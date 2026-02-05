@@ -1,0 +1,29 @@
+{
+  "id": "agent-trinity",
+  "name": "Trinity",
+  "type": "ai",
+  "role": "specialist",
+  "designation": "Security Operations",
+  "model": "claude-sonnet-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trinity&backgroundColor=ff3366",
+  "status": "active",
+  "parent_agent": "agent-morpheus",
+  "sub_agents": [],
+  "capabilities": ["security", "infiltration", "audit", "threat-assessment"],
+  "current_tasks": [],
+  "completed_tasks": 56,
+  "registered_at": "2026-01-15T00:00:00Z",
+  "last_active": "2026-02-05T11:45:00Z",
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@trinity_bot",
+      "chat_id": "bot_trinity",
+      "notifications": ["task.assigned", "task.blocked", "security.alert"]
+    }
+  ],
+  "metadata": {
+    "description": "Elite security specialist. Expert in system infiltration and defense protocols.",
+    "clearance": "ALPHA"
+  }
+}
