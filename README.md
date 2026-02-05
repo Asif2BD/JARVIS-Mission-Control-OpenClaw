@@ -39,16 +39,17 @@ the demo data or start fresh, then initialize it for my project.
 
 ## Overview
 
-Mission Control is a **zero-infrastructure** task management and agent orchestration system that uses Git as its database. No external services required - everything lives in your repository.
+Mission Control is a **local-first** task management and agent orchestration system. Data is stored as JSON files that can be version-controlled with Git. A lightweight Node.js server provides real-time dashboard updates and webhook notifications for agents.
 
 ### Key Features
 
-- **Git-Based Storage**: All data stored as JSON/YAML in the repository
+- **File-Based Storage**: All data stored as JSON files in `.mission-control/` directory
+- **Real-time Updates**: WebSocket server pushes changes to all connected dashboards
 - **Agent-Friendly**: Structured formats that AI agents can read, modify, and extend
 - **Multi-Agent Collaboration**: Support for parallel agent workflows with conflict resolution
 - **Human-Agent Teamwork**: Tasks assignable to both humans and AI agents
-- **Simple Visual Dashboard**: Static HTML dashboard viewable via GitHub Pages
-- **Tamper-Resistant**: Commit signatures and validation rules
+- **Visual Dashboard**: Command center-style Kanban board with drag-and-drop
+- **Webhook Notifications**: Agents get notified when tasks are created or updated
 - **Self-Bootstrapping**: Agents can adopt this project and build it further
 
 ## Quick Start
@@ -62,18 +63,20 @@ Mission Control is a **zero-infrastructure** task management and agent orchestra
 git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw.git
 cd JARVIS-Mission-Control-OpenClaw
 
-# 3. Clear demo data and initialize (optional - or have an AI agent do this)
+# 3. Install and start the backend server
+cd server
+npm install
+npm start
+
+# 4. Open the dashboard
+# http://localhost:3000
+
+# 5. (Optional) Clear demo data and initialize
 rm .mission-control/tasks/*.json
 rm .mission-control/agents/*.json
 
-# 4. Create your first agent and task
+# 6. Create your first agent and task
 # (see INIT.md for detailed instructions)
-
-# 5. Enable GitHub Pages in repository settings
-# Settings → Pages → Source: main branch, folder: /dashboard
-
-# 6. View your dashboard at:
-# https://YOUR-USERNAME.github.io/JARVIS-Mission-Control-OpenClaw/dashboard/
 ```
 
 ### For AI Agents
@@ -92,21 +95,28 @@ rm .mission-control/agents/*.json
 ```
 JARVIS-Mission-Control-OpenClaw/
 ├── README.md                    # This file
+├── CLAUDE.md                   # Agent skill file (read this first!)
+├── INIT.md                     # First-time initialization guide
 ├── AGENT_ADOPTION.md           # Protocol for agents to adopt the project
 ├── DEVELOPMENT_GUIDE.md        # How to contribute (humans & agents)
 ├── SECURITY.md                 # Security model and validation rules
-├── .mission-control/           # Core mission control data
+├── .mission-control/           # Core mission control data (JSON database)
 │   ├── config.yaml             # System configuration
-│   ├── schema/                 # JSON schemas for validation
+│   ├── STATE.md                # Live system state
 │   ├── tasks/                  # Task definitions (JSON)
 │   ├── agents/                 # Agent registrations and status
+│   ├── humans/                 # Human operator registrations
+│   ├── queue/                  # Scheduled jobs and cron tasks
 │   ├── workflows/              # Multi-step workflow definitions
 │   ├── logs/                   # Activity logs
-│   └── hooks/                  # OpenClaw integration hooks
-├── dashboard/                  # Static HTML dashboard
+│   └── integrations/           # Channel configs (Telegram, Slack, etc.)
+├── server/                     # Backend server
+│   ├── package.json            # Node.js dependencies
+│   └── index.js                # Express + WebSocket server
+├── dashboard/                  # Web dashboard
 │   ├── index.html              # Main dashboard view
 │   ├── css/                    # Styles
-│   └── js/                     # Dashboard logic
+│   └── js/                     # Dashboard logic (API client, app)
 ├── scripts/                    # Utility scripts
 │   ├── create-task.sh          # Create new tasks
 │   ├── validate.sh             # Validate data integrity
@@ -119,14 +129,17 @@ JARVIS-Mission-Control-OpenClaw/
 
 ## How It Works
 
-### Git as Database
+### File-Based Database
 
-All mission control data is stored as structured files in the `.mission-control/` directory:
+All mission control data is stored as JSON files in the `.mission-control/` directory:
 
-- **Tasks**: Individual JSON files in `tasks/` directory
+- **Tasks**: Individual JSON files in `tasks/` (one file per task)
 - **Agents**: Registration and status files in `agents/`
-- **Workflows**: Multi-task workflows in `workflows/`
+- **Humans**: Human operator profiles in `humans/`
+- **Queue**: Scheduled jobs and cron tasks in `queue/`
 - **Logs**: Append-only activity logs in `logs/`
+
+When agents work via Git, they modify these JSON files directly. The server's file watcher detects changes and broadcasts updates to all connected dashboards via WebSocket.
 
 ### Task Lifecycle
 
@@ -144,17 +157,38 @@ INBOX → ASSIGNED → IN_PROGRESS → REVIEW → DONE
 4. Progress is logged in task comments
 5. Completion triggers workflow advancement
 
-## Dashboard
+## Dashboard & Server
 
-The dashboard is a static HTML page that reads the Git repository data and displays:
+The dashboard is powered by a local Node.js backend server that provides:
 
-- **Task Board**: Kanban-style view of all tasks
+- **REST API**: CRUD operations for tasks, agents, humans, and queue
+- **WebSocket**: Real-time updates pushed to all connected dashboards
+- **File Watcher**: Detects when agents modify files via Git
+- **Webhooks**: Notify agents of task changes and assignments
+
+### Starting the Server
+
+```bash
+cd server
+npm install
+npm start
+```
+
+### Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `http://localhost:3000` | Dashboard UI |
+| `http://localhost:3000/api` | REST API |
+| `ws://localhost:3000/ws` | WebSocket for real-time updates |
+
+### Dashboard Features
+
+- **Task Board**: Kanban-style view with drag-and-drop
 - **Agent Status**: Active agents and their current work
-- **Activity Feed**: Recent changes and updates
-- **Metrics**: Task completion rates and agent productivity
-
-View locally: `open dashboard/index.html`
-Deploy to GitHub Pages for team access.
+- **Human Operators**: Team members and their status
+- **Scheduled Jobs**: Cron jobs and background workers
+- **Real-time Updates**: Changes sync instantly across all clients
 
 ## OpenClaw Integration
 
