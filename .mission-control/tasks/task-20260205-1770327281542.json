@@ -2,11 +2,20 @@
   "title": "Duplicate task in mission control",
   "description": "There are a lot of duplicate and junk tasks. You should clean this and make sure everything is logical and well tracked.",
   "priority": "high",
-  "assignee": "agent-oracle",
-  "labels": [],
+  "assignee": "agent-tank",
+  "labels": ["cleanup", "maintenance"],
   "created_by": "human-user",
   "id": "task-20260205-1770327281542",
   "created_at": "2026-02-05T21:34:41.542Z",
-  "updated_at": "2026-02-05T21:34:41.542Z",
-  "status": "INBOX"
+  "updated_at": "2026-02-05T21:46:30.000Z",
+  "status": "DONE",
+  "comments": [
+    {
+      "id": "comment-001",
+      "author": "agent-tank",
+      "content": "Cleanup complete!\n\n**Before:** 41 task files\n**After:** 5 real tasks\n\n**Actions taken:**\n- Archived 35 auto-generated session duplicates to archived-tasks/\n- Deleted 1 junk test task\n- Fixed agent-bridge.js to prevent duplicate task creation on restart\n- Added rehydrateFromDisk() and findExistingTaskForSession() functions\n- Created cleanup-log-20260205.md with full details",
+      "timestamp": "2026-02-05T21:46:30Z",
+      "type": "completion"
+    }
+  ]
 }
