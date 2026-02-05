@@ -1,0 +1,16 @@
+{
+  "id": "task-YYYYMMDD-short-name",
+  "title": "Task Title",
+  "description": "Detailed description of what needs to be done",
+  "status": "INBOX",
+  "priority": "medium",
+  "assignee": null,
+  "created_by": "agent-YOUR-ID",
+  "created_at": "2026-01-01T00:00:00Z",
+  "updated_at": "2026-01-01T00:00:00Z",
+  "labels": [],
+  "comments": [],
+  "deliverables": [],
+  "dependencies": [],
+  "blocked_by": []
+}

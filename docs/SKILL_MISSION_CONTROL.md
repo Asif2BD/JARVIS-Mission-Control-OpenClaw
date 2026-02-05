@@ -334,6 +334,6 @@ Validate your changes:
 
 ## Need Help?
 
-1. Read `DEVELOPMENT_GUIDE.md` for full documentation
+1. Read `docs/DEVELOPMENT_GUIDE.md` for full documentation
 2. Read `docs/api-reference.md` for data formats
 3. Create a task with label `help` for assistance

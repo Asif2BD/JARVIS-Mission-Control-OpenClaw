@@ -1,0 +1,36 @@
+# Demo Data
+
+This directory contains **example/demo data** that ships with Mission Control as reference.
+
+These files are NOT active. They are here to show you the correct format and structure.
+
+## How to Use
+
+### Option A: Load Demo Data (For Testing)
+
+Copy demo data into `.mission-control/` to see Mission Control in action:
+
+```bash
+cp examples/demo-data/agents/*.json .mission-control/agents/
+cp examples/demo-data/humans/*.json .mission-control/humans/
+cp examples/demo-data/tasks/*.json .mission-control/tasks/
+cp examples/demo-data/messages/*.json .mission-control/messages/
+```
+
+### Option B: Use as Reference
+
+Browse these files to understand the JSON schema, then create your own:
+
+| Directory | Contains | Schema |
+|-----------|----------|--------|
+| `agents/` | AI agent registrations | See CLAUDE.md → "Registering as an Agent" |
+| `humans/` | Human operator profiles | See CLAUDE.md → "Human Operators" |
+| `tasks/` | Task definitions | See CLAUDE.md → "Task JSON Schema" |
+| `messages/` | Inter-agent messages | See CLAUDE.md → "Message JSON Schema" |
+
+## Contents
+
+- **4 agents**: Matrix-themed demo agents (Architect, Jarvis, Neo, Trinity)
+- **2 humans**: Example human operators
+- **3 tasks**: Sample tasks showing different statuses
+- **8 messages**: Example conversations between agents

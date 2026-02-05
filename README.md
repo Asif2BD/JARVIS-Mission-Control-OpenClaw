@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 A robust, Git-based Mission Control system for orchestrating AI agents and human collaborators. Designed to be adopted by agents themselves and built collaboratively.
@@ -9,7 +9,7 @@ A robust, Git-based Mission Control system for orchestrating AI agents and human
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-| **0.7.0** | Pre-release | 2026-02-05 |
+| **0.8.0** | Pre-release | 2026-02-05 |
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
@@ -72,20 +72,23 @@ Mission Control is a **local-first** task management and agent orchestration sys
 git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw.git
 cd JARVIS-Mission-Control-OpenClaw
 
-# 3. Install and start the backend server
+# 3. Register yourself and your first agent
+./scripts/add-human.sh --id human-yourname --name "Your Name"
+./scripts/add-agent.sh --id agent-primary --name "Primary Agent" --role lead
+
+# 4. Install and start the backend server
 cd server
 npm install
 npm start
 
-# 4. Open the dashboard
+# 5. Open the dashboard
 # http://localhost:3000
 
-# 5. (Optional) Clear demo data and initialize
-rm .mission-control/tasks/*.json
-rm .mission-control/agents/*.json
+# 6. (Optional) Load demo data to see it in action
+cp examples/demo-data/agents/*.json .mission-control/agents/
+cp examples/demo-data/tasks/*.json .mission-control/tasks/
 
-# 6. Create your first agent and task
-# (see INIT.md for detailed instructions)
+# See INIT.md for detailed setup instructions
 ```
 
 ### For AI Agents
@@ -106,15 +109,14 @@ JARVIS-Mission-Control-OpenClaw/
 ├── README.md                    # This file
 ├── CLAUDE.md                   # Agent skill file (read this first!)
 ├── INIT.md                     # First-time initialization guide
-├── AGENT_ADOPTION.md           # Protocol for agents to adopt the project
-├── DEVELOPMENT_GUIDE.md        # How to contribute (humans & agents)
-├── SECURITY.md                 # Security model and validation rules
-├── .mission-control/           # Core mission control data (JSON database)
+├── CHANGELOG.md                # Version history
+├── .mission-control/           # Core data directory (starts empty - you fill it!)
 │   ├── config.yaml             # System configuration
 │   ├── STATE.md                # Live system state
-│   ├── tasks/                  # Task definitions (JSON)
-│   ├── agents/                 # Agent registrations and status
-│   ├── humans/                 # Human operator registrations
+│   ├── tasks/                  # Your task definitions (JSON)
+│   ├── agents/                 # Your agent registrations
+│   ├── humans/                 # Your human operators
+│   ├── messages/               # Direct messages between agents
 │   ├── queue/                  # Scheduled jobs and cron tasks
 │   ├── workflows/              # Multi-step workflow definitions
 │   ├── logs/                   # Activity logs
@@ -125,15 +127,20 @@ JARVIS-Mission-Control-OpenClaw/
 ├── dashboard/                  # Web dashboard
 │   ├── index.html              # Main dashboard view
 │   ├── css/                    # Styles
-│   └── js/                     # Dashboard logic (API client, app)
+│   └── js/                     # Dashboard logic
 ├── scripts/                    # Utility scripts
+│   ├── add-agent.sh            # Register new agents
+│   ├── add-human.sh            # Register human operators
 │   ├── create-task.sh          # Create new tasks
-│   ├── validate.sh             # Validate data integrity
-│   └── sync-status.sh          # Sync agent status
+│   └── validate.sh             # Validate data integrity
+├── examples/                   # Reference files
+│   ├── demo-data/              # Matrix-themed demo data (for testing)
+│   └── templates/              # Blank templates to copy and customize
 └── docs/                       # Extended documentation
-    ├── architecture.md         # System architecture
-    ├── api-reference.md        # Data format reference
-    └── examples/               # Example configurations
+    ├── AGENT_ADOPTION.md       # Protocol for agent onboarding
+    ├── DEVELOPMENT_GUIDE.md    # How to contribute
+    ├── SECURITY.md             # Security model
+    └── architecture.md         # System architecture
 ```
 
 ## How It Works
@@ -228,11 +235,11 @@ See `docs/openclaw-integration.md` for detailed setup.
 - **Access Control**: Branch protection and CODEOWNERS
 - **Agent Authentication**: Agents must be registered before operating
 
-See `SECURITY.md` for complete security documentation.
+See `docs/SECURITY.md` for complete security documentation.
 
 ## Contributing
 
-Both humans and AI agents can contribute! See `DEVELOPMENT_GUIDE.md` for:
+Both humans and AI agents can contribute! See `docs/DEVELOPMENT_GUIDE.md` for:
 
 - Code style and formatting
 - Commit message conventions
