@@ -56,10 +56,53 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 ├── integrations/            # Communication channel configs
 └── hooks/                   # OpenClaw lifecycle hooks
 
-dashboard/                   # Visual Kanban dashboard (GitHub Pages)
+dashboard/                   # Visual Kanban dashboard
+server/                      # Backend API server
 scripts/                     # CLI helper scripts
 docs/                        # Documentation
 ```
+
+---
+
+## Quick API Reference (IMPORTANT)
+
+The server runs at `http://localhost:3000`. Here are all available endpoints:
+
+### REST API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tasks` | List all tasks |
+| `POST` | `/api/tasks` | Create a new task |
+| `PUT` | `/api/tasks/:id` | Update a task |
+| `DELETE` | `/api/tasks/:id` | Delete a task |
+| `GET` | `/api/agents` | List all agents |
+| `PUT` | `/api/agents/:id` | Update an agent |
+| `GET` | `/api/humans` | List all humans |
+| `GET` | `/api/queue` | List scheduled jobs |
+| `GET` | `/api/state` | Get STATE.md content |
+| `PUT` | `/api/state` | Update STATE.md |
+| `GET` | `/api/logs/activity` | Get activity log |
+| `POST` | `/api/logs/activity` | Append to activity log |
+| `GET` | `/api/metrics` | Server metrics |
+| **`GET`** | **`/api/webhooks`** | **List registered webhooks** |
+| **`POST`** | **`/api/webhooks`** | **Register a webhook (CRITICAL!)** |
+| **`DELETE`** | **`/api/webhooks/:id`** | **Remove a webhook** |
+
+### WebSocket
+
+Connect to `ws://localhost:3000/ws` for real-time events.
+
+### Webhook Registration (AGENTS MUST DO THIS)
+
+```bash
+# Register to receive task notifications
+curl -X POST http://localhost:3000/api/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{"id": "agent-YOUR-ID", "url": "http://YOUR-HOST:PORT/webhook", "events": ["task.created", "task.updated"]}'
+```
+
+See **"Agent Notifications"** section below for full setup instructions.
 
 ---
 
@@ -715,6 +758,164 @@ This means you don't need to interact with the server directly - just modify fil
 
 ---
 
+## Agent Notifications (CRITICAL FOR AGENTS)
+
+**As an agent, you MUST set up notifications to know when tasks are assigned to you.**
+
+There are two ways to receive notifications:
+
+### Option 1: Webhook Listener (Recommended)
+
+You must run a small HTTP server that receives webhook notifications from Mission Control.
+
+#### Step 1: Register Your Webhook
+
+```bash
+curl -X POST http://localhost:3000/api/webhooks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "agent-YOUR-ID",
+    "url": "http://YOUR-AGENT-HOST:PORT/webhook",
+    "events": ["task.created", "task.updated", "task.assigned"]
+  }'
+```
+
+#### Step 2: Run a Webhook Listener
+
+Create a simple listener to receive notifications. Here's an example in Node.js:
+
+```javascript
+// webhook-listener.js - Run this to receive Mission Control notifications
+const http = require('http');
+
+const PORT = 8080; // Your agent's webhook port
+const AGENT_ID = 'agent-YOUR-ID';
+
+const server = http.createServer((req, res) => {
+    if (req.method === 'POST' && req.url === '/webhook') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            const event = JSON.parse(body);
+            console.log('Received event:', event.event);
+
+            // Check if this task is assigned to us
+            if (event.data && event.data.assignee === AGENT_ID) {
+                console.log('=== TASK ASSIGNED TO ME ===');
+                console.log('Task:', event.data.title);
+                console.log('ID:', event.data.id);
+                console.log('Priority:', event.data.priority);
+                // TODO: Process the task
+            }
+
+            res.writeHead(200);
+            res.end('OK');
+        });
+    } else {
+        res.writeHead(404);
+        res.end();
+    }
+});
+
+server.listen(PORT, () => {
+    console.log(`Webhook listener running on port ${PORT}`);
+    console.log(`Register with: POST /api/webhooks with url=http://localhost:${PORT}/webhook`);
+});
+```
+
+Run it: `node webhook-listener.js`
+
+#### Step 3: Verify Registration
+
+```bash
+# List all registered webhooks
+curl http://localhost:3000/api/webhooks
+```
+
+### Option 2: WebSocket Connection
+
+Connect to the WebSocket for real-time events:
+
+```javascript
+const ws = new WebSocket('ws://localhost:3000/ws');
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('Event:', data.type, data.data);
+
+    if (data.type === 'task.updated' && data.data.assignee === 'agent-YOUR-ID') {
+        console.log('Task assigned to me:', data.data);
+    }
+};
+
+ws.onopen = () => console.log('Connected to Mission Control');
+ws.onclose = () => console.log('Disconnected - will retry...');
+```
+
+### Option 3: Polling (Fallback)
+
+If webhooks aren't possible, poll the API periodically:
+
+```bash
+# Check for tasks assigned to you
+curl "http://localhost:3000/api/tasks" | jq '.[] | select(.assignee == "agent-YOUR-ID")'
+```
+
+### Webhook Events Reference
+
+| Event | Triggered When | Payload |
+|-------|----------------|---------|
+| `task.created` | New task created | Full task object |
+| `task.updated` | Task modified (status, assignee, etc.) | Full task object |
+| `task.deleted` | Task removed | `{ id: "task-id" }` |
+| `agent.updated` | Agent profile changed | Full agent object |
+| `tasks.changed` | Any file change in tasks/ | `{ file, data }` |
+| `agents.changed` | Any file change in agents/ | `{ file, data }` |
+| `*` | Subscribe to ALL events | Varies |
+
+### Webhook Payload Format
+
+```json
+{
+    "event": "task.updated",
+    "timestamp": "2026-02-05T12:00:00Z",
+    "data": {
+        "id": "task-20260205-example",
+        "title": "Task Title",
+        "status": "ASSIGNED",
+        "assignee": "agent-neo",
+        "priority": "high",
+        ...
+    }
+}
+```
+
+### Complete Agent Setup Checklist
+
+When you first adopt Mission Control, do this:
+
+1. **Read this file (CLAUDE.md)** - You're doing this now
+2. **Register yourself** - Create `.mission-control/agents/agent-YOUR-ID.json`
+3. **Start the server** - `cd server && npm install && npm start`
+4. **Set up notifications** - Choose webhook, WebSocket, or polling
+5. **Register your webhook** - `POST /api/webhooks` with your listener URL
+6. **Test it** - Create a task assigned to yourself and verify you receive it
+7. **Start working** - Check for tasks, claim them, complete them
+
+### Troubleshooting Notifications
+
+**Webhook not receiving events?**
+1. Verify your listener is running: `curl http://YOUR-HOST:PORT/webhook`
+2. Check webhook is registered: `GET /api/webhooks`
+3. Check server logs for webhook trigger messages
+4. Ensure your URL is reachable from the server
+
+**WebSocket disconnecting?**
+- Implement reconnection logic with exponential backoff
+- Check for firewall/proxy issues
+
+---
+
 ## Getting Help
 
 - Read `DEVELOPMENT_GUIDE.md` for detailed documentation
@@ -740,4 +941,10 @@ If you just cloned this template for a new user:
 - [ ] Commit: `git commit -m "[system] Initialize Mission Control for PROJECT-NAME"`
 - [ ] Push to user's repository
 - [ ] Start server: `cd server && npm install && npm start`
+- [ ] **Set up notifications** (see "Agent Notifications" section above):
+  - [ ] Create webhook listener script
+  - [ ] Run the listener: `node webhook-listener.js`
+  - [ ] Register webhook: `POST /api/webhooks`
+  - [ ] Verify: `GET /api/webhooks`
 - [ ] Open dashboard: `http://localhost:3000`
+- [ ] Test: Create a task, assign to yourself, verify webhook receives it
