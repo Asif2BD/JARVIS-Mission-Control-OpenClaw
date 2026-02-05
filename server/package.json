@@ -1,10 +1,12 @@
 {
   "name": "jarvis-mission-control-server",
-  "version": "0.8.0",
-  "description": "Backend server for JARVIS Mission Control - handles data persistence and real-time updates",
+  "version": "0.9.0",
+  "description": "Backend server for JARVIS Mission Control - handles data persistence, real-time updates, and OpenClaw agent integration",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "bridge": "node agent-bridge.js",
+    "all": "node start-all.js",
     "dev": "node index.js --watch"
   },
   "dependencies": {
@@ -14,6 +16,6 @@
     "cors": "^2.8.5"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }

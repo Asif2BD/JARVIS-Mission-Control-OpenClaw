@@ -305,6 +305,51 @@ app.put('/api/tasks/:id', async (req, res) => {
     }
 });
 
+app.patch('/api/tasks/:id', async (req, res) => {
+    try {
+        // Read existing task
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${req.params.id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        // Apply partial updates (only allowed fields)
+        const allowedFields = ['status', 'assignee', 'priority', 'title', 'description'];
+        const updates = req.body;
+        const changes = [];
+
+        for (const field of allowedFields) {
+            if (updates[field] !== undefined && updates[field] !== task[field]) {
+                changes.push(`${field}: ${task[field]} → ${updates[field]}`);
+                task[field] = updates[field];
+            }
+        }
+
+        // Update timestamp
+        task.updated_at = new Date().toISOString();
+
+        // Save updated task
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+
+        // Log the change with details
+        const actor = updates.updated_by || 'system';
+        const changeDescription = changes.length > 0 
+            ? `Task ${task.id}: ${changes.join(', ')}`
+            : `Task ${task.id}: no changes`;
+        await logActivity(actor, 'PATCHED', changeDescription);
+
+        // Broadcast and trigger webhooks
+        broadcast('task.updated', task);
+        triggerWebhooks('task.updated', task);
+
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.delete('/api/tasks/:id', async (req, res) => {
     try {
         await deleteJsonFile(`tasks/${req.params.id}.json`);
