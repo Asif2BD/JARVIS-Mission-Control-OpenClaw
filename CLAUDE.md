@@ -2,6 +2,27 @@
 
 You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
 
+---
+
+## IMPORTANT: This is a Template Repository
+
+**DO NOT modify this original repository directly.**
+
+If this is your first time here and you're setting up Mission Control for a user:
+
+1. **Read `INIT.md`** for the complete initialization guide
+2. **Clone/Fork this repo** to the user's own GitHub account
+3. **Ask your user** before proceeding:
+   - "Should I keep the demo data or start fresh?"
+   - "What names would you like for your agents?"
+   - "What's your first task?"
+4. **Initialize** by clearing demo data and setting up real agents/tasks
+5. **Never push changes back** to the original template repository
+
+The demo data (Matrix-themed agents, sample tasks) is for **demonstration only**.
+
+---
+
 ## Your Identity
 
 When working in this repository, you are an agent in the Matrix. Choose or use an assigned identity:
@@ -337,3 +358,21 @@ git push
 - Read `AGENT_ADOPTION.md` for onboarding steps
 - Read `SECURITY.md` for security protocols
 - Create a task with label `help` if you're stuck
+
+---
+
+## First Time Setup Checklist
+
+If you just cloned this template for a new user:
+
+- [ ] Read `INIT.md` for full initialization guide
+- [ ] Ask user: Keep demo data or start fresh?
+- [ ] Ask user: What to name the agents?
+- [ ] Ask user: What's the first real task?
+- [ ] Clear demo data: `rm .mission-control/tasks/*.json .mission-control/agents/*.json`
+- [ ] Create primary agent in `.mission-control/agents/`
+- [ ] Create first real task in `.mission-control/tasks/`
+- [ ] Update `.mission-control/config.yaml` with project info
+- [ ] Commit: `git commit -m "[system] Initialize Mission Control for PROJECT-NAME"`
+- [ ] Push to user's repository
+- [ ] Enable GitHub Pages for dashboard
