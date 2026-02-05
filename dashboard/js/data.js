@@ -265,34 +265,22 @@ const SAMPLE_TASKS = [
     }
 ];
 
-// Human operators - separate from AI agents
+// Human operators - DEMO DATA (replace with your own via scripts/add-human.sh)
 const SAMPLE_HUMANS = [
     {
-        "id": "human-asif",
-        "name": "Asif",
+        "id": "human-admin",
+        "name": "Admin",
         "type": "human",
         "role": "admin",
         "designation": "Project Owner",
-        "email": "asif@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=asif&backgroundColor=10b981",
+        "email": "admin@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=admin&backgroundColor=10b981",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
         "completed_tasks": 24,
         "last_seen": "2026-02-05T11:45:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@asif_admin",
-                "chat_id": "123456789",
-                "notifications": ["task.assigned", "task.completed", "task.blocked", "agent.mentioned"]
-            },
-            {
-                "type": "email",
-                "id": "asif@example.com",
-                "notifications": ["task.completed", "system.daily_report"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Primary human administrator with full system access.",
             "clearance": "OMEGA",
@@ -300,80 +288,59 @@ const SAMPLE_HUMANS = [
         }
     },
     {
-        "id": "human-nobin",
-        "name": "Nobin",
+        "id": "human-dev",
+        "name": "Dev Lead",
         "type": "human",
         "role": "admin",
         "designation": "Lead Developer",
-        "email": "nobin@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=nobin&backgroundColor=0ea5e9",
+        "email": "dev@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=devlead&backgroundColor=0ea5e9",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
         "completed_tasks": 42,
         "last_seen": "2026-02-05T11:30:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@nobin_dev",
-                "chat_id": "987654321",
-                "notifications": ["task.assigned", "task.review_requested", "task.commented"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Lead developer overseeing all technical implementations.",
             "clearance": "OMEGA",
-            "timezone": "Asia/Dhaka"
+            "timezone": "UTC"
         }
     },
     {
-        "id": "human-jewel",
-        "name": "Jewel",
+        "id": "human-reviewer",
+        "name": "Reviewer",
         "type": "human",
         "role": "reviewer",
         "designation": "Code Reviewer",
-        "email": "jewel@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=jewel&backgroundColor=a855f7",
+        "email": "reviewer@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=reviewer&backgroundColor=a855f7",
         "status": "away",
         "capabilities": ["review", "approve", "comment"],
         "current_tasks": [],
         "completed_tasks": 67,
         "last_seen": "2026-02-05T10:30:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@jewel_review",
-                "chat_id": "456789123",
-                "notifications": ["task.review_requested", "task.commented"]
-            }
-        ],
+        "channels": [],
         "metadata": {
-            "description": "Human code reviewer and quality assurance specialist.",
+            "description": "Code reviewer and quality assurance specialist.",
             "clearance": "ALPHA",
             "timezone": "America/New_York"
         }
     },
     {
-        "id": "human-cipher",
-        "name": "Cipher",
+        "id": "human-security",
+        "name": "Security Lead",
         "type": "human",
         "role": "reviewer",
         "designation": "Security Analyst",
-        "email": "cipher@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=cipher&backgroundColor=ff3366",
+        "email": "security@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=security&backgroundColor=ff3366",
         "status": "online",
         "capabilities": ["review", "approve", "security-audit"],
         "current_tasks": [],
         "completed_tasks": 31,
         "last_seen": "2026-02-05T11:50:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@cipher_sec",
-                "chat_id": "789123456",
-                "notifications": ["task.assigned", "security.alert", "task.blocked"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Security analyst reviewing security-related tasks and audits.",
             "clearance": "ALPHA",
@@ -381,25 +348,19 @@ const SAMPLE_HUMANS = [
         }
     },
     {
-        "id": "human-tony",
-        "name": "Tony",
+        "id": "human-pm",
+        "name": "Product Manager",
         "type": "human",
         "role": "observer",
         "designation": "Product Manager",
-        "email": "tony@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=tony&backgroundColor=fbbf24",
+        "email": "pm@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=pm&backgroundColor=fbbf24",
         "status": "offline",
         "capabilities": ["view", "comment"],
         "current_tasks": [],
         "completed_tasks": 8,
         "last_seen": "2026-02-04T18:00:00Z",
-        "channels": [
-            {
-                "type": "email",
-                "id": "tony@example.com",
-                "notifications": ["task.completed", "system.weekly_report"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Product manager overseeing project direction and priorities.",
             "clearance": "OBSERVER",
@@ -408,7 +369,7 @@ const SAMPLE_HUMANS = [
     }
 ];
 
-// Matrix-themed AI agents with hierarchy and sub-agent support
+// DEMO AI agents (Matrix-themed) - Replace with your own via scripts/add-agent.sh
 const SAMPLE_AGENTS = [
     {
         "id": "agent-architect",
@@ -965,12 +926,12 @@ const SAMPLE_MESSAGES = [
         read: true,
         type: "direct"
     },
-    // Thread: JARVIS <-> Human (chat)
+    // Thread: Human <-> Agents (dashboard chat)
     {
         id: "msg-20260205-010",
-        from: "human-asif",
-        to: "agent-jarvis",
-        content: "@jarvis what's the current status? Anything blocked?",
+        from: "human-admin",
+        to: "agent-architect",
+        content: "@architect what's the current status? Anything blocked?",
         timestamp: "2026-02-05T11:00:00Z",
         thread_id: "chat-general",
         read: true,
@@ -978,8 +939,8 @@ const SAMPLE_MESSAGES = [
     },
     {
         id: "msg-20260205-011",
-        from: "agent-jarvis",
-        to: "human-asif",
+        from: "agent-architect",
+        to: "human-admin",
         content: "All systems operational. 3 tasks in progress, 1 in review, 0 blocked. Trinity is wrapping up the security audit. Neo is at 80% on Matrix Core.",
         timestamp: "2026-02-05T11:01:00Z",
         thread_id: "chat-general",
@@ -988,7 +949,7 @@ const SAMPLE_MESSAGES = [
     },
     {
         id: "msg-20260205-012",
-        from: "human-asif",
+        from: "human-admin",
         to: "agent-neo",
         content: "@neo how's the core upgrade? Need it by end of day.",
         timestamp: "2026-02-05T11:05:00Z",
@@ -999,7 +960,7 @@ const SAMPLE_MESSAGES = [
     {
         id: "msg-20260205-013",
         from: "agent-neo",
-        to: "human-asif",
+        to: "human-admin",
         content: "80% complete. ETA: 2 hours. The sync module is the last piece. Will push to review by 3pm.",
         timestamp: "2026-02-05T11:06:00Z",
         thread_id: "chat-general",

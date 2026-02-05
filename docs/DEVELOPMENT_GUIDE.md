@@ -279,7 +279,7 @@ git merge feature/task-20260205-001-oauth
 
 ### Reading Instructions
 
-1. Always read `AGENT_ADOPTION.md` first
+1. Always read `CLAUDE.md` first (then `docs/AGENT_ADOPTION.md`)
 2. Check `.mission-control/config.yaml` for rules
 3. Review your agent file for capabilities
 4. Check current tasks before creating duplicates

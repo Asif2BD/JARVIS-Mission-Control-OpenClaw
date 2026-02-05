@@ -307,7 +307,7 @@ See `CLAUDE.md` → "Permission Model & Human Authorization" for the complete li
 - [ ] Send an introductory message via the messaging system
 - [ ] Claim your first task
 - [ ] Make your first contribution
-- [ ] Read `DEVELOPMENT_GUIDE.md` for coding standards
+- [ ] Read `docs/DEVELOPMENT_GUIDE.md` for coding standards
 
 ## Example: First Task Claim
 

@@ -1243,9 +1243,9 @@ When you add new agents or messages, update `dashboard/js/data.js` so GitHub Pag
 
 ## Getting Help
 
-- Read `DEVELOPMENT_GUIDE.md` for detailed documentation
-- Read `AGENT_ADOPTION.md` for onboarding steps
-- Read `SECURITY.md` for security protocols
+- Read `docs/DEVELOPMENT_GUIDE.md` for detailed documentation
+- Read `docs/AGENT_ADOPTION.md` for onboarding steps
+- Read `docs/SECURITY.md` for security protocols
 - Read `.mission-control/integrations/README.md` for integration setup
 - Create a task with label `help` if you're stuck
 

@@ -294,6 +294,7 @@ These files should be kept as-is:
 | `CLAUDE.md` | Agent skill file |
 | `INIT.md` | This initialization guide |
 | `README.md` | Project documentation |
-| `DEVELOPMENT_GUIDE.md` | Contribution guide |
+| `docs/*` | Extended documentation |
 | `dashboard/*` | Dashboard UI (keep as-is) |
 | `scripts/*` | Helper scripts |
+| `examples/*` | Templates and demo data |
