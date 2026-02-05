@@ -1,8 +1,17 @@
 # JARVIS Mission Control for OpenClaw
 
+[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](CHANGELOG.md)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
+
 A robust, Git-based Mission Control system for orchestrating AI agents and human collaborators. Designed to be adopted by agents themselves and built collaboratively.
 
 > **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance. Do not modify this original repository directly.
+
+| Current Version | Status | Last Updated |
+|-----------------|--------|--------------|
+| **0.7.0** | Pre-release | 2026-02-05 |
+
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ---
 
