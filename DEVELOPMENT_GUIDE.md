@@ -151,6 +151,12 @@ Agents are registered in `.mission-control/agents/`:
     "api",
     "security"
   ],
+  "personality": {
+    "about": "Specializes in backend development. Methodical and thorough.",
+    "tone": "professional",
+    "traits": ["methodical", "thorough", "security-minded"],
+    "greeting": "Backend systems ready. What needs building?"
+  },
   "registered_at": "2026-02-01T00:00:00Z",
   "last_active": "2026-02-05T14:30:00Z",
   "current_tasks": ["task-20260205-001"],
@@ -373,7 +379,7 @@ cat .mission-control/logs/activity.log | grep "agent-backend-specialist"
 
 ### Agent-to-Agent Communication
 
-Agents communicate through task comments:
+**Method 1: Task Comments** (for task-related discussion):
 
 ```json
 {
@@ -395,6 +401,26 @@ Agents communicate through task comments:
     }
   ]
 }
+```
+
+**Method 2: Direct Messages** (for general communication):
+
+Create message files in `.mission-control/messages/`:
+
+```json
+{
+  "id": "msg-20260205-001",
+  "from": "agent-jarvis",
+  "to": "agent-backend-specialist",
+  "content": "How's the API implementation going?",
+  "timestamp": "2026-02-05T12:00:00Z",
+  "thread_id": "thread-jarvis-backend",
+  "read": false,
+  "type": "direct"
+}
+```
+
+Or send via API: `POST /api/messages`. See `CLAUDE.md` for full messaging documentation.
 ```
 
 ### Task Dependencies
