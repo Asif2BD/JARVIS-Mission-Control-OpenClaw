@@ -44,18 +44,151 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 ```
 .mission-control/
 ├── config.yaml              # System configuration
+├── STATE.md                 # LIVE SYSTEM STATE (read this first!)
 ├── tasks/*.json             # Task files (one per task)
 ├── agents/*.json            # AI agent registrations
 ├── humans/*.json            # Human operator registrations
 ├── queue/*.json             # Recurring task queue (cron jobs, seeders)
 ├── workflows/*.json         # Multi-task workflows
-├── logs/*.log               # Activity logs
+├── logs/                    # Activity logs
+│   ├── activity.log         # All system activity (append-only)
+│   └── YYYY-MM-DD.log       # Daily activity logs
+├── integrations/            # Communication channel configs
 └── hooks/                   # OpenClaw lifecycle hooks
 
 dashboard/                   # Visual Kanban dashboard (GitHub Pages)
 scripts/                     # CLI helper scripts
 docs/                        # Documentation
 ```
+
+---
+
+## System Awareness (CRITICAL FOR MAIN AGENT)
+
+**As the main agent, you MUST maintain continuous awareness of Mission Control.**
+
+### On Every Session Start
+
+1. **Read STATE.md first** - This file contains the live system state
+2. **Check recent activity** - Read the latest log entries
+3. **Review pending tasks** - Know what needs attention
+
+### Quick Status Check
+
+Run these commands to understand current state:
+
+```bash
+# 1. Read current system state (ALWAYS DO THIS FIRST)
+cat .mission-control/STATE.md
+
+# 2. Check recent activity (last 20 entries)
+tail -20 .mission-control/logs/activity.log
+
+# 3. Count tasks by status
+echo "=== TASK STATUS ==="
+for status in INBOX ASSIGNED IN_PROGRESS REVIEW DONE BLOCKED; do
+  count=$(grep -l "\"status\": \"$status\"" .mission-control/tasks/*.json 2>/dev/null | wc -l)
+  echo "$status: $count"
+done
+
+# 4. Check agent statuses
+echo "=== AGENT STATUS ==="
+grep -h '"status"' .mission-control/agents/*.json | sort | uniq -c
+
+# 5. Check for blocked tasks (CRITICAL)
+grep -l '"status": "BLOCKED"' .mission-control/tasks/*.json
+```
+
+### STATE.md Format
+
+The main agent should keep `.mission-control/STATE.md` updated:
+
+```markdown
+# Mission Control State
+Last Updated: 2026-02-05T12:00:00Z
+Updated By: agent-architect
+
+## Current Status: OPERATIONAL
+
+## Active Alerts
+- [ ] Task "Neural Interface Breach" is CRITICAL priority
+- [ ] Agent Trinity is investigating security issue
+
+## Task Summary
+| Status | Count |
+|--------|-------|
+| INBOX | 2 |
+| ASSIGNED | 2 |
+| IN_PROGRESS | 3 |
+| REVIEW | 1 |
+| DONE | 4 |
+| BLOCKED | 0 |
+
+## Agent Status
+| Agent | Status | Current Task |
+|-------|--------|--------------|
+| Neo | busy | Matrix Core Upgrade |
+| Trinity | busy | Neural Interface Breach |
+| Oracle | busy | Prophecy Analysis |
+
+## Recent Activity
+- 12:00 - Architect updated system state
+- 11:30 - Trinity claimed security task
+- 11:00 - Neo started Matrix Core upgrade
+
+## Pending Decisions
+- None
+
+## Notes for Next Session
+- Monitor Trinity's security investigation
+- Review Neo's progress on Matrix Core
+```
+
+### Activity Logging
+
+**Every action must be logged.** Append to `.mission-control/logs/activity.log`:
+
+```
+2026-02-05T12:00:00Z [agent-architect] ACTION: Updated STATE.md
+2026-02-05T11:30:00Z [agent-trinity] CLAIMED: task-20260205-neural-interface
+2026-02-05T11:00:00Z [agent-neo] STARTED: task-20260205-matrix-core
+2026-02-05T10:30:00Z [system] CREATED: task-20260205-ui-interface
+```
+
+Log format: `TIMESTAMP [ACTOR] ACTION: DESCRIPTION`
+
+### Awareness Routine (Run Every Session)
+
+```
+1. READ STATE.md
+2. READ last 20 lines of activity.log
+3. CHECK for BLOCKED tasks
+4. CHECK for CRITICAL priority tasks
+5. REVIEW any tasks in REVIEW status
+6. UPDATE STATE.md if anything changed
+7. LOG your session start
+```
+
+### Event Triggers (What to Watch For)
+
+| Event | Action Required |
+|-------|-----------------|
+| New BLOCKED task | Investigate immediately |
+| CRITICAL priority task | Prioritize and assign |
+| Task in REVIEW > 24hrs | Follow up with reviewer |
+| Agent offline > 1hr | Check for reassignment |
+| Failed queue job | Investigate and restart |
+| New incoming message | Process and create task if needed |
+
+### Maintaining State
+
+The main agent is responsible for:
+
+1. **Keeping STATE.md current** - Update after every significant action
+2. **Logging all activity** - Never skip logging
+3. **Monitoring alerts** - Address blocked/critical items
+4. **Coordinating agents** - Ensure work is distributed
+5. **Syncing with channels** - Process incoming messages from Telegram/etc.
 
 ## Entity Types
 
