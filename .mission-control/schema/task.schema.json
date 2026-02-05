@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jarvis-mission-control.dev/schemas/task.json",
+  "title": "Task",
+  "description": "A task in the Mission Control system",
+  "type": "object",
+  "required": ["id", "title", "description", "status", "priority", "created_by", "created_at", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^task-[a-z0-9-]+$",
+      "description": "Unique task identifier"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Brief task title"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Detailed task description"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["INBOX", "ASSIGNED", "IN_PROGRESS", "REVIEW", "DONE", "BLOCKED", "CANCELLED"],
+      "description": "Current task status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Task priority level"
+    },
+    "assignee": {
+      "type": ["string", "null"],
+      "pattern": "^(agent-|human-)[a-z0-9-]+$",
+      "description": "ID of assigned agent or human"
+    },
+    "created_by": {
+      "type": "string",
+      "pattern": "^(agent-|human-|system)[a-z0-9-]*$",
+      "description": "ID of task creator"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last update timestamp"
+    },
+    "due_date": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Optional due date"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "description": "Task labels for categorization"
+    },
+    "estimated_hours": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Estimated hours to complete"
+    },
+    "actual_hours": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Actual hours spent"
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/comment"
+      },
+      "description": "Task comments and updates"
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/deliverable"
+      },
+      "description": "Task outputs and artifacts"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^task-[a-z0-9-]+$"
+      },
+      "description": "Tasks that must complete before this one"
+    },
+    "blocked_by": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^task-[a-z0-9-]+$"
+      },
+      "description": "Tasks currently blocking this one"
+    },
+    "workflow_id": {
+      "type": ["string", "null"],
+      "pattern": "^workflow-[a-z0-9-]+$",
+      "description": "Parent workflow if applicable"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional custom metadata"
+    }
+  },
+  "$defs": {
+    "comment": {
+      "type": "object",
+      "required": ["id", "author", "content", "timestamp", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^comment-[a-z0-9-]+$"
+        },
+        "author": {
+          "type": "string",
+          "pattern": "^(agent-|human-|system)[a-z0-9-]*$"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["progress", "question", "review", "approval", "refute", "praise", "blocked", "system"]
+        }
+      }
+    },
+    "deliverable": {
+      "type": "object",
+      "required": ["name", "type", "status"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["code", "document", "design", "data", "other"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "in_progress", "completed"]
+        },
+        "url": {
+          "type": ["string", "null"],
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS Mission Control</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="logo">JARVIS Mission Control</h1>
+            <span class="version">v1.0.0</span>
+        </div>
+        <div class="header-right">
+            <div class="metrics">
+                <div class="metric">
+                    <span class="metric-value" id="total-tasks">0</span>
+                    <span class="metric-label">Total</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="in-progress">0</span>
+                    <span class="metric-label">In Progress</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="completed-today">0</span>
+                    <span class="metric-label">Done</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-value" id="active-agents">0</span>
+                    <span class="metric-label">Agents</span>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">+ New Task</button>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Kanban Board -->
+        <div class="kanban-board" id="kanban-board">
+            <div class="kanban-column" data-status="INBOX">
+                <div class="column-header">
+                    <h2>Inbox</h2>
+                    <span class="task-count" id="count-INBOX">0</span>
+                </div>
+                <div class="task-list" id="tasks-INBOX"></div>
+            </div>
+
+            <div class="kanban-column" data-status="ASSIGNED">
+                <div class="column-header">
+                    <h2>Assigned</h2>
+                    <span class="task-count" id="count-ASSIGNED">0</span>
+                </div>
+                <div class="task-list" id="tasks-ASSIGNED"></div>
+            </div>
+
+            <div class="kanban-column" data-status="IN_PROGRESS">
+                <div class="column-header">
+                    <h2>In Progress</h2>
+                    <span class="task-count" id="count-IN_PROGRESS">0</span>
+                </div>
+                <div class="task-list" id="tasks-IN_PROGRESS"></div>
+            </div>
+
+            <div class="kanban-column" data-status="REVIEW">
+                <div class="column-header">
+                    <h2>Review</h2>
+                    <span class="task-count" id="count-REVIEW">0</span>
+                </div>
+                <div class="task-list" id="tasks-REVIEW"></div>
+            </div>
+
+            <div class="kanban-column" data-status="DONE">
+                <div class="column-header">
+                    <h2>Done</h2>
+                    <span class="task-count" id="count-DONE">0</span>
+                </div>
+                <div class="task-list" id="tasks-DONE"></div>
+            </div>
+        </div>
+
+        <!-- Agents Panel -->
+        <aside class="agents-panel">
+            <h2>Active Agents</h2>
+            <div class="agents-list" id="agents-list">
+                <!-- Agents will be populated by JavaScript -->
+            </div>
+        </aside>
+    </main>
+
+    <!-- Task Detail Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-task-title">Task Title</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="task-meta">
+                    <span class="priority-badge" id="modal-priority">medium</span>
+                    <span class="status-badge" id="modal-status">INBOX</span>
+                </div>
+                <div class="task-field">
+                    <label>Description</label>
+                    <div class="description" id="modal-description"></div>
+                </div>
+                <div class="task-field">
+                    <label>Assignee</label>
+                    <span id="modal-assignee">Unassigned</span>
+                </div>
+                <div class="task-field">
+                    <label>Labels</label>
+                    <div class="labels" id="modal-labels"></div>
+                </div>
+                <div class="task-field">
+                    <label>Comments</label>
+                    <div class="comments-list" id="modal-comments"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div class="modal" id="create-task-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <button class="close-btn" onclick="closeCreateTaskModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-task-form">
+                    <div class="form-field">
+                        <label for="task-title">Title</label>
+                        <input type="text" id="task-title" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" rows="4" required></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="task-assignee">Assignee</label>
+                            <select id="task-assignee">
+                                <option value="">Unassigned</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="task-labels">Labels (comma-separated)</label>
+                        <input type="text" id="task-labels" placeholder="feature, backend">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCreateTaskModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createTask()">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Panel -->
+    <div class="instructions-panel" id="instructions-panel">
+        <h3>Getting Started</h3>
+        <p>This dashboard reads data from the <code>.mission-control/</code> directory.</p>
+        <h4>For Local Development:</h4>
+        <ol>
+            <li>Start a local server: <code>python -m http.server 8000</code></li>
+            <li>Open <code>http://localhost:8000/dashboard/</code></li>
+            <li>Data will be loaded from the repository</li>
+        </ol>
+        <h4>For GitHub Pages:</h4>
+        <ol>
+            <li>Enable GitHub Pages in repository settings</li>
+            <li>Tasks will be loaded via GitHub API</li>
+        </ol>
+        <button class="btn btn-secondary" onclick="toggleInstructions()">Got it!</button>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
