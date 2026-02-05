@@ -190,6 +190,169 @@ const MissionControlAPI = {
         return this.request(`/agents/${agentId}/timeline`);
     },
 
+    // --- Reports ---
+
+    async getReports() {
+        return this.request('/reports');
+    },
+
+    async getReport(filename) {
+        return this.request(`/reports/${encodeURIComponent(filename)}`);
+    },
+
+    // --- Files ---
+
+    async getFiles(directory = 'reports') {
+        return this.request(`/files?dir=${encodeURIComponent(directory)}`);
+    },
+
+    async getFile(directory, filename) {
+        return this.request(`/files/${encodeURIComponent(directory)}/${encodeURIComponent(filename)}`);
+    },
+
+    async getFileDirectories() {
+        return this.request('/files/directories');
+    },
+
+    // --- Task Attachments ---
+
+    async addTaskAttachment(taskId, filePath, description = null, addedBy = 'system') {
+        return this.request(`/tasks/${taskId}/attachments`, {
+            method: 'POST',
+            body: JSON.stringify({ filePath, description, added_by: addedBy })
+        });
+    },
+
+    async removeTaskAttachment(taskId, attachmentId) {
+        return this.request(`/tasks/${taskId}/attachments/${attachmentId}`, {
+            method: 'DELETE'
+        });
+    },
+
+    // ============================================
+    // RESOURCE MANAGEMENT
+    // ============================================
+
+    // --- Credentials Vault ---
+
+    async getCredentials() {
+        return this.request('/credentials');
+    },
+
+    async getCredential(id, includeValue = false) {
+        const query = includeValue ? '?includeValue=true' : '';
+        return this.request(`/credentials/${id}${query}`);
+    },
+
+    async createCredential(credential) {
+        return this.request('/credentials', {
+            method: 'POST',
+            body: JSON.stringify(credential)
+        });
+    },
+
+    async deleteCredential(id) {
+        return this.request(`/credentials/${id}`, {
+            method: 'DELETE'
+        });
+    },
+
+    // --- Resources ---
+
+    async getResources() {
+        return this.request('/resources');
+    },
+
+    async getResource(id) {
+        return this.request(`/resources/${id}`);
+    },
+
+    async createResource(resource) {
+        return this.request('/resources', {
+            method: 'POST',
+            body: JSON.stringify(resource)
+        });
+    },
+
+    // --- Bookings ---
+
+    async getBookings(filters = {}) {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) params.append(key, value);
+        });
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return this.request(`/bookings${query}`);
+    },
+
+    async createBooking(booking) {
+        return this.request('/bookings', {
+            method: 'POST',
+            body: JSON.stringify(booking)
+        });
+    },
+
+    async cancelBooking(id) {
+        return this.request(`/bookings/${id}`, {
+            method: 'DELETE'
+        });
+    },
+
+    // --- Costs ---
+
+    async getCostSummary(filters = {}) {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value) params.append(key, value);
+        });
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return this.request(`/costs${query}`);
+    },
+
+    async recordCost(cost) {
+        return this.request('/costs', {
+            method: 'POST',
+            body: JSON.stringify(cost)
+        });
+    },
+
+    // --- Quotas ---
+
+    async getQuotas(agentId = null) {
+        const query = agentId ? `?agent_id=${agentId}` : '';
+        return this.request(`/quotas${query}`);
+    },
+
+    async setQuota(quota) {
+        return this.request('/quotas', {
+            method: 'POST',
+            body: JSON.stringify(quota)
+        });
+    },
+
+    async updateQuotaUsage(quotaId, usage) {
+        return this.request(`/quotas/${quotaId}/usage`, {
+            method: 'PUT',
+            body: JSON.stringify({ usage })
+        });
+    },
+
+    async resetQuota(quotaId) {
+        return this.request(`/quotas/${quotaId}/reset`, {
+            method: 'POST'
+        });
+    },
+
+    async checkQuota(agentId, type, amount = 1) {
+        return this.request(`/quotas/check?agent_id=${agentId}&type=${type}&amount=${amount}`);
+    },
+
+    // --- Resource Metrics ---
+
+    async getResourceMetrics() {
+        return this.request('/resources/metrics');
+    },
+
     // ============================================
     // WebSocket - Real-time Updates
     // ============================================

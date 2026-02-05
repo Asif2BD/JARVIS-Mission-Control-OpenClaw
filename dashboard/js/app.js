@@ -33,6 +33,9 @@ async function init() {
     // Render the dashboard
     renderDashboard();
 
+    // Load reports
+    loadFiles('reports');
+
     // Load chat messages
     loadChatMessages();
 
@@ -605,6 +608,9 @@ function openTaskModal(task) {
     labelsContainer.innerHTML = task.labels && task.labels.length > 0 ?
         task.labels.map(label => `<span class="label">${escapeHtml(label)}</span>`).join('') :
         '<span class="text-muted">No labels</span>';
+
+    // Attachments
+    renderTaskAttachments(task);
 
     // Comments
     const commentsContainer = document.getElementById('modal-comments');
@@ -1868,6 +1874,343 @@ async function sendChatMessage() {
 }
 
 // ============================================
+// REPORTS & FILE BROWSER
+// ============================================
+
+let currentFilesDir = 'reports';
+let currentViewerFile = null;
+
+/**
+ * Load and render files from a directory
+ */
+async function loadFiles(directory = 'reports') {
+    const container = document.getElementById('reports-list');
+    const countEl = document.getElementById('reports-count');
+    
+    if (!container) return;
+    
+    currentFilesDir = directory;
+    
+    // Show loading state
+    container.innerHTML = '<p class="empty-state">Loading...</p>';
+    
+    try {
+        let files = [];
+        
+        if (window.MissionControlAPI) {
+            const result = await window.MissionControlAPI.getFiles(directory);
+            files = result.files || [];
+        }
+        
+        // Update count
+        if (countEl) {
+            countEl.textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
+        }
+        
+        // Render files
+        if (files.length === 0) {
+            container.innerHTML = `<p class="empty-state">No files in ${directory}</p>`;
+            return;
+        }
+        
+        container.innerHTML = files.map(file => {
+            const sizeStr = formatFileSize(file.size);
+            const dateStr = formatDate(file.modified);
+            
+            return `
+                <div class="report-item" onclick="openFileViewer('${directory}', '${escapeHtml(file.name)}')" title="${escapeHtml(file.name)}">
+                    <div class="report-icon ${file.type}">${file.type.toUpperCase().substring(0, 4)}</div>
+                    <div class="report-info">
+                        <div class="report-name">${escapeHtml(file.name)}</div>
+                        <div class="report-meta">
+                            <span class="report-size">${sizeStr}</span>
+                            <span class="report-date">${dateStr}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Failed to load files:', error);
+        container.innerHTML = '<p class="empty-state">Failed to load files</p>';
+    }
+}
+
+/**
+ * Switch between file directories
+ */
+function switchFilesTab(directory) {
+    // Update active tab
+    document.querySelectorAll('.reports-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.dir === directory);
+    });
+    
+    // Load files
+    loadFiles(directory);
+}
+
+/**
+ * Open file viewer modal
+ */
+async function openFileViewer(directory, filename) {
+    const modal = document.getElementById('file-viewer-modal');
+    const titleEl = document.getElementById('file-viewer-title');
+    const badgeEl = document.getElementById('file-type-badge');
+    const sizeEl = document.getElementById('file-viewer-size');
+    const modifiedEl = document.getElementById('file-viewer-modified');
+    const contentEl = document.getElementById('file-viewer-content');
+    
+    if (!modal || !contentEl) return;
+    
+    // Show loading
+    titleEl.textContent = filename;
+    contentEl.innerHTML = '<p class="text-muted">Loading...</p>';
+    contentEl.className = 'file-content';
+    modal.classList.add('open');
+    
+    try {
+        let fileData;
+        
+        if (window.MissionControlAPI) {
+            fileData = await window.MissionControlAPI.getFile(directory, filename);
+        }
+        
+        if (!fileData) {
+            contentEl.innerHTML = '<p class="text-muted">Failed to load file</p>';
+            return;
+        }
+        
+        currentViewerFile = fileData;
+        
+        // Update metadata
+        titleEl.textContent = fileData.name;
+        badgeEl.textContent = fileData.type.toUpperCase();
+        badgeEl.className = `file-type-badge ${fileData.type}`;
+        sizeEl.textContent = formatFileSize(fileData.size);
+        modifiedEl.textContent = `Modified: ${new Date(fileData.modified).toLocaleString()}`;
+        
+        // Render content based on type
+        if (fileData.type === 'md') {
+            contentEl.className = 'file-content markdown';
+            contentEl.innerHTML = renderMarkdown(fileData.content);
+        } else if (fileData.type === 'json') {
+            contentEl.className = 'file-content json-viewer';
+            contentEl.innerHTML = renderJsonSyntax(fileData.content);
+        } else {
+            contentEl.className = 'file-content plain-text';
+            contentEl.textContent = fileData.content;
+        }
+        
+    } catch (error) {
+        console.error('Failed to load file:', error);
+        contentEl.innerHTML = `<p class="text-muted">Error: ${escapeHtml(error.message)}</p>`;
+    }
+}
+
+/**
+ * Close file viewer modal
+ */
+function closeFileViewer() {
+    const modal = document.getElementById('file-viewer-modal');
+    if (modal) {
+        modal.classList.remove('open');
+    }
+    currentViewerFile = null;
+}
+
+/**
+ * Copy file content to clipboard
+ */
+function copyFileContent() {
+    if (!currentViewerFile || !currentViewerFile.content) return;
+    
+    navigator.clipboard.writeText(currentViewerFile.content)
+        .then(() => showToast('success', 'Copied!', 'File content copied to clipboard'))
+        .catch(() => showToast('error', 'Copy Failed', 'Could not copy to clipboard'));
+}
+
+/**
+ * Download current file
+ */
+function downloadFile() {
+    if (!currentViewerFile) return;
+    
+    const blob = new Blob([currentViewerFile.content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = currentViewerFile.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * Simple Markdown renderer
+ */
+function renderMarkdown(text) {
+    if (!text) return '';
+    
+    let html = escapeHtml(text);
+    
+    // Headers
+    html = html.replace(/^######\s+(.*)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^#####\s+(.*)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^####\s+(.*)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^###\s+(.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^##\s+(.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^#\s+(.*)$/gm, '<h1>$1</h1>');
+    
+    // Bold and italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+    
+    // Strikethrough
+    html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    
+    // Code blocks
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+    
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // Blockquotes
+    html = html.replace(/^&gt;\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+    
+    // Horizontal rules
+    html = html.replace(/^---$/gm, '<hr>');
+    html = html.replace(/^\*\*\*$/gm, '<hr>');
+    
+    // Lists
+    html = html.replace(/^\s*[-*+]\s+(.*)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)\n(<li>)/g, '$1$2');
+    html = html.replace(/(<li>.*<\/li>)(?!\n<li>)/g, '<ul>$1</ul>');
+    
+    // Numbered lists
+    html = html.replace(/^\s*\d+\.\s+(.*)$/gm, '<li>$1</li>');
+    
+    // Links
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    
+    // Tables (simple)
+    html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
+        const cells = content.split('|').map(c => c.trim());
+        if (cells.every(c => /^-+$/.test(c))) {
+            return ''; // separator row
+        }
+        const cellTag = cells.some(c => c.match(/^\*\*.+\*\*$/)) ? 'th' : 'td';
+        return '<tr>' + cells.map(c => `<${cellTag}>${c}</${cellTag}>`).join('') + '</tr>';
+    });
+    html = html.replace(/(<tr>.*<\/tr>\n?)+/g, '<table>$&</table>');
+    
+    // Paragraphs
+    html = html.replace(/\n\n+/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>(<h[1-6]>)/g, '$1');
+    html = html.replace(/(<\/h[1-6]>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<ul>)/g, '$1');
+    html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<blockquote>)/g, '$1');
+    html = html.replace(/(<\/blockquote>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<pre>)/g, '$1');
+    html = html.replace(/(<\/pre>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<table>)/g, '$1');
+    html = html.replace(/(<\/table>)<\/p>/g, '$1');
+    html = html.replace(/<p>(<hr>)/g, '$1');
+    html = html.replace(/(<hr>)<\/p>/g, '$1');
+    
+    return html;
+}
+
+/**
+ * Render JSON with syntax highlighting
+ */
+function renderJsonSyntax(text) {
+    if (!text) return '';
+    
+    try {
+        // Try to parse and re-format
+        const parsed = JSON.parse(text);
+        text = JSON.stringify(parsed, null, 2);
+    } catch (e) {
+        // Not valid JSON, just display as-is
+    }
+    
+    // Escape HTML first
+    let html = escapeHtml(text);
+    
+    // Syntax highlighting
+    // Strings
+    html = html.replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, '<span class="json-string">"$1"</span>');
+    
+    // Keys (before colon)
+    html = html.replace(/<span class="json-string">"([^"]+)"<\/span>(\s*:)/g, 
+        '<span class="json-key">"$1"</span>$2');
+    
+    // Numbers
+    html = html.replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="json-number">$1</span>');
+    
+    // Booleans
+    html = html.replace(/:\s*(true|false)/g, ': <span class="json-boolean">$1</span>');
+    
+    // Null
+    html = html.replace(/:\s*(null)/g, ': <span class="json-null">$1</span>');
+    
+    return html;
+}
+
+/**
+ * Format file size
+ */
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Render attachments in task modal
+ */
+function renderTaskAttachments(task) {
+    const container = document.getElementById('modal-attachments');
+    if (!container) return;
+    
+    if (!task.attachments || task.attachments.length === 0) {
+        container.innerHTML = '<p class="text-muted">No attachments</p>';
+        return;
+    }
+    
+    container.innerHTML = task.attachments.map(att => {
+        const pathParts = att.path.split('/');
+        const filename = pathParts[pathParts.length - 1];
+        const dir = pathParts.length > 1 ? pathParts[0] : 'reports';
+        const ext = filename.split('.').pop().toLowerCase();
+        
+        return `
+            <div class="attachment-item" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" title="${escapeHtml(att.description || att.path)}">
+                <div class="attachment-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="attachment-info">
+                    <div class="attachment-name">${escapeHtml(filename)}</div>
+                    ${att.description ? `<div class="attachment-desc">${escapeHtml(att.description)}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
 // REAL-TIME MESSAGE LISTENERS
 // ============================================
 
@@ -1907,6 +2250,58 @@ function setupMessageListeners() {
         const senderName = sender ? sender.name : data.from;
         showToast('info', `Message from ${senderName}`, data.content.substring(0, 80));
     });
+    
+    // Listen for task updates (including file watcher)
+    window.MissionControlAPI.on('tasks.created', (data) => {
+        console.log('[WebSocket] Task created:', data);
+        if (data.data) {
+            // Add to local store if not already present
+            const exists = window.missionControlData.tasks.find(t => t.id === data.data.id);
+            if (!exists) {
+                window.missionControlData.tasks.push(data.data);
+            }
+        }
+        // Refresh dashboard
+        renderDashboard();
+        initDragAndDrop();
+        showToast('success', 'New Task', `Task "${data.data?.title || data.file}" was created`);
+    });
+    
+    window.MissionControlAPI.on('tasks.updated', (data) => {
+        console.log('[WebSocket] Task updated:', data);
+        if (data.data) {
+            const idx = window.missionControlData.tasks.findIndex(t => t.id === data.data.id);
+            if (idx >= 0) {
+                window.missionControlData.tasks[idx] = data.data;
+            }
+        }
+        renderDashboard();
+        initDragAndDrop();
+    });
+    
+    window.MissionControlAPI.on('tasks.deleted', (data) => {
+        console.log('[WebSocket] Task deleted:', data);
+        if (data.data?.id) {
+            window.missionControlData.tasks = window.missionControlData.tasks.filter(t => t.id !== data.data.id);
+        }
+        renderDashboard();
+        initDragAndDrop();
+    });
+    
+    // Listen for report changes
+    window.MissionControlAPI.on('reports.changed', (data) => {
+        console.log('[WebSocket] Report changed:', data);
+        // Refresh reports list if we're on that tab
+        if (currentFilesDir === 'reports') {
+            loadFiles('reports');
+        }
+        showToast('info', 'Report Updated', `${data.file} was ${data.action}`);
+    });
+    
+    // General data changed listener for any updates
+    window.MissionControlAPI.on('data.changed', (data) => {
+        console.log('[WebSocket] Data changed:', data.type);
+    });
 }
 
 // Initialize on DOM ready
@@ -1917,3 +2312,592 @@ document.addEventListener('DOMContentLoaded', () => {
         checkUrlForTask();
     });
 });
+
+// ============================================
+// RESOURCE MANAGEMENT
+// ============================================
+
+let resourcesData = {
+    credentials: [],
+    resources: [],
+    bookings: [],
+    costs: { total: 0, by_type: {}, by_agent: {}, items: [] },
+    quotas: []
+};
+
+/**
+ * Load resource management data
+ */
+async function loadResourcesData() {
+    try {
+        const [credentials, resources, bookings, costs, quotas] = await Promise.all([
+            window.MissionControlAPI.getCredentials(),
+            window.MissionControlAPI.getResources(),
+            window.MissionControlAPI.getBookings(),
+            window.MissionControlAPI.getCostSummary(),
+            window.MissionControlAPI.getQuotas()
+        ]);
+        
+        resourcesData = { credentials, resources, bookings, costs, quotas };
+        updateResourceSummary();
+        return resourcesData;
+    } catch (error) {
+        console.error('Error loading resources data:', error);
+        return resourcesData;
+    }
+}
+
+/**
+ * Update resource summary in sidebar
+ */
+function updateResourceSummary() {
+    document.getElementById('credentials-count').textContent = resourcesData.credentials.length;
+    document.getElementById('resources-count').textContent = resourcesData.resources.length;
+    document.getElementById('bookings-count').textContent = resourcesData.bookings.filter(b => b.status === 'confirmed').length;
+    document.getElementById('total-costs').textContent = '$' + resourcesData.costs.total.toFixed(2);
+    
+    // Update quota warnings
+    const warningQuotas = resourcesData.quotas.filter(q => 
+        (q.current_usage / q.limit) >= q.warning_threshold
+    );
+    
+    const quotaWarningsEl = document.getElementById('quota-warnings');
+    const quotaWarningList = document.getElementById('quota-warning-list');
+    
+    if (warningQuotas.length > 0) {
+        quotaWarningsEl.style.display = 'block';
+        quotaWarningList.innerHTML = warningQuotas.map(q => {
+            const percent = ((q.current_usage / q.limit) * 100).toFixed(0);
+            return `<div class="quota-warning-item">${q.type}: ${percent}% used${q.agent_id ? ` (${q.agent_id})` : ''}</div>`;
+        }).join('');
+    } else {
+        quotaWarningsEl.style.display = 'none';
+    }
+}
+
+/**
+ * Open resources modal
+ */
+async function openResourcesModal() {
+    await loadResourcesData();
+    renderCredentialsList();
+    populateAgentSelects();
+    document.getElementById('resources-modal').classList.add('active');
+}
+
+/**
+ * Close resources modal
+ */
+function closeResourcesModal() {
+    document.getElementById('resources-modal').classList.remove('active');
+}
+
+/**
+ * Switch resource tab
+ */
+function switchResourceTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.resource-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+    });
+    
+    // Update tab panes
+    document.querySelectorAll('.resource-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === `resource-tab-${tabName}`);
+    });
+    
+    // Render content for the selected tab
+    switch (tabName) {
+        case 'credentials':
+            renderCredentialsList();
+            break;
+        case 'resources':
+            renderResourcesList();
+            break;
+        case 'bookings':
+            renderBookingsList();
+            break;
+        case 'costs':
+            renderCostsList();
+            break;
+        case 'quotas':
+            renderQuotasList();
+            break;
+    }
+}
+
+/**
+ * Populate agent select dropdowns
+ */
+function populateAgentSelects() {
+    const agents = window.missionControlData?.agents || [];
+    const selects = ['cred-owner', 'book-agent', 'cost-agent', 'quota-agent'];
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        // Keep first option (system/global)
+        const firstOption = select.options[0];
+        select.innerHTML = '';
+        select.appendChild(firstOption);
+        
+        agents.forEach(agent => {
+            const option = document.createElement('option');
+            option.value = agent.id;
+            option.textContent = agent.name;
+            select.appendChild(option);
+        });
+    });
+}
+
+// --- CREDENTIALS ---
+
+function renderCredentialsList() {
+    const list = document.getElementById('credentials-list');
+    if (!resourcesData.credentials.length) {
+        list.innerHTML = '<p class="empty-state">No credentials stored yet. Add your first credential to get started.</p>';
+        return;
+    }
+    
+    list.innerHTML = resourcesData.credentials.map(cred => `
+        <div class="credential-item">
+            <div class="credential-icon">🔐</div>
+            <div class="credential-info">
+                <div class="credential-name">${escapeHtml(cred.name)}</div>
+                <div class="credential-meta">
+                    <span class="credential-type">${cred.type}</span>
+                    <span>${cred.service || 'General'}</span>
+                    <span>Owner: ${cred.owner}</span>
+                    ${cred.last_used ? `<span>Last used: ${formatRelativeTime(cred.last_used)}</span>` : ''}
+                </div>
+            </div>
+            <div class="credential-actions">
+                <button class="btn-delete" onclick="deleteCredential('${cred.id}')" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openAddCredentialForm() {
+    document.getElementById('add-credential-modal').classList.add('active');
+}
+
+function closeAddCredentialForm() {
+    document.getElementById('add-credential-modal').classList.remove('active');
+    document.getElementById('add-credential-form').reset();
+}
+
+async function saveCredential() {
+    const credential = {
+        name: document.getElementById('cred-name').value,
+        type: document.getElementById('cred-type').value,
+        service: document.getElementById('cred-service').value,
+        value: document.getElementById('cred-value').value,
+        description: document.getElementById('cred-description').value,
+        owner: document.getElementById('cred-owner').value || 'system'
+    };
+    
+    try {
+        await window.MissionControlAPI.createCredential(credential);
+        showToast('success', 'Credential Created', 'Your credential has been securely stored.');
+        closeAddCredentialForm();
+        await loadResourcesData();
+        renderCredentialsList();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+async function deleteCredential(id) {
+    if (!confirm('Are you sure you want to delete this credential? This cannot be undone.')) return;
+    
+    try {
+        await window.MissionControlAPI.deleteCredential(id);
+        showToast('success', 'Credential Deleted', 'The credential has been removed.');
+        await loadResourcesData();
+        renderCredentialsList();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// --- RESOURCES ---
+
+function renderResourcesList() {
+    const list = document.getElementById('resources-list');
+    if (!resourcesData.resources.length) {
+        list.innerHTML = '<p class="empty-state">No resources registered yet. Add servers, GPUs, or other shared resources.</p>';
+        return;
+    }
+    
+    const icons = { server: '🖥️', gpu: '⚡', service: '☁️', license: '📄', other: '📦' };
+    
+    list.innerHTML = resourcesData.resources.map(res => `
+        <div class="resource-item">
+            <div class="resource-icon">${icons[res.type] || '📦'}</div>
+            <div class="resource-info">
+                <div class="resource-name">${escapeHtml(res.name)}</div>
+                <div class="resource-meta">
+                    <span class="resource-type">${res.type}</span>
+                    <span>$${res.cost_per_hour}/hr</span>
+                    <span>Max ${res.max_booking_hours}h</span>
+                    ${res.tags?.length ? `<span>${res.tags.join(', ')}</span>` : ''}
+                </div>
+            </div>
+            <div class="resource-actions">
+                <button class="btn btn-sm btn-secondary" onclick="quickBookResource('${res.id}')">Book</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openAddResourceForm() {
+    document.getElementById('add-resource-modal').classList.add('active');
+}
+
+function closeAddResourceForm() {
+    document.getElementById('add-resource-modal').classList.remove('active');
+    document.getElementById('add-resource-form').reset();
+}
+
+async function saveResource() {
+    const resource = {
+        name: document.getElementById('res-name').value,
+        type: document.getElementById('res-type').value,
+        description: document.getElementById('res-description').value,
+        cost_per_hour: parseFloat(document.getElementById('res-cost').value) || 0,
+        max_booking_hours: parseInt(document.getElementById('res-max-hours').value) || 24,
+        tags: document.getElementById('res-tags').value.split(',').map(t => t.trim()).filter(Boolean)
+    };
+    
+    try {
+        await window.MissionControlAPI.createResource(resource);
+        showToast('success', 'Resource Created', `${resource.name} has been added.`);
+        closeAddResourceForm();
+        await loadResourcesData();
+        renderResourcesList();
+        populateResourceSelect();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+function quickBookResource(resourceId) {
+    openAddBookingForm();
+    document.getElementById('book-resource').value = resourceId;
+}
+
+// --- BOOKINGS ---
+
+function renderBookingsList() {
+    const list = document.getElementById('bookings-list');
+    if (!resourcesData.bookings.length) {
+        list.innerHTML = '<p class="empty-state">No bookings yet. Book a resource to reserve it for a specific time.</p>';
+        return;
+    }
+    
+    list.innerHTML = resourcesData.bookings.map(booking => {
+        const start = new Date(booking.start_time);
+        const end = new Date(booking.end_time);
+        const statusClass = booking.status === 'confirmed' ? 'confirmed' : 
+                           booking.status === 'cancelled' ? 'cancelled' : 'completed';
+        
+        return `
+            <div class="booking-item">
+                <div class="booking-icon">📅</div>
+                <div class="booking-info">
+                    <div class="booking-title">${escapeHtml(booking.resource_name)}</div>
+                    <div class="booking-meta">
+                        <span class="booking-status ${statusClass}">${booking.status}</span>
+                        ${booking.agent_id ? `<span>Agent: ${booking.agent_id}</span>` : ''}
+                        <span>Est. $${booking.estimated_cost?.toFixed(2) || '0.00'}</span>
+                    </div>
+                </div>
+                <div class="booking-time">
+                    <span class="booking-time-label">Start</span>
+                    <span>${start.toLocaleDateString()} ${start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                <div class="booking-time">
+                    <span class="booking-time-label">End</span>
+                    <span>${end.toLocaleDateString()} ${end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+                ${booking.status === 'confirmed' ? `
+                    <div class="booking-actions">
+                        <button class="btn-delete" onclick="cancelBooking('${booking.id}')" title="Cancel">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function openAddBookingForm() {
+    populateResourceSelect();
+    
+    // Set default times
+    const now = new Date();
+    const later = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+    document.getElementById('book-start').value = formatDateTimeLocal(now);
+    document.getElementById('book-end').value = formatDateTimeLocal(later);
+    
+    document.getElementById('add-booking-modal').classList.add('active');
+}
+
+function closeAddBookingForm() {
+    document.getElementById('add-booking-modal').classList.remove('active');
+    document.getElementById('add-booking-form').reset();
+}
+
+function populateResourceSelect() {
+    const select = document.getElementById('book-resource');
+    select.innerHTML = '<option value="">Select a resource...</option>';
+    
+    resourcesData.resources.forEach(res => {
+        const option = document.createElement('option');
+        option.value = res.id;
+        option.textContent = `${res.name} (${res.type}) - $${res.cost_per_hour}/hr`;
+        select.appendChild(option);
+    });
+}
+
+function formatDateTimeLocal(date) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+async function saveBooking() {
+    const booking = {
+        resource_id: document.getElementById('book-resource').value,
+        agent_id: document.getElementById('book-agent').value || null,
+        booked_by: 'dashboard',
+        start_time: new Date(document.getElementById('book-start').value).toISOString(),
+        end_time: new Date(document.getElementById('book-end').value).toISOString(),
+        purpose: document.getElementById('book-purpose').value
+    };
+    
+    if (!booking.resource_id) {
+        showToast('error', 'Error', 'Please select a resource to book.');
+        return;
+    }
+    
+    try {
+        await window.MissionControlAPI.createBooking(booking);
+        showToast('success', 'Resource Booked', 'Your booking has been confirmed.');
+        closeAddBookingForm();
+        await loadResourcesData();
+        renderBookingsList();
+    } catch (error) {
+        showToast('error', 'Booking Failed', error.message);
+    }
+}
+
+async function cancelBooking(id) {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    
+    try {
+        await window.MissionControlAPI.cancelBooking(id);
+        showToast('success', 'Booking Cancelled', 'The booking has been cancelled.');
+        await loadResourcesData();
+        renderBookingsList();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// --- COSTS ---
+
+function renderCostsList() {
+    const costs = resourcesData.costs;
+    
+    // Render cost overview
+    const overviewEl = document.getElementById('cost-overview');
+    overviewEl.innerHTML = `
+        <div class="cost-stat">
+            <div class="cost-stat-value">$${costs.total.toFixed(2)}</div>
+            <div class="cost-stat-label">Total Costs</div>
+        </div>
+        ${Object.entries(costs.by_type).map(([type, amount]) => `
+            <div class="cost-stat">
+                <div class="cost-stat-value">$${amount.toFixed(2)}</div>
+                <div class="cost-stat-label">${type.replace('_', ' ')}</div>
+            </div>
+        `).join('')}
+    `;
+    
+    // Render cost items
+    const list = document.getElementById('costs-list');
+    if (!costs.items.length) {
+        list.innerHTML = '<p class="empty-state">No costs recorded yet. Track API usage, hosting, and other expenses.</p>';
+        return;
+    }
+    
+    list.innerHTML = costs.items.slice().reverse().slice(0, 20).map(cost => `
+        <div class="cost-item">
+            <div class="cost-info">
+                <div class="credential-name">${escapeHtml(cost.description)}</div>
+                <div class="credential-meta">
+                    <span class="cost-type-badge">${cost.type}</span>
+                    <span>${cost.category || 'General'}</span>
+                    ${cost.agent_id ? `<span>Agent: ${cost.agent_id}</span>` : ''}
+                    <span>${formatRelativeTime(cost.recorded_at)}</span>
+                </div>
+            </div>
+            <div class="cost-amount">$${cost.amount.toFixed(2)}</div>
+        </div>
+    `).join('');
+}
+
+function openAddCostForm() {
+    document.getElementById('add-cost-modal').classList.add('active');
+}
+
+function closeAddCostForm() {
+    document.getElementById('add-cost-modal').classList.remove('active');
+    document.getElementById('add-cost-form').reset();
+}
+
+async function saveCost() {
+    const cost = {
+        type: document.getElementById('cost-type').value,
+        description: document.getElementById('cost-description').value,
+        amount: parseFloat(document.getElementById('cost-amount').value) || 0,
+        agent_id: document.getElementById('cost-agent').value || null,
+        category: document.getElementById('cost-category').value || 'general'
+    };
+    
+    try {
+        await window.MissionControlAPI.recordCost(cost);
+        showToast('success', 'Cost Recorded', `$${cost.amount.toFixed(2)} added to ${cost.type}.`);
+        closeAddCostForm();
+        await loadResourcesData();
+        renderCostsList();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// --- QUOTAS ---
+
+function renderQuotasList() {
+    const list = document.getElementById('quotas-list');
+    if (!resourcesData.quotas.length) {
+        list.innerHTML = '<p class="empty-state">No quotas set. Set usage limits to control costs and API usage.</p>';
+        return;
+    }
+    
+    list.innerHTML = resourcesData.quotas.map(quota => {
+        const usagePercent = (quota.current_usage / quota.limit) * 100;
+        const statusClass = usagePercent >= 100 ? 'exceeded' : usagePercent >= quota.warning_threshold * 100 ? 'warning' : '';
+        
+        return `
+            <div class="quota-item">
+                <div class="quota-header">
+                    <span class="quota-type">${formatQuotaType(quota.type)}</span>
+                    <span class="quota-agent">${quota.agent_id || 'Global'}</span>
+                </div>
+                <div class="quota-progress">
+                    <div class="quota-progress-bar">
+                        <div class="quota-progress-fill ${statusClass}" style="width: ${Math.min(usagePercent, 100)}%"></div>
+                    </div>
+                </div>
+                <div class="quota-stats">
+                    <span class="quota-usage ${statusClass}">${quota.current_usage} / ${quota.limit} (${usagePercent.toFixed(1)}%)</span>
+                    <span>${quota.period} • ${quota.hard_stop ? 'Hard stop' : 'Warning only'}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatQuotaType(type) {
+    const types = {
+        'api_calls': '📊 API Calls',
+        'cost': '💰 Cost',
+        'tokens': '🔤 Tokens',
+        'storage': '💾 Storage'
+    };
+    return types[type] || type;
+}
+
+function openAddQuotaForm() {
+    document.getElementById('add-quota-modal').classList.add('active');
+}
+
+function closeAddQuotaForm() {
+    document.getElementById('add-quota-modal').classList.remove('active');
+    document.getElementById('add-quota-form').reset();
+}
+
+async function saveQuota() {
+    const quota = {
+        type: document.getElementById('quota-type').value,
+        agent_id: document.getElementById('quota-agent').value || null,
+        limit: parseInt(document.getElementById('quota-limit').value),
+        period: document.getElementById('quota-period').value,
+        warning_threshold: parseFloat(document.getElementById('quota-warning').value) / 100,
+        hard_stop: document.getElementById('quota-hard-stop').checked
+    };
+    
+    try {
+        await window.MissionControlAPI.setQuota(quota);
+        showToast('success', 'Quota Set', `${formatQuotaType(quota.type)} limit: ${quota.limit}`);
+        closeAddQuotaForm();
+        await loadResourcesData();
+        renderQuotasList();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// --- Initialize on page load ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Load resources data initially
+    loadResourcesData();
+    
+    // Listen for resource updates via WebSocket
+    if (window.MissionControlAPI) {
+        window.MissionControlAPI.on('credential.created', () => loadResourcesData());
+        window.MissionControlAPI.on('credential.deleted', () => loadResourcesData());
+        window.MissionControlAPI.on('resource.created', () => loadResourcesData());
+        window.MissionControlAPI.on('booking.created', () => loadResourcesData());
+        window.MissionControlAPI.on('booking.cancelled', () => loadResourcesData());
+        window.MissionControlAPI.on('cost.recorded', () => loadResourcesData());
+        window.MissionControlAPI.on('quota.updated', () => loadResourcesData());
+        window.MissionControlAPI.on('quota.warning', (data) => {
+            showToast('info', 'Quota Warning', data.warning);
+        });
+        window.MissionControlAPI.on('quota.exceeded', (data) => {
+            showToast('error', 'Quota Exceeded', `${data.quota.type} quota exceeded!`);
+        });
+    }
+});
+
+/**
+ * Format relative time
+ */
+function formatRelativeTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now - date;
+    
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'just now';
+}

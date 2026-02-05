@@ -1,0 +1,28 @@
+{
+  "quota-global-api_calls": {
+    "id": "quota-global-api_calls",
+    "agent_id": null,
+    "type": "api_calls",
+    "limit": 10000,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "hard_stop": true,
+    "current_usage": 0,
+    "period_start": "2026-02-01T00:00:00.000Z",
+    "created_at": "2026-02-05T00:00:00.000Z",
+    "updated_at": "2026-02-05T00:00:00.000Z"
+  },
+  "quota-global-cost": {
+    "id": "quota-global-cost",
+    "agent_id": null,
+    "type": "cost",
+    "limit": 100,
+    "period": "monthly",
+    "warning_threshold": 0.8,
+    "hard_stop": false,
+    "current_usage": 0,
+    "period_start": "2026-02-01T00:00:00.000Z",
+    "created_at": "2026-02-05T00:00:00.000Z",
+    "updated_at": "2026-02-05T00:00:00.000Z"
+  }
+}
