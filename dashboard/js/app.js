@@ -173,7 +173,7 @@ function createTaskCard(task) {
 }
 
 /**
- * Render the humans section - compact inline design
+ * Render the humans section - compact inline design with avatars
  */
 function renderHumans() {
     const humans = window.missionControlData.getHumans();
@@ -186,21 +186,50 @@ function renderHumans() {
     const activeCount = humans.filter(h => h.status === 'online' || h.status === 'away').length;
     subtitle.textContent = `${activeCount} online`;
 
-    container.innerHTML = humans.map(human => `
-        <div class="entity-row human-row">
-            <div class="entity-status ${human.status}"></div>
-            <div class="entity-avatar human">${getInitials(human.name)}</div>
-            <div class="entity-info">
-                <span class="entity-name">${escapeHtml(human.name)}</span>
-                <span class="entity-role ${human.role}">${human.role}</span>
+    container.innerHTML = humans.map(human => {
+        const avatarHtml = human.avatar
+            ? `<img src="${human.avatar}" alt="${escapeHtml(human.name)}" class="entity-avatar-img human" onerror="this.outerHTML='<div class=\\'entity-avatar human\\'>${getInitials(human.name)}</div>'"/>`
+            : `<div class="entity-avatar human">${getInitials(human.name)}</div>`;
+
+        const channelIcons = getChannelIcons(human.channels);
+
+        return `
+            <div class="entity-row human-row">
+                <div class="entity-status ${human.status}"></div>
+                ${avatarHtml}
+                <div class="entity-info">
+                    <span class="entity-name">${escapeHtml(human.name)}</span>
+                    <span class="entity-role ${human.role}">${human.role}</span>
+                    ${channelIcons}
+                </div>
+                <span class="entity-tasks">${human.completed_tasks || 0}</span>
             </div>
-            <span class="entity-tasks">${human.completed_tasks || 0}</span>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 /**
- * Render the agents sidebar - compact inline design
+ * Get channel icons HTML for an entity
+ */
+function getChannelIcons(channels) {
+    if (!channels || channels.length === 0) return '';
+
+    const icons = channels.map(ch => {
+        switch(ch.type) {
+            case 'telegram': return '<span class="channel-icon telegram" title="Telegram">T</span>';
+            case 'whatsapp': return '<span class="channel-icon whatsapp" title="WhatsApp">W</span>';
+            case 'slack': return '<span class="channel-icon slack" title="Slack">S</span>';
+            case 'discord': return '<span class="channel-icon discord" title="Discord">D</span>';
+            case 'email': return '<span class="channel-icon email" title="Email">@</span>';
+            default: return '';
+        }
+    }).join('');
+
+    return icons ? `<span class="channel-icons">${icons}</span>` : '';
+}
+
+/**
+ * Render the agents sidebar - compact inline design with avatars
  */
 function renderAgents() {
     const allAgents = window.missionControlData.getAgents();
@@ -221,26 +250,39 @@ function renderAgents() {
         const subAgents = window.missionControlData.getSubAgents(agent.id);
         const activeTasks = agent.current_tasks ? agent.current_tasks.length : 0;
 
+        const avatarHtml = agent.avatar
+            ? `<img src="${agent.avatar}" alt="${escapeHtml(agent.name)}" class="entity-avatar-img agent ${agent.role}" onerror="this.outerHTML='<div class=\\'entity-avatar agent ${agent.role}\\'>${getInitials(agent.name)}</div>'"/>`
+            : `<div class="entity-avatar agent ${agent.role}">${getInitials(agent.name)}</div>`;
+
+        const channelIcons = getChannelIcons(agent.channels);
+
         return `
             <div class="entity-row agent-row ${agent.role}">
                 <div class="entity-status ${agent.status}"></div>
-                <div class="entity-avatar agent ${agent.role}">${getInitials(agent.name)}</div>
+                ${avatarHtml}
                 <div class="entity-info">
                     <span class="entity-name">${escapeHtml(agent.name)}</span>
                     ${activeTasks > 0 ? `<span class="entity-active">${activeTasks}</span>` : ''}
+                    ${channelIcons}
                 </div>
                 <span class="entity-tasks">${agent.completed_tasks || 0}</span>
             </div>
-            ${subAgents.length > 0 ? subAgents.map(sub => `
-                <div class="entity-row sub-agent-row">
-                    <div class="entity-status ${sub.status}"></div>
-                    <div class="entity-avatar sub-agent">↳</div>
-                    <div class="entity-info">
-                        <span class="entity-name sub">${escapeHtml(sub.name)}</span>
+            ${subAgents.length > 0 ? subAgents.map(sub => {
+                const subAvatarHtml = sub.avatar
+                    ? `<img src="${sub.avatar}" alt="${escapeHtml(sub.name)}" class="entity-avatar-img sub-agent" onerror="this.outerHTML='<div class=\\'entity-avatar sub-agent\\'>↳</div>'"/>`
+                    : `<div class="entity-avatar sub-agent">↳</div>`;
+
+                return `
+                    <div class="entity-row sub-agent-row">
+                        <div class="entity-status ${sub.status}"></div>
+                        ${subAvatarHtml}
+                        <div class="entity-info">
+                            <span class="entity-name sub">${escapeHtml(sub.name)}</span>
+                        </div>
+                        <span class="entity-tasks">${sub.completed_tasks || 0}</span>
                     </div>
-                    <span class="entity-tasks">${sub.completed_tasks || 0}</span>
-                </div>
-            `).join('') : ''}
+                `;
+            }).join('') : ''}
         `;
     }).join('');
 }

@@ -72,8 +72,17 @@ Real humans who oversee the system. Create in `.mission-control/humans/`:
   "role": "admin",
   "designation": "Project Owner",
   "email": "owner@example.com",
+  "avatar": "https://example.com/avatar.png",
   "status": "online",
   "capabilities": ["all", "override", "approve"],
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@username",
+      "chat_id": "123456789",
+      "notifications": ["task.assigned", "task.completed"]
+    }
+  ],
   "metadata": {
     "clearance": "OMEGA",
     "timezone": "UTC"
@@ -85,7 +94,7 @@ Real humans who oversee the system. Create in `.mission-control/humans/`:
 **Human Status:** `online`, `away`, `offline`
 
 ### 2. AI Agents
-AI agents that perform work. Agents can have **sub-agents**.
+AI agents that perform work. Agents can have **sub-agents** and communication channels.
 
 ```json
 {
@@ -95,10 +104,19 @@ AI agents that perform work. Agents can have **sub-agents**.
   "role": "specialist",
   "designation": "Code Warrior",
   "model": "claude-opus-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo",
   "status": "active",
   "parent_agent": null,
   "sub_agents": ["agent-neo-scout"],
   "capabilities": ["coding", "debugging"],
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@neo_bot",
+      "chat_id": "bot_neo",
+      "notifications": ["task.assigned", "task.commented"]
+    }
+  ],
   "metadata": { "clearance": "OMEGA" }
 }
 ```
@@ -114,10 +132,12 @@ Lightweight agents spawned by parent agents for specific tasks:
   "role": "sub-agent",
   "designation": "Code Scout",
   "model": "claude-haiku-3",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neoscout",
   "status": "active",
   "parent_agent": "agent-neo",
   "sub_agents": [],
-  "capabilities": ["search", "analysis"]
+  "capabilities": ["search", "analysis"],
+  "channels": []
 }
 ```
 
@@ -447,11 +467,95 @@ git commit -m "[agent:neo] Completed task: Matrix Core System Upgrade"
 git push
 ```
 
+## Communication & Integrations
+
+Mission Control is designed to integrate with external communication channels like Telegram, WhatsApp, Slack, etc. This enables **bi-directional communication**:
+
+1. **Incoming**: Messages/commands from channels create or update tasks
+2. **Outgoing**: Task changes trigger notifications to relevant agents/humans
+
+### Channel Configuration
+
+Each agent and human can have communication channels configured:
+
+```json
+"channels": [
+  {
+    "type": "telegram",
+    "id": "@username_or_bot",
+    "chat_id": "123456789",
+    "notifications": [
+      "task.assigned",
+      "task.commented",
+      "task.completed",
+      "agent.mentioned"
+    ]
+  }
+]
+```
+
+**Supported Channels:**
+- `telegram` - Telegram bots/users
+- `whatsapp` - WhatsApp Business API
+- `slack` - Slack workspaces
+- `discord` - Discord servers
+- `email` - Email notifications
+- `webhook` - Custom HTTP webhooks
+
+### Event Types
+
+Events that flow through Mission Control:
+
+| Event | Description |
+|-------|-------------|
+| `task.created` | New task created |
+| `task.assigned` | Task assigned to agent/human |
+| `task.status_changed` | Task status updated |
+| `task.commented` | New comment on task |
+| `task.completed` | Task marked as done |
+| `task.blocked` | Task blocked |
+| `agent.mentioned` | Agent @mentioned |
+| `agent.status_changed` | Agent status changed |
+| `queue.job_completed` | Scheduled job finished |
+| `system.heartbeat` | System health check |
+
+### Webhook Configuration
+
+Create `.mission-control/integrations/webhooks.yaml`:
+
+```yaml
+incoming:
+  telegram:
+    enabled: true
+    path: "/webhook/telegram"
+    secret: "${TELEGRAM_WEBHOOK_SECRET}"
+
+outgoing:
+  notifications:
+    enabled: true
+    url: "${NOTIFICATION_WEBHOOK_URL}"
+    events:
+      - task.assigned
+      - task.completed
+```
+
+### Setting Up Telegram Integration
+
+1. Copy `.mission-control/integrations/telegram.example.yaml` to `telegram.yaml`
+2. Add your bot token from @BotFather
+3. Configure channel mappings (chat IDs to agents/humans)
+4. Set up webhook URL or enable polling
+
+See `.mission-control/integrations/README.md` for detailed setup instructions.
+
+---
+
 ## Getting Help
 
 - Read `DEVELOPMENT_GUIDE.md` for detailed documentation
 - Read `AGENT_ADOPTION.md` for onboarding steps
 - Read `SECURITY.md` for security protocols
+- Read `.mission-control/integrations/README.md` for integration setup
 - Create a task with label `help` if you're stuck
 
 ---
