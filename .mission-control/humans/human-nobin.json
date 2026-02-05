@@ -1,0 +1,27 @@
+{
+  "id": "human-nobin",
+  "name": "Nobin",
+  "type": "human",
+  "role": "admin",
+  "designation": "Lead Developer",
+  "email": "nobin@example.com",
+  "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=nobin&backgroundColor=0ea5e9",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "current_tasks": [],
+  "completed_tasks": 42,
+  "last_seen": "2026-02-05T11:30:00Z",
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@nobin_dev",
+      "chat_id": "987654321",
+      "notifications": ["task.assigned", "task.review_requested", "task.commented"]
+    }
+  ],
+  "metadata": {
+    "description": "Lead developer overseeing all technical implementations.",
+    "clearance": "OMEGA",
+    "timezone": "Asia/Dhaka"
+  }
+}

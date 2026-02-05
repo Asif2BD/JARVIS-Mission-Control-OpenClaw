@@ -1,0 +1,32 @@
+{
+  "id": "human-asif",
+  "name": "Asif",
+  "type": "human",
+  "role": "admin",
+  "designation": "Project Owner",
+  "email": "asif@example.com",
+  "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=asif&backgroundColor=10b981",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "current_tasks": [],
+  "completed_tasks": 24,
+  "last_seen": "2026-02-05T11:45:00Z",
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@asif_admin",
+      "chat_id": "123456789",
+      "notifications": ["task.assigned", "task.completed", "task.blocked", "agent.mentioned"]
+    },
+    {
+      "type": "email",
+      "id": "asif@example.com",
+      "notifications": ["task.completed", "system.daily_report"]
+    }
+  ],
+  "metadata": {
+    "description": "Primary human administrator with full system access.",
+    "clearance": "OMEGA",
+    "timezone": "UTC"
+  }
+}
