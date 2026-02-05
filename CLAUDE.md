@@ -187,6 +187,9 @@ These Matrix-themed identities are available in `examples/demo-data/` for refere
 
 dashboard/                   # Visual Kanban dashboard
 server/                      # Backend API server
+├── index.js                 # Express + WebSocket server
+├── agent-bridge.js          # OpenClaw session bridge
+└── start-all.js             # Unified startup (server + bridge)
 scripts/                     # CLI helper scripts
 skills/                      # Modular skill definitions (by role)
 docs/                        # Extended documentation
@@ -205,7 +208,8 @@ The server runs at `http://localhost:3000`. Here are all available endpoints:
 |--------|----------|-------------|
 | `GET` | `/api/tasks` | List all tasks |
 | `POST` | `/api/tasks` | Create a new task |
-| `PUT` | `/api/tasks/:id` | Update a task |
+| `PUT` | `/api/tasks/:id` | Update a task (full replace) |
+| `PATCH` | `/api/tasks/:id` | Partial task update (used by agent bridge) |
 | `DELETE` | `/api/tasks/:id` | Delete a task |
 | `GET` | `/api/agents` | List all agents |
 | `PUT` | `/api/agents/:id` | Update an agent |
@@ -1141,7 +1145,9 @@ Mission Control includes a local Node.js server that powers the dashboard with r
 ```bash
 cd server
 npm install
-npm start
+npm start          # Server only
+npm run bridge     # Agent bridge only (requires server running)
+npm run all        # Server + agent bridge together
 ```
 
 ### Server Features
@@ -1151,6 +1157,7 @@ npm start
 | REST API | CRUD operations at `http://localhost:3000/api` |
 | WebSocket | Real-time updates at `ws://localhost:3000/ws` |
 | File Watcher | Detects when you modify JSON files via Git |
+| Agent Bridge | Monitors OpenClaw sessions, auto-creates tasks (see `docs/AGENT-BRIDGE.md`) |
 | Webhooks | Register webhooks to get notified of changes |
 
 ### How It Works
