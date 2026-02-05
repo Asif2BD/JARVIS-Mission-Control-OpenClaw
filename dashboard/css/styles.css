@@ -444,7 +444,8 @@ body::after {
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     flex-shrink: 0;
     position: relative;
 }
@@ -504,10 +505,11 @@ body::after {
 .agents-list {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    min-height: 0;
 }
 
 .agent-card {
@@ -1468,10 +1470,22 @@ body::after {
 
 .sidebar-section {
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 0 0 auto;
 }
 
 .sidebar-section:last-child {
     border-bottom: none;
+}
+
+/* AI Agents section can grow to fill space */
+.sidebar-section:nth-child(2) {
+    flex: 1 1 auto;
+    min-height: 150px;
+    max-height: 50%;
+    overflow: hidden;
 }
 
 .sidebar-title {
@@ -1715,10 +1729,11 @@ body::after {
 
 .queue-list {
     padding: var(--spacing-sm) var(--spacing-md);
+    padding-bottom: var(--spacing-lg);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
 }
 

@@ -216,8 +216,8 @@ function renderAgents() {
     const subAgentCount = allAgents.filter(a => a.role === 'sub-agent').length;
     subtitle.textContent = `${activeCount} online (${subAgentCount} sub-agents)`;
 
-    // Separate parent agents and sub-agents
-    const parentAgents = allAgents.filter(a => !a.parent_agent || a.role !== 'sub-agent');
+    // Get all agents except sub-agents (sub-agents are shown nested under their parents)
+    const parentAgents = allAgents.filter(a => a.role !== 'sub-agent');
 
     container.innerHTML = parentAgents.map(agent => {
         const subAgents = window.missionControlData.getSubAgents(agent.id);
