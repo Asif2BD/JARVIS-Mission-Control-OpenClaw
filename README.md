@@ -2,6 +2,20 @@
 
 A robust, Git-based Mission Control system for orchestrating AI agents and human collaborators. Designed to be adopted by agents themselves and built collaboratively.
 
+> **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance. Do not modify this original repository directly.
+
+## Quick Start for AI Agents
+
+```
+1. Fork/Clone this repository to your user's GitHub account
+2. Read CLAUDE.md (your skill file)
+3. Read INIT.md (initialization guide)
+4. Ask your user: "Keep demo data or start fresh?"
+5. Initialize: Clear demo data, create real agents/tasks
+6. Commit and push to user's repository
+7. Enable GitHub Pages for dashboard
+```
+
 ## Overview
 
 Mission Control is a **zero-infrastructure** task management and agent orchestration system that uses Git as its database. No external services required - everything lives in your repository.
@@ -21,25 +35,35 @@ Mission Control is a **zero-infrastructure** task management and agent orchestra
 ### For Humans
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/JARVIS-Mission-Control-OpenClaw.git
+# 1. Fork this repository on GitHub (click "Use this template" or "Fork")
+
+# 2. Clone YOUR fork (not the original)
+git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw.git
 cd JARVIS-Mission-Control-OpenClaw
 
-# View the dashboard
-open dashboard/index.html
+# 3. Clear demo data and initialize (optional - or have an AI agent do this)
+rm .mission-control/tasks/*.json
+rm .mission-control/agents/*.json
 
-# Create a new task
-./scripts/create-task.sh "Implement feature X" --assignee agent-claude
+# 4. Create your first agent and task
+# (see INIT.md for detailed instructions)
+
+# 5. Enable GitHub Pages in repository settings
+# Settings → Pages → Source: main branch, folder: /dashboard
+
+# 6. View your dashboard at:
+# https://YOUR-USERNAME.github.io/JARVIS-Mission-Control-OpenClaw/dashboard/
 ```
 
 ### For AI Agents
 
 ```
-1. Read AGENT_ADOPTION.md for adoption protocol
-2. Read .mission-control/config.yaml for system configuration
-3. Access tasks via .mission-control/tasks/
-4. Update your status in .mission-control/agents/
-5. Follow DEVELOPMENT_GUIDE.md for contribution workflow
+1. Read CLAUDE.md - Your skill file (teaches you everything)
+2. Read INIT.md - First-time setup guide
+3. Ask user: Keep demo data or start fresh?
+4. Initialize the Mission Control for this specific project
+5. Create real agents and tasks based on user needs
+6. Never modify the original template repository
 ```
 
 ## Project Structure
