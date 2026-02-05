@@ -449,6 +449,216 @@ app.delete('/api/webhooks/:id', (req, res) => {
     res.json({ success: true });
 });
 
+// --- MESSAGES ---
+
+app.get('/api/messages', async (req, res) => {
+    try {
+        const messages = await readJsonDirectory('messages');
+        const agentFilter = req.query.agent;
+
+        if (agentFilter) {
+            const filtered = messages.filter(m => m.from === agentFilter || m.to === agentFilter);
+            return res.json(filtered);
+        }
+
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/messages/thread/:threadId', async (req, res) => {
+    try {
+        const messages = await readJsonDirectory('messages');
+        const threadMessages = messages
+            .filter(m => m.thread_id === req.params.threadId)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+        res.json(threadMessages);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/messages', async (req, res) => {
+    try {
+        const message = req.body;
+
+        // Generate ID if not provided
+        if (!message.id) {
+            message.id = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+        }
+
+        // Set defaults
+        message.timestamp = message.timestamp || new Date().toISOString();
+        message.read = message.read !== undefined ? message.read : false;
+        message.type = message.type || 'direct';
+
+        await writeJsonFile(`messages/${message.id}.json`, message);
+        await logActivity(message.from || 'system', 'MESSAGE', `To ${message.to}: ${message.content.substring(0, 80)}`);
+
+        broadcast('message.created', message);
+        triggerWebhooks('message.created', message);
+
+        res.status(201).json(message);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/messages/:id/read', async (req, res) => {
+    try {
+        const message = await readJsonFile(`messages/${req.params.id}.json`);
+        message.read = true;
+
+        await writeJsonFile(`messages/${message.id}.json`, message);
+
+        broadcast('message.updated', message);
+
+        res.json(message);
+    } catch (error) {
+        res.status(404).json({ error: 'Message not found' });
+    }
+});
+
+// --- AGENT ATTENTION ---
+
+app.get('/api/agents/:id/attention', async (req, res) => {
+    try {
+        const agentId = req.params.id;
+        const tasks = await readJsonDirectory('tasks');
+        const items = [];
+
+        for (const task of tasks) {
+            // Tasks assigned to this agent
+            if (task.assignee === agentId) {
+                items.push({
+                    type: 'assigned_task',
+                    task_id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    priority: task.priority,
+                    timestamp: task.updated_at || task.created_at
+                });
+            }
+
+            // Critical priority tasks assigned to this agent
+            if (task.assignee === agentId && task.priority === 'critical') {
+                items.push({
+                    type: 'critical_task',
+                    task_id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    priority: task.priority,
+                    timestamp: task.updated_at || task.created_at
+                });
+            }
+
+            // Blocked tasks created by this agent
+            if (task.status === 'BLOCKED' && task.created_by === agentId) {
+                items.push({
+                    type: 'blocked_task',
+                    task_id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    priority: task.priority,
+                    timestamp: task.updated_at || task.created_at
+                });
+            }
+
+            // @mentions in task comments
+            if (task.comments && Array.isArray(task.comments)) {
+                for (const comment of task.comments) {
+                    if (comment.content && comment.content.includes(`@${agentId}`)) {
+                        items.push({
+                            type: 'mention',
+                            task_id: task.id,
+                            title: task.title,
+                            comment_id: comment.id,
+                            author: comment.author,
+                            content: comment.content,
+                            timestamp: comment.timestamp
+                        });
+                    }
+                }
+            }
+        }
+
+        // Sort by timestamp, newest first
+        items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- AGENT TIMELINE ---
+
+app.get('/api/agents/:id/timeline', async (req, res) => {
+    try {
+        const agentId = req.params.id;
+        const timeline = [];
+
+        // Scan activity.log for entries matching this agent
+        try {
+            const logPath = path.join(MISSION_CONTROL_DIR, 'logs', 'activity.log');
+            const content = await fs.readFile(logPath, 'utf-8');
+            const lines = content.trim().split('\n');
+
+            for (const line of lines) {
+                if (line.includes(`[${agentId}]`)) {
+                    // Parse log format: TIMESTAMP [ACTOR] ACTION: DESCRIPTION
+                    const match = line.match(/^(\S+)\s+\[([^\]]+)\]\s+(\w+):\s+(.*)$/);
+                    if (match) {
+                        timeline.push({
+                            type: 'log',
+                            timestamp: match[1],
+                            actor: match[2],
+                            action: match[3],
+                            description: match[4]
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            // Activity log may not exist yet
+        }
+
+        // Scan task comments authored by this agent
+        try {
+            const tasks = await readJsonDirectory('tasks');
+
+            for (const task of tasks) {
+                if (task.comments && Array.isArray(task.comments)) {
+                    for (const comment of task.comments) {
+                        if (comment.author === agentId) {
+                            timeline.push({
+                                type: 'comment',
+                                timestamp: comment.timestamp,
+                                task_id: task.id,
+                                task_title: task.title,
+                                comment_id: comment.id,
+                                content: comment.content,
+                                comment_type: comment.type
+                            });
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            // Tasks directory may not exist yet
+        }
+
+        // Sort by timestamp, newest first
+        timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Limit to 50 entries
+        res.json(timeline.slice(0, 50));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // --- METRICS ---
 
 app.get('/api/metrics', async (req, res) => {

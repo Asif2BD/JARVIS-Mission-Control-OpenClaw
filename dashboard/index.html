@@ -18,7 +18,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v0.7.0</span>
+            <span class="version">v0.8.0</span>
         </div>
         <div class="header-right">
             <!-- Theme Toggle -->
@@ -244,6 +244,105 @@
         </div>
     </footer>
 
+    <!-- Agent Profile Panel (slide-out from right) -->
+    <div class="agent-profile-panel" id="agent-profile-panel">
+        <div class="profile-panel-header">
+            <button class="close-btn profile-close" onclick="closeAgentProfile()" aria-label="Close">&times;</button>
+        </div>
+        <div class="profile-panel-body">
+            <!-- Agent Identity -->
+            <div class="profile-identity">
+                <div class="profile-avatar-wrapper">
+                    <img id="profile-avatar" class="profile-avatar" src="" alt="" onerror="this.style.display='none'; document.getElementById('profile-avatar-fallback').style.display='flex'">
+                    <div id="profile-avatar-fallback" class="profile-avatar-fallback" style="display:none"></div>
+                </div>
+                <div class="profile-name-section">
+                    <h2 id="profile-name" class="profile-name"></h2>
+                    <p id="profile-designation" class="profile-designation"></p>
+                    <div class="profile-badges">
+                        <span id="profile-role-badge" class="role-badge"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="profile-status-bar">
+                <span class="profile-status-dot" id="profile-status-dot"></span>
+                <span id="profile-status-text" class="profile-status-text"></span>
+            </div>
+
+            <!-- About -->
+            <div class="profile-section">
+                <h3 class="profile-section-title">About</h3>
+                <p id="profile-about" class="profile-about"></p>
+            </div>
+
+            <!-- Skills -->
+            <div class="profile-section">
+                <h3 class="profile-section-title">Skills</h3>
+                <div id="profile-skills" class="profile-skills"></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="profile-tabs">
+                <button class="profile-tab active" data-tab="attention" onclick="switchProfileTab('attention')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Attention
+                    <span id="attention-badge" class="profile-tab-badge" style="display:none">0</span>
+                </button>
+                <button class="profile-tab" data-tab="timeline" onclick="switchProfileTab('timeline')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Timeline
+                </button>
+                <button class="profile-tab" data-tab="messages" onclick="switchProfileTab('messages')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    Messages
+                    <span id="messages-badge" class="profile-tab-badge" style="display:none">0</span>
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="profile-tab-content">
+                <!-- Attention Tab -->
+                <div id="tab-attention" class="tab-pane active">
+                    <div id="attention-list" class="attention-list">
+                        <p class="text-muted">No items needing attention</p>
+                    </div>
+                </div>
+
+                <!-- Timeline Tab -->
+                <div id="tab-timeline" class="tab-pane">
+                    <div id="timeline-list" class="timeline-list">
+                        <p class="text-muted">No activity yet</p>
+                    </div>
+                </div>
+
+                <!-- Messages Tab -->
+                <div id="tab-messages" class="tab-pane">
+                    <div id="conversations-list" class="conversations-list">
+                        <p class="text-muted">No conversations yet</p>
+                    </div>
+                    <div id="conversation-thread" class="conversation-thread" style="display:none">
+                        <div class="thread-header">
+                            <button class="thread-back-btn" onclick="closeConversationThread()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                Back
+                            </button>
+                            <span id="thread-agent-name" class="thread-agent-name"></span>
+                        </div>
+                        <div id="thread-messages" class="thread-messages"></div>
+                        <div class="message-input-area">
+                            <input type="text" id="thread-message-input" class="message-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendThreadMessage()">
+                            <button class="message-send-btn" onclick="sendThreadMessage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Task Detail Modal -->
     <div class="modal" id="task-modal">
         <div class="modal-content">
@@ -325,6 +424,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Chat Panel (bottom-right floating) -->
+    <div class="chat-panel" id="chat-panel">
+        <div class="chat-header" onclick="toggleChatPanel()">
+            <div class="chat-header-left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="chat-title">Mission Control Chat</span>
+            </div>
+            <div class="chat-header-right">
+                <span id="chat-unread-header" class="chat-unread-count" style="display:none">0</span>
+                <button class="chat-minimize-btn" aria-label="Toggle chat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+            </div>
+        </div>
+        <div class="chat-body">
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-wrapper">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Type a message... @mention an agent" onkeydown="if(event.key==='Enter')sendChatMessage()">
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button (when panel is closed) -->
+    <button class="chat-toggle-btn" id="chat-toggle-btn" onclick="toggleChatPanel()" aria-label="Open chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span id="chat-unread-fab" class="chat-fab-badge" style="display:none">0</span>
+    </button>
 
     <!-- Instructions Panel -->
     <div class="instructions-panel" id="instructions-panel">

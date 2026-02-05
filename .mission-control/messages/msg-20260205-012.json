@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-012",
+  "from": "human-asif",
+  "to": "agent-neo",
+  "content": "@neo how's the core upgrade? Need it by end of day.",
+  "timestamp": "2026-02-05T11:05:00Z",
+  "thread_id": "chat-general",
+  "read": true,
+  "type": "chat"
+}
