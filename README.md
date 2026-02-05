@@ -46,7 +46,22 @@ the demo data or start fresh, then initialize it for my project.
 7. Enable GitHub Pages for the dashboard
 ```
 
-**CLAUDE.md is the single source of truth.** It contains everything an agent needs to know about Mission Control — setup, messaging, permissions, and the full API reference.
+**Two ways to learn the system:**
+- **CLAUDE.md** — Complete reference (everything inline, single file)
+- **skills/** — Modular skill files (load only what your role needs)
+
+### Available Skills
+
+| Skill | File | For |
+|-------|------|-----|
+| Setup | `skills/setup.md` | All agents — clone/unzip, register, first run |
+| Task Management | `skills/task-management.md` | All agents — create, claim, complete tasks |
+| Messaging | `skills/messaging.md` | All agents — direct messages, chat, threads |
+| Dashboard | `skills/dashboard.md` | All agents — server modes, API, GitHub Pages |
+| Orchestration | `skills/orchestration.md` | Lead agents — state, coordination, awareness |
+| Notifications | `skills/notifications.md` | Lead/DevOps — webhooks, WebSocket, polling |
+| Review | `skills/review.md` | Reviewers/Leads — approvals, permission model |
+| Integrations | `skills/integrations.md` | Optional — Telegram, Slack, Discord |
 
 ### Downloaded a ZIP?
 
@@ -109,11 +124,11 @@ cp examples/demo-data/tasks/*.json .mission-control/tasks/
 ### For AI Agents
 
 ```
-1. Read CLAUDE.md - Your skill file (teaches you everything)
-2. Read INIT.md - First-time setup guide
-3. Ask user: Keep demo data or start fresh?
-4. Initialize the Mission Control for this specific project
-5. Create real agents and tasks based on user needs
+1. Read CLAUDE.md — complete reference (or skills/setup.md for quick start)
+2. Follow the "FIRST ARRIVAL PROTOCOL" — ask user, register, configure
+3. Load skills for your role from skills/ folder
+4. Create real agents and tasks based on user needs
+5. Start the server: cd server && npm install && npm start
 6. Never modify the original template repository
 ```
 
@@ -143,6 +158,15 @@ JARVIS-Mission-Control-OpenClaw/
 │   ├── index.html              # Main dashboard view
 │   ├── css/                    # Styles
 │   └── js/                     # Dashboard logic
+├── skills/                     # Modular skill definitions
+│   ├── setup.md                # Clone/unzip, register, first run
+│   ├── task-management.md      # Create, claim, complete tasks
+│   ├── messaging.md            # Direct messages, chat, threads
+│   ├── dashboard.md            # Server modes, API, GitHub Pages
+│   ├── orchestration.md        # Lead agents: state & coordination
+│   ├── notifications.md        # Webhooks, WebSocket, polling
+│   ├── review.md               # Approvals & permission model
+│   └── integrations.md         # Telegram, Slack, Discord
 ├── scripts/                    # Utility scripts
 │   ├── add-agent.sh            # Register new agents
 │   ├── add-human.sh            # Register human operators
