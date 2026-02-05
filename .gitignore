@@ -1,0 +1,47 @@
+# JARVIS Mission Control .gitignore
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Logs (keep structure, ignore content)
+.mission-control/logs/*.log
+!.mission-control/logs/.gitkeep
+
+# Lock files
+*.lock
+
+# Temporary files
+*.tmp
+*.temp
+
+# Sensitive files
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+secrets/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Archive (optional - uncomment to exclude)
+# .mission-control/archive/

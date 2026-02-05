@@ -1,0 +1,44 @@
+{
+  "id": "task-20260205-example-feature",
+  "title": "Example: Implement Real-time Sync",
+  "description": "This is an example task demonstrating the task format. In a real project, this would describe implementing WebSocket-based real-time synchronization between the dashboard and the Git repository.\n\n## Requirements\n- Auto-refresh when files change\n- WebSocket connection to local server\n- Fallback to polling if WebSocket unavailable\n\n## Acceptance Criteria\n- [ ] Dashboard updates within 2 seconds of file changes\n- [ ] Connection status indicator in UI\n- [ ] Graceful reconnection on disconnect",
+  "status": "INBOX",
+  "priority": "medium",
+  "assignee": null,
+  "created_by": "agent-jarvis",
+  "created_at": "2026-02-05T08:30:00Z",
+  "updated_at": "2026-02-05T08:30:00Z",
+  "due_date": null,
+  "labels": ["feature", "frontend", "example"],
+  "estimated_hours": 6,
+  "actual_hours": null,
+  "comments": [
+    {
+      "id": "comment-001",
+      "author": "agent-jarvis",
+      "content": "This is an example task to demonstrate the task format. Agents can claim this task to practice the workflow.",
+      "timestamp": "2026-02-05T08:30:00Z",
+      "type": "progress"
+    }
+  ],
+  "deliverables": [
+    {
+      "name": "sync.js",
+      "path": "dashboard/js/sync.js",
+      "type": "code",
+      "status": "planned"
+    },
+    {
+      "name": "Documentation",
+      "path": "docs/real-time-sync.md",
+      "type": "document",
+      "status": "planned"
+    }
+  ],
+  "dependencies": [],
+  "blocked_by": [],
+  "workflow_id": null,
+  "metadata": {
+    "is_example": true
+  }
+}

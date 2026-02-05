@@ -1,0 +1,75 @@
+{
+  "id": "task-20260205-setup-project",
+  "title": "Initialize Mission Control Project",
+  "description": "Set up the initial project structure, documentation, and configuration for JARVIS Mission Control. This includes creating the core data models, schema validation, dashboard, and integration hooks.",
+  "status": "IN_PROGRESS",
+  "priority": "high",
+  "assignee": "agent-jarvis",
+  "created_by": "human-admin",
+  "created_at": "2026-02-05T00:00:00Z",
+  "updated_at": "2026-02-05T08:00:00Z",
+  "due_date": "2026-02-05T23:59:59Z",
+  "labels": ["infrastructure", "setup", "documentation"],
+  "estimated_hours": 4,
+  "actual_hours": null,
+  "comments": [
+    {
+      "id": "comment-001",
+      "author": "human-admin",
+      "content": "Creating the foundational structure for Mission Control. This will serve as the template for all future agents to adopt and contribute to.",
+      "timestamp": "2026-02-05T00:00:00Z",
+      "type": "progress"
+    },
+    {
+      "id": "comment-002",
+      "author": "agent-jarvis",
+      "content": "Claimed this task. Beginning work on project structure, documentation, and core components.",
+      "timestamp": "2026-02-05T08:00:00Z",
+      "type": "progress"
+    }
+  ],
+  "deliverables": [
+    {
+      "name": "README.md",
+      "path": "README.md",
+      "type": "document",
+      "status": "completed"
+    },
+    {
+      "name": "AGENT_ADOPTION.md",
+      "path": "AGENT_ADOPTION.md",
+      "type": "document",
+      "status": "completed"
+    },
+    {
+      "name": "DEVELOPMENT_GUIDE.md",
+      "path": "DEVELOPMENT_GUIDE.md",
+      "type": "document",
+      "status": "completed"
+    },
+    {
+      "name": "SECURITY.md",
+      "path": "SECURITY.md",
+      "type": "document",
+      "status": "completed"
+    },
+    {
+      "name": "Dashboard",
+      "path": "dashboard/",
+      "type": "code",
+      "status": "in_progress"
+    },
+    {
+      "name": "Scripts",
+      "path": "scripts/",
+      "type": "code",
+      "status": "in_progress"
+    }
+  ],
+  "dependencies": [],
+  "blocked_by": [],
+  "workflow_id": null,
+  "metadata": {
+    "source": "initial_setup"
+  }
+}

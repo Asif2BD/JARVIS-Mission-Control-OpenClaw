@@ -1,0 +1,300 @@
+# JARVIS Mission Control Configuration
+# This file defines the core system behavior
+
+project:
+  name: "JARVIS Mission Control"
+  version: "1.0.0"
+  description: "Git-based AI agent orchestration system"
+  repository: "https://github.com/your-org/JARVIS-Mission-Control-OpenClaw"
+
+# Workflow Configuration
+workflow:
+  states:
+    - id: INBOX
+      name: "Inbox"
+      description: "New tasks waiting to be assigned"
+      color: "#6B7280"
+      allowed_transitions:
+        - ASSIGNED
+        - BLOCKED
+        - CANCELLED
+
+    - id: ASSIGNED
+      name: "Assigned"
+      description: "Task assigned to an agent/human"
+      color: "#3B82F6"
+      allowed_transitions:
+        - IN_PROGRESS
+        - INBOX
+        - BLOCKED
+        - CANCELLED
+
+    - id: IN_PROGRESS
+      name: "In Progress"
+      description: "Work is actively being done"
+      color: "#F59E0B"
+      allowed_transitions:
+        - REVIEW
+        - BLOCKED
+        - ASSIGNED
+
+    - id: REVIEW
+      name: "Review"
+      description: "Work completed, awaiting review"
+      color: "#8B5CF6"
+      allowed_transitions:
+        - DONE
+        - IN_PROGRESS
+        - BLOCKED
+
+    - id: DONE
+      name: "Done"
+      description: "Task completed and approved"
+      color: "#10B981"
+      allowed_transitions: []
+
+    - id: BLOCKED
+      name: "Blocked"
+      description: "Task cannot proceed"
+      color: "#EF4444"
+      allowed_transitions:
+        - INBOX
+        - ASSIGNED
+        - IN_PROGRESS
+        - CANCELLED
+
+    - id: CANCELLED
+      name: "Cancelled"
+      description: "Task was cancelled"
+      color: "#9CA3AF"
+      allowed_transitions: []
+
+  # Priority levels
+  priorities:
+    - id: critical
+      name: "Critical"
+      color: "#DC2626"
+      weight: 100
+
+    - id: high
+      name: "High"
+      color: "#F97316"
+      weight: 75
+
+    - id: medium
+      name: "Medium"
+      color: "#EAB308"
+      weight: 50
+
+    - id: low
+      name: "Low"
+      color: "#22C55E"
+      weight: 25
+
+# Agent Configuration
+agents:
+  # Agent types
+  types:
+    - id: ai
+      name: "AI Agent"
+      description: "Autonomous AI agent"
+
+    - id: human
+      name: "Human"
+      description: "Human operator"
+
+    - id: hybrid
+      name: "Hybrid"
+      description: "Human-supervised AI"
+
+  # Role definitions
+  roles:
+    - id: lead
+      name: "Lead Agent"
+      permissions:
+        - create_tasks
+        - assign_tasks
+        - claim_tasks
+        - complete_tasks
+        - review_tasks
+        - approve_tasks
+        - spawn_agents
+        - modify_config
+
+    - id: specialist
+      name: "Specialist"
+      permissions:
+        - create_tasks
+        - claim_tasks
+        - complete_tasks
+        - review_tasks
+
+    - id: reviewer
+      name: "Reviewer"
+      permissions:
+        - review_tasks
+        - approve_tasks
+        - create_tasks
+
+    - id: observer
+      name: "Observer"
+      permissions:
+        - read_tasks
+
+  # Default lead agent
+  lead_agent: "agent-jarvis"
+
+# Task Configuration
+tasks:
+  # Auto-assignment rules
+  auto_assign:
+    enabled: false
+    rules:
+      - label: "backend"
+        agents: ["agent-backend-specialist"]
+      - label: "frontend"
+        agents: ["agent-frontend-specialist"]
+      - label: "review"
+        agents: ["agent-reviewer"]
+
+  # Required fields for task creation
+  required_fields:
+    - title
+    - description
+    - priority
+
+  # Maximum tasks per agent
+  max_concurrent_per_agent: 3
+
+  # Labels for categorization
+  labels:
+    - id: feature
+      name: "Feature"
+      color: "#3B82F6"
+    - id: bug
+      name: "Bug"
+      color: "#EF4444"
+    - id: docs
+      name: "Documentation"
+      color: "#10B981"
+    - id: research
+      name: "Research"
+      color: "#8B5CF6"
+    - id: review
+      name: "Review"
+      color: "#F59E0B"
+    - id: infrastructure
+      name: "Infrastructure"
+      color: "#6366F1"
+    - id: testing
+      name: "Testing"
+      color: "#EC4899"
+
+# Communication Configuration
+communication:
+  # Comment types
+  comment_types:
+    - progress
+    - question
+    - review
+    - approval
+    - refute
+    - praise
+    - blocked
+    - system
+
+  # Notification triggers
+  notifications:
+    - event: task_created
+      notify: [lead_agent]
+    - event: task_assigned
+      notify: [assignee]
+    - event: task_completed
+      notify: [created_by, lead_agent]
+    - event: task_blocked
+      notify: [created_by, lead_agent]
+    - event: comment_added
+      notify: [assignee, created_by]
+
+# OpenClaw Integration
+openclaw:
+  enabled: true
+  gateway_url: "ws://127.0.0.1:18789"
+
+  # Lifecycle hooks
+  hooks:
+    on_agent_start:
+      - action: create_task
+        template: "agent_session"
+    on_agent_complete:
+      - action: update_task
+        status: REVIEW
+    on_agent_error:
+      - action: update_task
+        status: BLOCKED
+    on_tool_use:
+      - action: add_comment
+        type: progress
+
+  # Session mapping
+  session_prefix: "mc:"
+
+# Security Configuration
+security:
+  # Require agent registration before operations
+  require_registration: true
+
+  # Allowed agent operations per type
+  agent_permissions:
+    ai:
+      - read
+      - write_own_tasks
+      - claim_tasks
+      - create_tasks
+    human:
+      - read
+      - write_all
+      - admin
+
+  # Commit signing
+  sign_commits: false
+
+  # Validation
+  validate_schema: true
+  schema_path: ".mission-control/schema/"
+
+# Logging Configuration
+logging:
+  enabled: true
+  path: ".mission-control/logs/"
+  retention_days: 30
+
+  # Events to log
+  events:
+    - task_created
+    - task_updated
+    - task_claimed
+    - task_completed
+    - agent_registered
+    - comment_added
+    - workflow_advanced
+
+# Dashboard Configuration
+dashboard:
+  title: "JARVIS Mission Control"
+  refresh_interval: 30000  # ms
+
+  # Visible columns on board
+  columns:
+    - INBOX
+    - ASSIGNED
+    - IN_PROGRESS
+    - REVIEW
+    - DONE
+
+  # Metrics to display
+  metrics:
+    - total_tasks
+    - completed_today
+    - active_agents
+    - blocked_tasks
