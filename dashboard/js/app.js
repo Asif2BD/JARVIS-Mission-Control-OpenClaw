@@ -16,6 +16,9 @@ async function init() {
     // Initialize theme
     initTheme();
 
+    // Load saved dashboard name
+    loadDashboardName();
+
     // Load data
     await window.missionControlData.loadData();
 
@@ -243,47 +246,141 @@ function renderAgents() {
 }
 
 /**
- * Render the task queue - compact inline design
+ * Render scheduled jobs in the right sidebar
  */
 function renderQueue() {
     const queue = window.missionControlData.getQueue();
-    const container = document.getElementById('queue-list');
-    const subtitle = document.getElementById('queue-subtitle');
+    const container = document.getElementById('jobs-list');
+    const countEl = document.getElementById('jobs-running');
 
     if (!container) return;
 
-    // Update subtitle
+    // Update running count
     const runningCount = queue.filter(q => q.status === 'running').length;
-    subtitle.textContent = `${runningCount} running`;
+    if (countEl) countEl.textContent = `${runningCount} running`;
 
     container.innerHTML = queue.map(item => {
         const successRate = item.run_count > 0
             ? Math.round((item.success_count / item.run_count) * 100)
             : 100;
+        const humanSchedule = cronToHuman(item.schedule);
 
         return `
-            <div class="entity-row queue-row">
-                <div class="entity-status queue-status ${item.status}"></div>
-                <div class="queue-icon ${item.type}">${getQueueTypeIcon(item.type)}</div>
-                <div class="entity-info">
-                    <span class="entity-name">${escapeHtml(item.name)}</span>
-                    <span class="queue-schedule">${escapeHtml(item.schedule)}</span>
+            <div class="job-card ${item.status}">
+                <div class="job-header">
+                    <span class="job-status-dot ${item.status}"></span>
+                    <span class="job-name">${escapeHtml(item.name)}</span>
                 </div>
-                <span class="queue-rate ${successRate < 90 ? 'warning' : ''}">${successRate}%</span>
+                <div class="job-schedule">
+                    <span class="job-frequency">${humanSchedule}</span>
+                    <span class="job-type ${item.type}">${item.type}</span>
+                </div>
+                <div class="job-stats">
+                    <span class="job-runs">${item.run_count} runs</span>
+                    <span class="job-rate ${successRate < 90 ? 'warning' : ''}">${successRate}% success</span>
+                </div>
+                ${item.last_run ? `<div class="job-last-run">Last: ${formatDate(item.last_run)}</div>` : ''}
             </div>
         `;
     }).join('');
 }
 
 /**
- * Get compact icon for queue item type
+ * Convert cron syntax to human-readable format
  */
-function getQueueTypeIcon(type) {
-    switch(type) {
-        case 'cron': return '⏰';
-        case 'watcher': return '👁';
-        case 'seeder': return '🌱';
-        default: return '📋';
+function cronToHuman(schedule) {
+    if (!schedule) return 'Unknown';
+
+    // Handle special cases
+    if (schedule === 'continuous') return 'Always running';
+    if (schedule === 'manual') return 'Manual trigger';
+
+    const parts = schedule.split(' ');
+    if (parts.length !== 5) return schedule;
+
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+
+    // Every X minutes
+    if (minute.startsWith('*/') && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const mins = minute.substring(2);
+        return `Every ${mins} min`;
+    }
+
+    // Every hour at specific minute
+    if (minute !== '*' && !minute.includes('/') && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        return minute === '0' ? 'Every hour' : `Hourly at :${minute.padStart(2, '0')}`;
+    }
+
+    // Every X hours
+    if (minute === '0' && hour.startsWith('*/') && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const hrs = hour.substring(2);
+        return `Every ${hrs} hours`;
+    }
+
+    // Daily at specific time
+    if (minute !== '*' && hour !== '*' && !hour.includes('/') && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const h = parseInt(hour);
+        const m = minute.padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+        return `Daily at ${h12}:${m} ${ampm}`;
+    }
+
+    // Weekdays at specific time
+    if (minute !== '*' && hour !== '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5') {
+        const h = parseInt(hour);
+        const m = minute.padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+        return `Weekdays ${h12}:${m} ${ampm}`;
+    }
+
+    // Weekly
+    if (minute !== '*' && hour !== '*' && dayOfMonth === '*' && month === '*' && /^[0-6]$/.test(dayOfWeek)) {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return `Weekly on ${days[parseInt(dayOfWeek)]}`;
+    }
+
+    // Fallback - return simplified version
+    return schedule;
+}
+
+/**
+ * Save dashboard name to localStorage
+ */
+function saveDashboardName() {
+    const input = document.getElementById('dashboard-name');
+    if (input && input.value.trim()) {
+        const name = input.value.trim();
+        localStorage.setItem('mc-dashboard-name', name);
+        updateDashboardName(name);
+        alert('Dashboard name saved!');
+    }
+}
+
+/**
+ * Update dashboard name in header
+ */
+function updateDashboardName(name) {
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        const icon = logo.querySelector('.logo-icon');
+        logo.innerHTML = '';
+        if (icon) logo.appendChild(icon);
+        logo.appendChild(document.createTextNode(' ' + name));
+    }
+    document.title = name;
+}
+
+/**
+ * Load saved dashboard name
+ */
+function loadDashboardName() {
+    const savedName = localStorage.getItem('mc-dashboard-name');
+    if (savedName) {
+        updateDashboardName(savedName);
+        const input = document.getElementById('dashboard-name');
+        if (input) input.value = savedName;
     }
 }
 
