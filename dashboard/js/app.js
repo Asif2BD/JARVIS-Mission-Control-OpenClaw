@@ -176,16 +176,16 @@ function renderAgents() {
     const subtitle = document.getElementById('agents-subtitle');
 
     // Update subtitle
-    const activeCount = agents.filter(a => a.status === 'active').length;
+    const activeCount = agents.filter(a => a.status === 'active' || a.status === 'busy').length;
     subtitle.textContent = `${activeCount} agent${activeCount !== 1 ? 's' : ''} online`;
 
     container.innerHTML = agents.map(agent => `
-        <div class="agent-card">
+        <div class="agent-card ${agent.role === 'lead' ? 'agent-lead' : ''}">
             <div class="agent-header">
                 <div class="agent-avatar ${agent.role}">${getInitials(agent.name)}</div>
                 <div class="agent-info">
                     <div class="agent-name">${escapeHtml(agent.name)}</div>
-                    <div class="agent-role">${agent.role}</div>
+                    <div class="agent-designation">${escapeHtml(agent.designation || agent.role)}</div>
                 </div>
                 <div class="agent-status-indicator ${agent.status}"></div>
             </div>
@@ -197,7 +197,15 @@ function renderAgents() {
                     </svg>
                     ${agent.current_tasks ? agent.current_tasks.length : 0} active task${agent.current_tasks && agent.current_tasks.length !== 1 ? 's' : ''}
                 </span>
+                <span class="agent-completed">
+                    ${agent.completed_tasks || 0} completed
+                </span>
             </div>
+            ${agent.metadata && agent.metadata.clearance ? `
+                <div class="agent-clearance clearance-${agent.metadata.clearance.toLowerCase()}">
+                    ${agent.metadata.clearance} CLEARANCE
+                </div>
+            ` : ''}
         </div>
     `).join('');
 }
