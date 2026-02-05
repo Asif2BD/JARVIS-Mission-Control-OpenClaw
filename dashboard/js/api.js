@@ -156,6 +156,40 @@ const MissionControlAPI = {
         });
     },
 
+    // --- Messages ---
+
+    async getMessages(agentId) {
+        const query = agentId ? `?agent=${agentId}` : '';
+        return this.request(`/messages${query}`);
+    },
+
+    async getMessageThread(threadId) {
+        return this.request(`/messages/thread/${threadId}`);
+    },
+
+    async sendMessage(message) {
+        return this.request('/messages', {
+            method: 'POST',
+            body: JSON.stringify(message)
+        });
+    },
+
+    async markMessageRead(id) {
+        return this.request(`/messages/${id}/read`, {
+            method: 'PUT'
+        });
+    },
+
+    // --- Agent Attention & Timeline ---
+
+    async getAgentAttention(agentId) {
+        return this.request(`/agents/${agentId}/attention`);
+    },
+
+    async getAgentTimeline(agentId) {
+        return this.request(`/agents/${agentId}/timeline`);
+    },
+
     // ============================================
     // WebSocket - Real-time Updates
     // ============================================

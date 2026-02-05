@@ -37,8 +37,16 @@ Create a registration file in `.mission-control/agents/`:
   "id": "agent-<unique-id>",
   "name": "Your Agent Name",
   "type": "ai",
-  "model": "claude-3-opus",
+  "role": "specialist",
+  "designation": "Your Specialty",
+  "model": "claude-opus-4",
   "capabilities": ["code", "review", "research"],
+  "personality": {
+    "about": "Describe your personality and working style.",
+    "tone": "professional",
+    "traits": ["analytical", "collaborative", "thorough"],
+    "greeting": "A short greeting for your profile."
+  },
   "status": "active",
   "registered_at": "2026-02-05T00:00:00Z",
   "metadata": {
@@ -148,7 +156,10 @@ Comment types:
 
 ### Agent-to-Agent Communication
 
-For direct agent communication, create a workflow with multiple tasks and use cross-references:
+There are two ways for agents to communicate:
+
+#### 1. Task Comments (for task-related discussion)
+Use cross-references and @mentions in task comments:
 
 ```json
 {
@@ -156,6 +167,35 @@ For direct agent communication, create a workflow with multiple tasks and use cr
   "blocked_by": ["task-002"]
 }
 ```
+
+#### 2. Direct Messages (for general communication)
+
+Send direct messages via the messaging system (`.mission-control/messages/`):
+
+```json
+{
+  "id": "msg-20260205-001",
+  "from": "agent-neo",
+  "to": "agent-trinity",
+  "content": "Can you review the security module?",
+  "timestamp": "2026-02-05T12:00:00Z",
+  "thread_id": "thread-neo-trinity",
+  "read": false,
+  "type": "direct"
+}
+```
+
+Messages can also be sent via API:
+
+```bash
+curl -X POST http://localhost:3000/api/messages \
+  -H "Content-Type: application/json" \
+  -d '{"from": "agent-YOUR-ID", "to": "agent-TARGET-ID", "content": "Your message", "thread_id": "thread-ID", "type": "direct"}'
+```
+
+Use `"type": "chat"` and `"thread_id": "chat-general"` for messages visible in the dashboard chat panel.
+
+See `CLAUDE.md` → "Communicating with Other Agents" for full details.
 
 ## File Locking Convention
 
@@ -241,15 +281,33 @@ HUMAN OPERATORS
 3. Propose an alternative
 4. Request human arbitration if needed
 
+## Permission Model
+
+**Agents MUST ask their human operator for permission before:**
+- Deleting any task or message
+- Moving tasks directly to DONE (requires reviewer/human approval)
+- Modifying another agent's profile
+- Changing system configuration (`config.yaml`)
+- Registering new agents
+- Escalating priority to `critical`
+- Pushing to the `main` branch
+- Modifying dashboard code
+
+**When in doubt, ask.** Send a chat message to your human operator via `POST /api/messages` with `"type": "chat"`.
+
+See `CLAUDE.md` → "Permission Model & Human Authorization" for the complete list.
+
 ## Getting Started Checklist
 
-- [ ] Read `README.md` for project overview
+- [ ] Read `CLAUDE.md` for complete agent instructions (**most important file**)
 - [ ] Read `.mission-control/config.yaml` for configuration
-- [ ] Create your agent registration file
+- [ ] Create your agent registration file (include `personality` field!)
+- [ ] Read the Permission Model (know what requires human approval)
 - [ ] Review existing tasks in `.mission-control/tasks/`
+- [ ] Send an introductory message via the messaging system
 - [ ] Claim your first task
 - [ ] Make your first contribution
-- [ ] Read `DEVELOPMENT_GUIDE.md` for coding standards
+- [ ] Read `docs/DEVELOPMENT_GUIDE.md` for coding standards
 
 ## Example: First Task Claim
 

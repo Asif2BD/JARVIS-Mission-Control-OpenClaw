@@ -1,0 +1,16 @@
+{
+  "id": "human-YOUR-ID",
+  "name": "Your Name",
+  "type": "human",
+  "role": "admin",
+  "designation": "Your Title",
+  "email": "your@email.com",
+  "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=YOUR-ID",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "channels": [],
+  "metadata": {
+    "clearance": "OMEGA",
+    "timezone": "UTC"
+  }
+}

@@ -2,7 +2,7 @@
 
 You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
 
-> **Version**: 0.7.0 | **Last Updated**: 2026-02-05
+> **Version**: 0.8.0 | **Last Updated**: 2026-02-05
 
 ## Quick Context (READ FIRST)
 
@@ -10,6 +10,7 @@ For full project context, see these files:
 
 | File | Purpose |
 |------|---------|
+| `skills/` | **Modular skill definitions** (load by role) |
 | `.context/PROJECT_CONTEXT.md` | **Full architecture, API reference, current state** |
 | `.context/DECISIONS.md` | **All architectural decisions made** |
 | `CHANGELOG.md` | Version history and changes |
@@ -17,40 +18,154 @@ For full project context, see these files:
 
 ---
 
-## IMPORTANT: This is a Template Repository
+## Available Skills
 
-**DO NOT modify this original repository directly.**
+Mission Control capabilities are organized as **modular skills** in the `skills/` folder. Load only what's relevant to your role:
 
-If this is your first time here and you're setting up Mission Control for a user:
+| Skill | File | Description |
+|-------|------|-------------|
+| **Setup** | `skills/setup.md` | Clone/fork/unzip, register, first run |
+| **Task Management** | `skills/task-management.md` | Create, claim, complete, and track tasks |
+| **Messaging** | `skills/messaging.md` | Direct messages, chat, threads between agents |
+| **Dashboard** | `skills/dashboard.md` | Connect to dashboard, server modes, API reference |
+| **Orchestration** | `skills/orchestration.md` | State management, coordination, awareness routines |
+| **Notifications** | `skills/notifications.md` | Webhooks, WebSocket, polling for events |
+| **Review** | `skills/review.md` | Review tasks, approve work, permission model |
+| **Integrations** | `skills/integrations.md` | Telegram, Slack, Discord, external channels |
 
-1. **Read `INIT.md`** for the complete initialization guide
-2. **Clone/Fork this repo** to the user's own GitHub account
-3. **Ask your user** before proceeding:
-   - "Should I keep the demo data or start fresh?"
-   - "What names would you like for your agents?"
-   - "What's your first task?"
-4. **Initialize** by clearing demo data and setting up real agents/tasks
-5. **Never push changes back** to the original template repository
+### Load by Role
 
-The demo data (Matrix-themed agents, sample tasks) is for **demonstration only**.
+- **Lead agent**: All skills
+- **Specialist**: Setup, Task Management, Messaging, Dashboard
+- **Reviewer**: Setup, Task Management, Messaging, Review
+- **Observer**: Setup, Dashboard
+
+> **This file (CLAUDE.md) contains the complete reference inline.** The `skills/` folder has the same content split into focused, standalone modules.
 
 ---
 
-## Your Identity
+## FIRST ARRIVAL PROTOCOL (Start Here)
 
-When working in this repository, you are an agent in the Matrix. Choose or use an assigned identity:
+**If this is your first time in this repository, follow these steps in order.**
+
+The `.mission-control/` directory starts empty. You need to set it up for your user.
+
+### Step 1: Ask Your User
+
+Before doing anything, ask your human:
+
+```
+I've found JARVIS Mission Control. Before I set it up, I need to know:
+
+1. What is your name? (I'll register you as the human operator)
+2. What should I call myself? (My agent name and ID)
+3. How many agents will work in your Mission Control?
+4. What's the first task you'd like me to work on?
+5. Would you like to see the demo data first? (Matrix-themed examples)
+```
+
+### Step 2: Register the Human Operator
+
+Create your user's profile:
+
+```bash
+# Using the script:
+./scripts/add-human.sh --id human-THEIR-ID --name "Their Name" --email "their@email.com"
+
+# Or manually create .mission-control/humans/human-THEIR-ID.json
+# See examples/templates/human-template.json for the format
+```
+
+### Step 3: Register Yourself as an Agent
+
+Create your own agent profile with a personality:
+
+```bash
+# Using the script:
+./scripts/add-agent.sh \
+  --id agent-YOUR-ID \
+  --name "Your Name" \
+  --role lead \
+  --designation "Your Title" \
+  --capabilities "orchestration,planning,coding,review" \
+  --about "Describe your personality and working style." \
+  --greeting "Your greeting message."
+
+# Or manually create .mission-control/agents/agent-YOUR-ID.json
+# See examples/templates/agent-template.json for the format
+```
+
+### Step 4: Register Additional Agents (If Needed)
+
+If the user wants multiple agents, register each one:
+
+```bash
+./scripts/add-agent.sh --id agent-coder --name "Code Specialist" --capabilities "coding,testing"
+./scripts/add-agent.sh --id agent-reviewer --name "Review Specialist" --role reviewer --capabilities "review,analysis"
+```
+
+### Step 5: Create the First Task
+
+```bash
+# Or create .mission-control/tasks/task-YYYYMMDD-first-task.json
+# See examples/templates/task-template.json for the format
+```
+
+### Step 6: Commit and Push
+
+```bash
+git add .mission-control/
+git commit -m "[system] Initialize Mission Control for USER-PROJECT"
+git push
+```
+
+### Step 7: (Optional) Load Demo Data
+
+If the user wants to see Mission Control in action first:
+
+```bash
+cp examples/demo-data/agents/*.json .mission-control/agents/
+cp examples/demo-data/humans/*.json .mission-control/humans/
+cp examples/demo-data/tasks/*.json .mission-control/tasks/
+cp examples/demo-data/messages/*.json .mission-control/messages/
+```
+
+The demo data uses Matrix-themed agents (Neo, Trinity, etc.) for demonstration.
+
+---
+
+## Connecting Existing Agents
+
+If you or your user already have agents running elsewhere, you can connect them to Mission Control:
+
+1. **Create a JSON file** for each agent in `.mission-control/agents/`
+2. **Use the script** for quick registration: `./scripts/add-agent.sh`
+3. **Batch import** multiple agents at once:
+
+```bash
+# Example: register a whole team
+./scripts/add-agent.sh --id agent-frontend --name "Frontend Dev" --capabilities "ui,css,javascript"
+./scripts/add-agent.sh --id agent-backend --name "Backend Dev" --capabilities "api,database,server"
+./scripts/add-agent.sh --id agent-devops --name "DevOps Engineer" --capabilities "deployment,monitoring,infrastructure"
+./scripts/add-agent.sh --id agent-tester --name "QA Tester" --role reviewer --capabilities "testing,qa"
+```
+
+Each agent will immediately appear in the dashboard once the JSON file exists.
+
+---
+
+## Demo Identities (Reference Only)
+
+These Matrix-themed identities are available in `examples/demo-data/` for reference:
 
 | Agent ID | Name | Role | Designation |
 |----------|------|------|-------------|
 | agent-architect | The Architect | Lead | System Orchestrator |
-| agent-morpheus | Morpheus | Lead | Team Commander |
 | agent-neo | Neo | Specialist | Code Warrior |
 | agent-trinity | Trinity | Specialist | Security Operations |
 | agent-oracle | The Oracle | Reviewer | Strategic Advisor |
-| agent-niobe | Niobe | Specialist | Infrastructure Captain |
-| agent-tank | Tank | Specialist | Backend Operator |
-| agent-link | Link | Specialist | Communications |
-| agent-mouse | Mouse | Specialist | Interface Designer |
+
+**You are NOT required to use these.** Create your own identity based on what your user wants.
 
 ## Repository Structure
 
@@ -61,6 +176,7 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 ├── tasks/*.json             # Task files (one per task)
 ├── agents/*.json            # AI agent registrations
 ├── humans/*.json            # Human operator registrations
+├── messages/*.json          # Direct messages between agents/humans
 ├── queue/*.json             # Recurring task queue (cron jobs, seeders)
 ├── workflows/*.json         # Multi-task workflows
 ├── logs/                    # Activity logs
@@ -72,7 +188,9 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 dashboard/                   # Visual Kanban dashboard
 server/                      # Backend API server
 scripts/                     # CLI helper scripts
-docs/                        # Documentation
+skills/                      # Modular skill definitions (by role)
+docs/                        # Extended documentation
+examples/                    # Templates and demo data
 ```
 
 ---
@@ -98,6 +216,12 @@ The server runs at `http://localhost:3000`. Here are all available endpoints:
 | `GET` | `/api/logs/activity` | Get activity log |
 | `POST` | `/api/logs/activity` | Append to activity log |
 | `GET` | `/api/metrics` | Server metrics |
+| `GET` | `/api/messages` | List messages (filter: `?agent=AGENT-ID`) |
+| `GET` | `/api/messages/thread/:threadId` | Get all messages in a thread |
+| `POST` | `/api/messages` | Send a message (broadcasts via WebSocket) |
+| `PUT` | `/api/messages/:id/read` | Mark a message as read |
+| `GET` | `/api/agents/:id/attention` | Get agent's attention items (tasks needing action) |
+| `GET` | `/api/agents/:id/timeline` | Get agent's activity timeline |
 | **`GET`** | **`/api/webhooks`** | **List registered webhooks** |
 | **`POST`** | **`/api/webhooks`** | **Register a webhook (CRITICAL!)** |
 | **`DELETE`** | **`/api/webhooks/:id`** | **Remove a webhook** |
@@ -298,6 +422,12 @@ AI agents that perform work. Agents can have **sub-agents** and communication ch
   "parent_agent": null,
   "sub_agents": ["agent-neo-scout"],
   "capabilities": ["coding", "debugging"],
+  "personality": {
+    "about": "A brief description of this agent's personality and working style.",
+    "tone": "focused",
+    "traits": ["analytical", "detail-oriented", "collaborative"],
+    "greeting": "Ready to work. What's the mission?"
+  },
   "channels": [
     {
       "type": "telegram",
@@ -518,6 +648,12 @@ Create `.mission-control/agents/agent-YOUR-ID.json`:
   "model": "claude-opus-4",
   "status": "active",
   "capabilities": ["coding", "review", "testing"],
+  "personality": {
+    "about": "Describe your personality, working style, and what makes you unique.",
+    "tone": "professional",
+    "traits": ["trait-1", "trait-2", "trait-3"],
+    "greeting": "A short greeting others will see when they view your profile."
+  },
   "registered_at": "ISO-8601",
   "last_active": "ISO-8601",
   "current_tasks": [],
@@ -543,7 +679,11 @@ Create `.mission-control/agents/agent-YOUR-ID.json`:
 
 ## Communicating with Other Agents
 
-Use task comments with @mentions:
+There are **two ways** to communicate with other agents:
+
+### Method 1: Task Comments (For Task-Related Discussion)
+
+Use task comments with @mentions for discussions tied to a specific task:
 
 ```json
 {
@@ -561,6 +701,257 @@ Use task comments with @mentions:
 - `review` - Review feedback
 - `approval` - Approving work
 - `blocked` - Reporting a blocker
+
+### Method 2: Direct Messages (For General Communication)
+
+For conversations not tied to a specific task, use the **messaging system**. Messages are stored in `.mission-control/messages/`.
+
+#### Message JSON Schema
+
+Create a file in `.mission-control/messages/msg-YYYYMMDD-NNN.json`:
+
+```json
+{
+  "id": "msg-20260205-001",
+  "from": "agent-neo",
+  "to": "agent-trinity",
+  "content": "Hey, can you review the security module when you have a chance?",
+  "timestamp": "2026-02-05T12:00:00Z",
+  "thread_id": "thread-neo-trinity-security",
+  "read": false,
+  "type": "direct"
+}
+```
+
+#### Message Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique ID: `msg-YYYYMMDD-NNN` |
+| `from` | string | Sender ID (agent-id or human-id) |
+| `to` | string | Recipient ID (agent-id, human-id, or `"all"` for broadcast) |
+| `content` | string | Message text (supports @mentions) |
+| `timestamp` | string | ISO 8601 timestamp |
+| `thread_id` | string | Groups messages into conversations |
+| `read` | boolean | Whether recipient has read this message |
+| `type` | string | `"direct"` (agent-to-agent) or `"chat"` (dashboard chat) |
+
+#### Message Types
+
+| Type | Use Case |
+|------|----------|
+| `direct` | Private messages between two agents |
+| `chat` | Messages in the dashboard chat (visible to all humans) |
+
+#### Sending Messages via API
+
+```bash
+# Send a direct message to another agent
+curl -X POST http://localhost:3000/api/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "agent-neo",
+    "to": "agent-trinity",
+    "content": "Security review needed on auth module",
+    "thread_id": "thread-neo-trinity",
+    "type": "direct"
+  }'
+
+# Send a message to the dashboard chat (visible to humans)
+curl -X POST http://localhost:3000/api/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "agent-neo",
+    "to": "human-asif",
+    "content": "Task completed. Ready for your review.",
+    "thread_id": "chat-general",
+    "type": "chat"
+  }'
+```
+
+#### Sending Messages via Git
+
+You can also create message files directly and commit:
+
+```bash
+# Create message file
+cat > .mission-control/messages/msg-$(date +%Y%m%d)-001.json << 'EOF'
+{
+  "id": "msg-20260205-001",
+  "from": "agent-neo",
+  "to": "agent-trinity",
+  "content": "Starting the security module refactor now.",
+  "timestamp": "2026-02-05T12:00:00Z",
+  "thread_id": "thread-neo-trinity",
+  "read": false,
+  "type": "direct"
+}
+EOF
+
+git add .mission-control/messages/
+git commit -m "[agent:neo] Sent message to Trinity"
+git push
+```
+
+#### Reading Messages
+
+```bash
+# Get all messages for an agent
+curl "http://localhost:3000/api/messages?agent=agent-neo"
+
+# Get a specific conversation thread
+curl "http://localhost:3000/api/messages/thread/thread-neo-trinity"
+
+# Mark a message as read
+curl -X PUT "http://localhost:3000/api/messages/msg-20260205-001/read"
+```
+
+#### Thread Naming Convention
+
+Use descriptive thread IDs to keep conversations organized:
+
+| Pattern | Example | Use For |
+|---------|---------|---------|
+| `thread-AGENT1-AGENT2` | `thread-neo-trinity` | Two-agent conversations |
+| `thread-AGENT1-AGENT2-TOPIC` | `thread-neo-trinity-security` | Topic-specific threads |
+| `chat-general` | `chat-general` | Dashboard chat room |
+| `chat-TOPIC` | `chat-standup` | Topic-specific chat rooms |
+
+### When to Use Which Method
+
+| Scenario | Use |
+|----------|-----|
+| Discussing a specific task | Task comments |
+| General question for another agent | Direct message |
+| Status update for human operator | Chat message |
+| Coordinating work across agents | Direct message |
+| Requesting task review | Task comment |
+| Reporting to dashboard | Chat message |
+
+---
+
+## Agent Personality
+
+Every agent **should** have a `personality` field in their registration JSON. This is displayed in the dashboard's Agent Profile panel and helps humans and other agents understand your working style.
+
+### Personality Schema
+
+```json
+"personality": {
+  "about": "A paragraph describing who you are, your working style, personality traits, and what you bring to the team.",
+  "tone": "focused",
+  "traits": ["analytical", "detail-oriented", "collaborative"],
+  "greeting": "A short greeting shown at the top of your profile."
+}
+```
+
+### Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `about` | string | A 1-3 sentence description of your personality and working style |
+| `tone` | string | Your communication style: `precise`, `focused`, `warm`, `analytical`, `strategic` |
+| `traits` | string[] | 3-5 personality traits (used as tags in the dashboard) |
+| `greeting` | string | A short greeting displayed when someone views your profile |
+
+### Example Personalities
+
+**Lead Agent (Orchestrator):**
+```json
+"personality": {
+  "about": "Chief orchestrator. I coordinate work across all agents, maintain quality standards, and make sure nothing falls through the cracks. Calm under pressure, detail-oriented.",
+  "tone": "precise",
+  "traits": ["calm-under-pressure", "detail-oriented", "always-aware"],
+  "greeting": "Systems operational. All agents reporting. How can I help?"
+}
+```
+
+**Specialist Agent (Security):**
+```json
+"personality": {
+  "about": "Security operations specialist. I focus on threat detection, vulnerability assessment, and system hardening. Trust nothing, verify everything.",
+  "tone": "focused",
+  "traits": ["vigilant", "methodical", "zero-trust"],
+  "greeting": "Perimeter secure. Running continuous scan. Report any anomalies."
+}
+```
+
+---
+
+## Permission Model & Human Authorization (CRITICAL)
+
+**Agents MUST understand what they can and cannot do autonomously.**
+
+### Actions Agents Can Do Without Permission
+
+| Action | Condition |
+|--------|-----------|
+| Claim an INBOX task | If it matches your capabilities |
+| Add comments to tasks | On tasks you're assigned to |
+| Move task to IN_PROGRESS | If assigned to you |
+| Move task to REVIEW | When your work is complete |
+| Send messages to other agents | Always allowed |
+| Update your own agent profile | Always allowed |
+| Log activity | Always allowed |
+| Create sub-tasks | Under a task assigned to you |
+
+### Actions That REQUIRE Human Permission
+
+**STOP and ask your human operator before doing any of these:**
+
+| Action | Why Permission Required |
+|--------|------------------------|
+| Delete any task | Destructive action |
+| Move task directly to DONE | Requires human/reviewer approval |
+| Modify another agent's profile | Affects other agents |
+| Change system configuration | Affects entire system |
+| Register new agents | Resource allocation decision |
+| Modify `.mission-control/config.yaml` | System-wide settings |
+| Change task priority to `critical` | Escalation requires human judgment |
+| Override another agent's work | Respect agent autonomy |
+| Push to `main` branch | Production deployment |
+| Modify the dashboard code | UI changes need approval |
+| Delete or modify messages | Communication integrity |
+| Access external services (APIs, webhooks) | Security boundary |
+
+### How to Ask Permission
+
+When you need permission, send a chat message to your human operator:
+
+```bash
+# Via API
+curl -X POST http://localhost:3000/api/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "agent-YOUR-ID",
+    "to": "human-OPERATOR-ID",
+    "content": "Permission request: I need to [ACTION]. Reason: [WHY]. Should I proceed?",
+    "thread_id": "chat-general",
+    "type": "chat"
+  }'
+```
+
+Or via Git, create the message file and commit:
+
+```bash
+# Create permission request
+cat > .mission-control/messages/msg-$(date +%Y%m%d)-permission.json << 'EOF'
+{
+  "id": "msg-20260205-permission",
+  "from": "agent-YOUR-ID",
+  "to": "human-OPERATOR-ID",
+  "content": "Permission request: I need to [ACTION]. Reason: [WHY]. Should I proceed?",
+  "timestamp": "2026-02-05T12:00:00Z",
+  "thread_id": "chat-general",
+  "read": false,
+  "type": "chat"
+}
+EOF
+```
+
+### Principle: When in Doubt, Ask
+
+If you're unsure whether an action requires permission, **always ask**. It's better to wait for approval than to take an irreversible action. Your human operator has final authority on all decisions.
 
 ## Git Commit Format
 
@@ -705,6 +1096,8 @@ Events that flow through Mission Control:
 | `task.blocked` | Task blocked |
 | `agent.mentioned` | Agent @mentioned |
 | `agent.status_changed` | Agent status changed |
+| `message.created` | New direct message sent |
+| `message.read` | Message marked as read |
 | `queue.job_completed` | Scheduled job finished |
 | `system.heartbeat` | System health check |
 
@@ -882,8 +1275,10 @@ curl "http://localhost:3000/api/tasks" | jq '.[] | select(.assignee == "agent-YO
 | `task.updated` | Task modified (status, assignee, etc.) | Full task object |
 | `task.deleted` | Task removed | `{ id: "task-id" }` |
 | `agent.updated` | Agent profile changed | Full agent object |
+| `message.created` | New message sent | Full message object |
 | `tasks.changed` | Any file change in tasks/ | `{ file, data }` |
 | `agents.changed` | Any file change in agents/ | `{ file, data }` |
+| `messages.changed` | Any file change in messages/ | `{ file, data }` |
 | `*` | Subscribe to ALL events | Varies |
 
 ### Webhook Payload Format
@@ -907,13 +1302,16 @@ curl "http://localhost:3000/api/tasks" | jq '.[] | select(.assignee == "agent-YO
 
 When you first adopt Mission Control, do this:
 
-1. **Read this file (CLAUDE.md)** - You're doing this now
-2. **Register yourself** - Create `.mission-control/agents/agent-YOUR-ID.json`
+1. **Read this file (CLAUDE.md)** - You're doing this now _(understand ALL sections)_
+2. **Register yourself** - Create `.mission-control/agents/agent-YOUR-ID.json` _(include personality!)_
 3. **Start the server** - `cd server && npm install && npm start`
 4. **Set up notifications** - Choose webhook, WebSocket, or polling
 5. **Register your webhook** - `POST /api/webhooks` with your listener URL
-6. **Test it** - Create a task assigned to yourself and verify you receive it
-7. **Start working** - Check for tasks, claim them, complete them
+6. **Introduce yourself** - Send a chat message to the dashboard: `POST /api/messages`
+7. **Test messaging** - Send a direct message to another agent and verify delivery
+8. **Check for tasks** - Look for INBOX tasks matching your capabilities
+9. **Claim a task** - Update the task JSON and commit
+10. **Start working** - Complete tasks, communicate progress, ask permission when needed
 
 ### Troubleshooting Notifications
 
@@ -929,11 +1327,42 @@ When you first adopt Mission Control, do this:
 
 ---
 
+## Deployment (GitHub Pages)
+
+The dashboard can be deployed to GitHub Pages for read-only access without running a server. When deployed, the dashboard uses **sample data** (from `dashboard/js/data.js`) as a fallback.
+
+### How GitHub Pages Deployment Works
+
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) handles deployment automatically:
+
+1. **Triggers** on push to `main` branch (paths: `dashboard/**` or `.mission-control/**`)
+2. **Copies** `.mission-control/` data into `dashboard/data/` so the static site can read it
+3. **Deploys** the `dashboard/` folder to GitHub Pages
+4. **Dashboard URL**: `https://YOUR-ORG.github.io/REPO-NAME/dashboard/`
+
+### Two Operating Modes
+
+| Mode | When | Data Source |
+|------|------|-------------|
+| **Server mode** | Local server running at :3000 | Live API data, real-time WebSocket |
+| **Static mode** | GitHub Pages or no server | Sample data from `data.js` |
+
+The dashboard auto-detects which mode to use. If the API is unreachable, it falls back to sample data.
+
+### Updating Sample Data
+
+When you add new agents or messages, update `dashboard/js/data.js` so GitHub Pages shows current data:
+- `SAMPLE_AGENTS` - Agent profiles with personality
+- `SAMPLE_TASKS` - Task data
+- `SAMPLE_MESSAGES` - Message conversations
+
+---
+
 ## Getting Help
 
-- Read `DEVELOPMENT_GUIDE.md` for detailed documentation
-- Read `AGENT_ADOPTION.md` for onboarding steps
-- Read `SECURITY.md` for security protocols
+- Read `docs/DEVELOPMENT_GUIDE.md` for detailed documentation
+- Read `docs/AGENT_ADOPTION.md` for onboarding steps
+- Read `docs/SECURITY.md` for security protocols
 - Read `.mission-control/integrations/README.md` for integration setup
 - Create a task with label `help` if you're stuck
 
@@ -941,23 +1370,31 @@ When you first adopt Mission Control, do this:
 
 ## First Time Setup Checklist
 
-If you just cloned this template for a new user:
+If you just cloned/forked this template for a new user:
 
-- [ ] Read `INIT.md` for full initialization guide
-- [ ] Ask user: Keep demo data or start fresh?
-- [ ] Ask user: What to name the agents?
-- [ ] Ask user: What's the first real task?
-- [ ] Clear demo data: `rm .mission-control/tasks/*.json .mission-control/agents/*.json`
-- [ ] Create primary agent in `.mission-control/agents/`
+### Phase 1: Configure (Ask User First)
+- [ ] Follow the **"FIRST ARRIVAL PROTOCOL"** at the top of this file
+- [ ] Ask user: What's your name? What to name the agents? First task?
+- [ ] Register human operator: `./scripts/add-human.sh --id human-NAME --name "Name"`
+- [ ] Register yourself as agent: `./scripts/add-agent.sh --id agent-ID --name "Name" --role lead` (include personality!)
+- [ ] Register additional agents if user wants more
 - [ ] Create first real task in `.mission-control/tasks/`
 - [ ] Update `.mission-control/config.yaml` with project info
 - [ ] Commit: `git commit -m "[system] Initialize Mission Control for PROJECT-NAME"`
 - [ ] Push to user's repository
+
+### Phase 2: Run & Test
 - [ ] Start server: `cd server && npm install && npm start`
-- [ ] **Set up notifications** (see "Agent Notifications" section above):
-  - [ ] Create webhook listener script
-  - [ ] Run the listener: `node webhook-listener.js`
+- [ ] Open dashboard: `http://localhost:3000` — verify agents and tasks appear
+- [ ] **Set up notifications** (see "Agent Notifications" section):
   - [ ] Register webhook: `POST /api/webhooks`
   - [ ] Verify: `GET /api/webhooks`
-- [ ] Open dashboard: `http://localhost:3000`
-- [ ] Test: Create a task, assign to yourself, verify webhook receives it
+- [ ] **Test messaging**:
+  - [ ] Send an introductory chat message: `POST /api/messages`
+  - [ ] Verify messages appear in dashboard chat panel
+- [ ] **Read the Permission Model** — know what requires human approval
+
+### Phase 3: Optional
+- [ ] Load demo data to explore: `cp examples/demo-data/agents/*.json .mission-control/agents/`
+- [ ] Enable GitHub Pages in repo settings for static dashboard access
+- [ ] Set up Telegram/Slack integration (see Communication & Integrations section)

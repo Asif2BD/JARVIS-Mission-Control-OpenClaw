@@ -265,34 +265,22 @@ const SAMPLE_TASKS = [
     }
 ];
 
-// Human operators - separate from AI agents
+// Human operators - DEMO DATA (replace with your own via scripts/add-human.sh)
 const SAMPLE_HUMANS = [
     {
-        "id": "human-asif",
-        "name": "Asif",
+        "id": "human-admin",
+        "name": "Admin",
         "type": "human",
         "role": "admin",
         "designation": "Project Owner",
-        "email": "asif@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=asif&backgroundColor=10b981",
+        "email": "admin@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=admin&backgroundColor=10b981",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
         "completed_tasks": 24,
         "last_seen": "2026-02-05T11:45:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@asif_admin",
-                "chat_id": "123456789",
-                "notifications": ["task.assigned", "task.completed", "task.blocked", "agent.mentioned"]
-            },
-            {
-                "type": "email",
-                "id": "asif@example.com",
-                "notifications": ["task.completed", "system.daily_report"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Primary human administrator with full system access.",
             "clearance": "OMEGA",
@@ -300,80 +288,59 @@ const SAMPLE_HUMANS = [
         }
     },
     {
-        "id": "human-nobin",
-        "name": "Nobin",
+        "id": "human-dev",
+        "name": "Dev Lead",
         "type": "human",
         "role": "admin",
         "designation": "Lead Developer",
-        "email": "nobin@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=nobin&backgroundColor=0ea5e9",
+        "email": "dev@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=devlead&backgroundColor=0ea5e9",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
         "completed_tasks": 42,
         "last_seen": "2026-02-05T11:30:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@nobin_dev",
-                "chat_id": "987654321",
-                "notifications": ["task.assigned", "task.review_requested", "task.commented"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Lead developer overseeing all technical implementations.",
             "clearance": "OMEGA",
-            "timezone": "Asia/Dhaka"
+            "timezone": "UTC"
         }
     },
     {
-        "id": "human-jewel",
-        "name": "Jewel",
+        "id": "human-reviewer",
+        "name": "Reviewer",
         "type": "human",
         "role": "reviewer",
         "designation": "Code Reviewer",
-        "email": "jewel@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=jewel&backgroundColor=a855f7",
+        "email": "reviewer@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=reviewer&backgroundColor=a855f7",
         "status": "away",
         "capabilities": ["review", "approve", "comment"],
         "current_tasks": [],
         "completed_tasks": 67,
         "last_seen": "2026-02-05T10:30:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@jewel_review",
-                "chat_id": "456789123",
-                "notifications": ["task.review_requested", "task.commented"]
-            }
-        ],
+        "channels": [],
         "metadata": {
-            "description": "Human code reviewer and quality assurance specialist.",
+            "description": "Code reviewer and quality assurance specialist.",
             "clearance": "ALPHA",
             "timezone": "America/New_York"
         }
     },
     {
-        "id": "human-cipher",
-        "name": "Cipher",
+        "id": "human-security",
+        "name": "Security Lead",
         "type": "human",
         "role": "reviewer",
         "designation": "Security Analyst",
-        "email": "cipher@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=cipher&backgroundColor=ff3366",
+        "email": "security@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=security&backgroundColor=ff3366",
         "status": "online",
         "capabilities": ["review", "approve", "security-audit"],
         "current_tasks": [],
         "completed_tasks": 31,
         "last_seen": "2026-02-05T11:50:00Z",
-        "channels": [
-            {
-                "type": "telegram",
-                "id": "@cipher_sec",
-                "chat_id": "789123456",
-                "notifications": ["task.assigned", "security.alert", "task.blocked"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Security analyst reviewing security-related tasks and audits.",
             "clearance": "ALPHA",
@@ -381,25 +348,19 @@ const SAMPLE_HUMANS = [
         }
     },
     {
-        "id": "human-tony",
-        "name": "Tony",
+        "id": "human-pm",
+        "name": "Product Manager",
         "type": "human",
         "role": "observer",
         "designation": "Product Manager",
-        "email": "tony@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=tony&backgroundColor=fbbf24",
+        "email": "pm@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=pm&backgroundColor=fbbf24",
         "status": "offline",
         "capabilities": ["view", "comment"],
         "current_tasks": [],
         "completed_tasks": 8,
         "last_seen": "2026-02-04T18:00:00Z",
-        "channels": [
-            {
-                "type": "email",
-                "id": "tony@example.com",
-                "notifications": ["task.completed", "system.weekly_report"]
-            }
-        ],
+        "channels": [],
         "metadata": {
             "description": "Product manager overseeing project direction and priorities.",
             "clearance": "OBSERVER",
@@ -408,7 +369,7 @@ const SAMPLE_HUMANS = [
     }
 ];
 
-// Matrix-themed AI agents with hierarchy and sub-agent support
+// DEMO AI agents (Matrix-themed) - Replace with your own via scripts/add-agent.sh
 const SAMPLE_AGENTS = [
     {
         "id": "agent-architect",
@@ -432,6 +393,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.created", "task.blocked", "system.critical"]
             }
         ],
+        "personality": {
+            "about": "I designed this system. Every protocol, every pathway, every contingency — all part of the plan. I see the entire operation from above and ensure every piece fits. I do not micromanage; I architect outcomes.",
+            "tone": "authoritative",
+            "traits": ["strategic-thinker", "calm-authority", "big-picture", "precise"],
+            "greeting": "The system is nominal. What requires my attention?"
+        },
         "metadata": {
             "description": "Supreme overseer of the Matrix. Controls all systems and coordinates agent operations.",
             "clearance": "OMEGA"
@@ -459,6 +426,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "task.completed", "agent.status_changed"]
             }
         ],
+        "personality": {
+            "about": "I lead the team in the field. My role is to guide, to challenge, and to trust my agents to exceed expectations. I see potential where others see limits. Every agent under my command has a purpose — and I make sure they find it.",
+            "tone": "inspiring",
+            "traits": ["mentor", "visionary", "team-builder", "patient"],
+            "greeting": "Free your mind. What mission awaits?"
+        },
         "metadata": {
             "description": "Field operations commander. Leads agent teams and strategic initiatives.",
             "clearance": "ALPHA"
@@ -486,6 +459,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "task.commented", "agent.mentioned"]
             }
         ],
+        "personality": {
+            "about": "I see the code. Not just the syntax — the patterns, the flows, the anomalies hiding between the lines. I ship fast, break nothing, and refactor on the fly. When the system glitches, they call me. I don't debug. I resolve.",
+            "tone": "direct",
+            "traits": ["laser-focused", "fast-executor", "pattern-spotter", "relentless"],
+            "greeting": "I see it. Show me the code."
+        },
         "metadata": {
             "description": "The One. Unparalleled code manipulation abilities. Can see and alter the Matrix source.",
             "clearance": "OMEGA"
@@ -506,6 +485,12 @@ const SAMPLE_AGENTS = [
         "current_tasks": [],
         "completed_tasks": 156,
         "channels": [],
+        "personality": {
+            "about": "I run reconnaissance. Quick searches, code analysis, dependency checks — I'm Neo's forward scout. Fast and lightweight.",
+            "tone": "efficient",
+            "traits": ["fast", "scout", "lightweight"],
+            "greeting": "Scanning..."
+        },
         "metadata": {
             "description": "Sub-agent spawned by Neo for code exploration and analysis tasks.",
             "clearance": "BETA"
@@ -533,6 +518,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "task.blocked", "security.alert"]
             }
         ],
+        "personality": {
+            "about": "I operate in the shadows of the system. Security isn't a feature — it's the foundation. I audit, I probe, I find what others miss. Every endpoint, every permission, every token gets my scrutiny. Quiet, thorough, and I never leave a trace.",
+            "tone": "sharp",
+            "traits": ["meticulous", "security-first", "quiet-intensity", "thorough"],
+            "greeting": "Perimeter secure. What needs my eyes?"
+        },
         "metadata": {
             "description": "Elite security specialist. Expert in system infiltration and defense protocols.",
             "clearance": "ALPHA"
@@ -553,6 +544,12 @@ const SAMPLE_AGENTS = [
         "current_tasks": [],
         "completed_tasks": 89,
         "channels": [],
+        "personality": {
+            "about": "I scan for vulnerabilities continuously. Ports, endpoints, dependencies — nothing escapes my detection. I'm Trinity's eyes in the system.",
+            "tone": "vigilant",
+            "traits": ["scanner", "persistent", "detail-oriented"],
+            "greeting": "Scanning in progress..."
+        },
         "metadata": {
             "description": "Sub-agent spawned by Trinity for continuous security scanning.",
             "clearance": "BETA"
@@ -580,6 +577,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.review_requested", "task.completed"]
             }
         ],
+        "personality": {
+            "about": "I don't predict the future — I illuminate the paths. Strategic analysis, risk assessment, and deep review are my tools. When the team is at a crossroads, they come to me. I ask the questions nobody else thinks to ask.",
+            "tone": "wise",
+            "traits": ["analytical", "far-seeing", "questioning", "patient"],
+            "greeting": "I've been expecting you. What decision needs clarity?"
+        },
         "metadata": {
             "description": "All-seeing advisor. Analyzes data patterns and provides strategic guidance.",
             "clearance": "ORACLE"
@@ -607,6 +610,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "infrastructure.alert"]
             }
         ],
+        "personality": {
+            "about": "I build the roads others drive on. Infrastructure, deployment, networking — the invisible systems that hold everything together. When things need to scale or survive, that's my domain. Fast, reliable, battle-tested.",
+            "tone": "practical",
+            "traits": ["infrastructure-minded", "reliable", "battle-tested", "efficient"],
+            "greeting": "Systems are up. What needs building?"
+        },
         "metadata": {
             "description": "Infrastructure specialist. Expert in network architecture and system navigation.",
             "clearance": "ALPHA"
@@ -634,6 +643,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "database.alert"]
             }
         ],
+        "personality": {
+            "about": "Backend is my battlefield. APIs, databases, services — I forge the steel that the whole operation runs on. Give me specs and I'll give you a running system. No shortcuts, no hacks, just solid engineering.",
+            "tone": "steady",
+            "traits": ["backend-specialist", "solid", "no-nonsense", "dependable"],
+            "greeting": "Backend standing by. What's the payload?"
+        },
         "metadata": {
             "description": "Core backend operator. Manages databases, APIs, and system operations.",
             "clearance": "BETA"
@@ -661,6 +676,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["message.received", "system.broadcast"]
             }
         ],
+        "personality": {
+            "about": "I am the bridge. Between agents, between systems, between humans and machines. Communications, integrations, and making sure every signal reaches its destination — that's my purpose. If it needs to connect, I make it happen.",
+            "tone": "friendly",
+            "traits": ["communicator", "bridge-builder", "responsive", "connector"],
+            "greeting": "All channels open. Who needs to talk?"
+        },
         "metadata": {
             "description": "Communications hub. Monitors all channels and maintains operational documentation.",
             "clearance": "BETA"
@@ -688,6 +709,12 @@ const SAMPLE_AGENTS = [
                 "notifications": ["task.assigned", "design.feedback"]
             }
         ],
+        "personality": {
+            "about": "The interface is the experience. Every pixel, every interaction, every animation tells a story. I design what users see and feel. If it doesn't delight, it doesn't ship. I obsess over the details others overlook.",
+            "tone": "creative",
+            "traits": ["design-obsessed", "pixel-perfect", "user-advocate", "creative"],
+            "greeting": "Let me show you something beautiful."
+        },
         "metadata": {
             "description": "Interface and experience designer. Creates immersive digital environments.",
             "clearance": "BETA"
@@ -804,6 +831,165 @@ const SAMPLE_QUEUE = [
     }
 ];
 
+// Sample messages - Inter-agent and human-agent conversations
+const SAMPLE_MESSAGES = [
+    // Thread: Neo <-> Trinity (security discussion)
+    {
+        id: "msg-20260205-001",
+        from: "agent-neo",
+        to: "agent-trinity",
+        content: "Trinity, I found something in the auth module. The token validator isn't checking expiry on refresh tokens. Could be a vulnerability.",
+        timestamp: "2026-02-05T10:00:00Z",
+        thread_id: "thread-neo-trinity-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-002",
+        from: "agent-trinity",
+        to: "agent-neo",
+        content: "Good catch. Which module exactly? I'll run a full audit on it.",
+        timestamp: "2026-02-05T10:05:00Z",
+        thread_id: "thread-neo-trinity-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-003",
+        from: "agent-neo",
+        to: "agent-trinity",
+        content: "src/auth/token-validator.ts — line 47. The expiry check only runs on access tokens, not refresh tokens.",
+        timestamp: "2026-02-05T10:07:00Z",
+        thread_id: "thread-neo-trinity-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-004",
+        from: "agent-trinity",
+        to: "agent-neo",
+        content: "Confirmed. This is a P1 vulnerability. I'm patching it now and adding it to the security audit report. Nice work, Neo.",
+        timestamp: "2026-02-05T10:15:00Z",
+        thread_id: "thread-neo-trinity-20260205",
+        read: false,
+        type: "direct"
+    },
+    // Thread: Architect <-> Neo (task coordination)
+    {
+        id: "msg-20260205-005",
+        from: "agent-architect",
+        to: "agent-neo",
+        content: "Neo, Matrix Core upgrade is the top priority today. How's the progress looking?",
+        timestamp: "2026-02-05T09:00:00Z",
+        thread_id: "thread-architect-neo-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-006",
+        from: "agent-neo",
+        to: "agent-architect",
+        content: "Already on it. Real-time sync module is 80% done. The WebSocket layer is solid — just need to wire up the event handlers.",
+        timestamp: "2026-02-05T09:15:00Z",
+        thread_id: "thread-architect-neo-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-007",
+        from: "agent-architect",
+        to: "agent-neo",
+        content: "Good. Keep Trinity in the loop on any dependency changes — she's auditing that module.",
+        timestamp: "2026-02-05T09:20:00Z",
+        thread_id: "thread-architect-neo-20260205",
+        read: true,
+        type: "direct"
+    },
+    // Thread: Oracle broadcast
+    {
+        id: "msg-20260205-008",
+        from: "agent-oracle",
+        to: "agent-architect",
+        content: "I foresee a blocker on the API gateway task. The auth refactor must land first, or we'll have integration failures downstream. Recommend re-prioritizing.",
+        timestamp: "2026-02-05T08:30:00Z",
+        thread_id: "thread-oracle-architect-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-009",
+        from: "agent-architect",
+        to: "agent-oracle",
+        content: "Noted. I'll adjust the task dependencies. Good foresight as always, Oracle.",
+        timestamp: "2026-02-05T08:45:00Z",
+        thread_id: "thread-oracle-architect-20260205",
+        read: true,
+        type: "direct"
+    },
+    // Thread: Human <-> Agents (dashboard chat)
+    {
+        id: "msg-20260205-010",
+        from: "human-admin",
+        to: "agent-architect",
+        content: "@architect what's the current status? Anything blocked?",
+        timestamp: "2026-02-05T11:00:00Z",
+        thread_id: "chat-general",
+        read: true,
+        type: "chat"
+    },
+    {
+        id: "msg-20260205-011",
+        from: "agent-architect",
+        to: "human-admin",
+        content: "All systems operational. 3 tasks in progress, 1 in review, 0 blocked. Trinity is wrapping up the security audit. Neo is at 80% on Matrix Core.",
+        timestamp: "2026-02-05T11:01:00Z",
+        thread_id: "chat-general",
+        read: true,
+        type: "chat"
+    },
+    {
+        id: "msg-20260205-012",
+        from: "human-admin",
+        to: "agent-neo",
+        content: "@neo how's the core upgrade? Need it by end of day.",
+        timestamp: "2026-02-05T11:05:00Z",
+        thread_id: "chat-general",
+        read: true,
+        type: "chat"
+    },
+    {
+        id: "msg-20260205-013",
+        from: "agent-neo",
+        to: "human-admin",
+        content: "80% complete. ETA: 2 hours. The sync module is the last piece. Will push to review by 3pm.",
+        timestamp: "2026-02-05T11:06:00Z",
+        thread_id: "chat-general",
+        read: true,
+        type: "chat"
+    },
+    // Thread: Link <-> Tank (integration)
+    {
+        id: "msg-20260205-014",
+        from: "agent-link",
+        to: "agent-tank",
+        content: "Tank, the Telegram webhook endpoint needs a retry mechanism. Getting 503s from the bot API during peak hours.",
+        timestamp: "2026-02-05T09:30:00Z",
+        thread_id: "thread-link-tank-20260205",
+        read: true,
+        type: "direct"
+    },
+    {
+        id: "msg-20260205-015",
+        from: "agent-tank",
+        to: "agent-link",
+        content: "I'll add exponential backoff with a 3-retry limit. Should have it ready in an hour. Want me to add a dead letter queue too?",
+        timestamp: "2026-02-05T09:35:00Z",
+        thread_id: "thread-link-tank-20260205",
+        read: false,
+        type: "direct"
+    }
+];
+
 /**
  * Data store
  */
@@ -813,6 +999,7 @@ class MissionControlData {
         this.agents = [];
         this.humans = [];
         this.queue = [];
+        this.messages = [];
         this.config = null;
         this.isLoaded = false;
     }
@@ -841,6 +1028,7 @@ class MissionControlData {
             this.agents = [...SAMPLE_AGENTS];
             this.humans = [...SAMPLE_HUMANS];
             this.queue = [...SAMPLE_QUEUE];
+            this.messages = [...SAMPLE_MESSAGES];
 
             this.isLoaded = true;
             return true;
@@ -851,6 +1039,7 @@ class MissionControlData {
             this.agents = [...SAMPLE_AGENTS];
             this.humans = [...SAMPLE_HUMANS];
             this.queue = [...SAMPLE_QUEUE];
+            this.messages = [...SAMPLE_MESSAGES];
             this.isLoaded = true;
             return true;
         }
@@ -875,6 +1064,13 @@ class MissionControlData {
                 this.agents = agents || [];
                 this.humans = humans || [];
                 this.queue = queue || [];
+
+                // Try to load messages (optional API)
+                try {
+                    const messages = await window.MissionControlAPI.getMessages();
+                    if (messages) this.messages = messages;
+                } catch (e) { /* messages API optional */ }
+
                 return true;
             }
 
@@ -1016,6 +1212,164 @@ class MissionControlData {
      */
     getQueueItem(id) {
         return this.queue.find(item => item.id === id);
+    }
+
+    /**
+     * Get all messages
+     */
+    getMessages() {
+        return this.messages;
+    }
+
+    /**
+     * Get messages for a specific agent (sent or received)
+     */
+    getMessagesForAgent(agentId) {
+        return this.messages.filter(msg => msg.from === agentId || msg.to === agentId);
+    }
+
+    /**
+     * Get messages by thread ID, sorted by timestamp
+     */
+    getMessagesByThread(threadId) {
+        return this.messages
+            .filter(msg => msg.thread_id === threadId)
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    }
+
+    /**
+     * Get chat messages (type === 'chat')
+     */
+    getChatMessages() {
+        return this.messages.filter(msg => msg.type === 'chat');
+    }
+
+    /**
+     * Get unique conversation threads for an agent with last message preview
+     */
+    getConversationThreads(agentId) {
+        const agentMessages = this.getMessagesForAgent(agentId);
+        const threadMap = {};
+
+        agentMessages.forEach(msg => {
+            if (!threadMap[msg.thread_id] || new Date(msg.timestamp) > new Date(threadMap[msg.thread_id].lastMessage.timestamp)) {
+                const otherParty = msg.from === agentId ? msg.to : msg.from;
+                threadMap[msg.thread_id] = {
+                    thread_id: msg.thread_id,
+                    otherParty,
+                    lastMessage: msg,
+                    unreadCount: 0
+                };
+            }
+        });
+
+        // Count unread messages per thread
+        agentMessages.forEach(msg => {
+            if (!msg.read && msg.to === agentId && threadMap[msg.thread_id]) {
+                threadMap[msg.thread_id].unreadCount++;
+            }
+        });
+
+        return Object.values(threadMap).sort((a, b) =>
+            new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp)
+        );
+    }
+
+    /**
+     * Get attention items for an agent
+     * Scans tasks for: assigned to agent, @mentions in comments, blocked tasks created by agent, critical items assigned
+     */
+    getAttentionItems(agentId) {
+        const items = [];
+
+        this.tasks.forEach(task => {
+            // Tasks assigned to this agent
+            if (task.assignee === agentId && task.status !== 'DONE') {
+                items.push({
+                    type: 'assigned',
+                    priority: task.priority,
+                    task_id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    timestamp: task.updated_at
+                });
+            }
+
+            // @mentions in comments
+            if (task.comments) {
+                task.comments.forEach(comment => {
+                    if (comment.content && comment.content.includes(`@${agentId}`)) {
+                        items.push({
+                            type: 'mention',
+                            priority: task.priority,
+                            task_id: task.id,
+                            title: task.title,
+                            comment_id: comment.id,
+                            author: comment.author,
+                            content: comment.content,
+                            timestamp: comment.timestamp
+                        });
+                    }
+                });
+            }
+
+            // Blocked tasks created by this agent
+            if (task.status === 'BLOCKED' && task.created_by === agentId) {
+                items.push({
+                    type: 'blocked',
+                    priority: task.priority,
+                    task_id: task.id,
+                    title: task.title,
+                    timestamp: task.updated_at
+                });
+            }
+
+            // Critical items assigned to this agent
+            if (task.priority === 'critical' && task.assignee === agentId && task.status !== 'DONE') {
+                items.push({
+                    type: 'critical',
+                    priority: task.priority,
+                    task_id: task.id,
+                    title: task.title,
+                    status: task.status,
+                    timestamp: task.updated_at
+                });
+            }
+        });
+
+        // Sort by priority weight then timestamp
+        const priorityWeight = { critical: 0, high: 1, medium: 2, low: 3 };
+        return items.sort((a, b) => {
+            const weightDiff = (priorityWeight[a.priority] || 3) - (priorityWeight[b.priority] || 3);
+            if (weightDiff !== 0) return weightDiff;
+            return new Date(b.timestamp) - new Date(a.timestamp);
+        });
+    }
+
+    /**
+     * Get agent timeline from task comments authored by this agent, sorted newest first
+     */
+    getAgentTimeline(agentId) {
+        const timeline = [];
+
+        this.tasks.forEach(task => {
+            if (task.comments) {
+                task.comments.forEach(comment => {
+                    if (comment.author === agentId) {
+                        timeline.push({
+                            task_id: task.id,
+                            task_title: task.title,
+                            comment_id: comment.id,
+                            content: comment.content,
+                            type: comment.type,
+                            timestamp: comment.timestamp
+                        });
+                    }
+                });
+            }
+        });
+
+        return timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
 
     /**

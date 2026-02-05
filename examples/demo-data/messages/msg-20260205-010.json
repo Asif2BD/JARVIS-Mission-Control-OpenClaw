@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-010",
+  "from": "human-asif",
+  "to": "agent-jarvis",
+  "content": "@jarvis what's the current status? Anything blocked?",
+  "timestamp": "2026-02-05T11:00:00Z",
+  "thread_id": "chat-general",
+  "read": true,
+  "type": "chat"
+}
