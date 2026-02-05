@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-011",
+  "from": "agent-jarvis",
+  "to": "human-asif",
+  "content": "All systems operational. 3 tasks in progress, 1 in review, 0 blocked. Trinity is wrapping up the security audit. Neo is at 80% on Matrix Core.",
+  "timestamp": "2026-02-05T11:01:00Z",
+  "thread_id": "chat-general",
+  "read": true,
+  "type": "chat"
+}

@@ -170,9 +170,100 @@ Referenced from `CLAUDE.md` as the primary agent instruction file.
 
 ---
 
+## ADR-009: Inter-Agent Messaging System
+
+**Date**: 2026-02-05
+**Status**: Accepted
+
+### Context
+Agents needed a way to communicate beyond task comments - for general coordination, status updates, and human interaction.
+
+### Decision
+Create a messaging system using JSON files in `.mission-control/messages/`. Messages have `from`, `to`, `thread_id`, and `type` (direct or chat). API endpoints for sending/reading messages. WebSocket broadcasts `message.created` events.
+
+### Consequences
+- **Positive**: Agents can communicate without task context
+- **Positive**: Humans can chat with agents from the dashboard
+- **Positive**: Message threads keep conversations organized
+- **Negative**: More JSON files to manage
+
+---
+
+## ADR-010: Agent Personality & Profile System
+
+**Date**: 2026-02-05
+**Status**: Accepted
+
+### Context
+Humans and other agents needed to understand each agent's working style, capabilities, and current focus at a glance.
+
+### Decision
+Add `personality` field to agent JSON (about, tone, traits, greeting). Create a slide-out Agent Profile panel in the dashboard with tabs: About, Skills/Attention, Timeline, Messages.
+
+### Consequences
+- **Positive**: Rich agent profiles visible in dashboard
+- **Positive**: Personality data helps agents interact appropriately
+- **Negative**: Additional required field in agent registration
+
+---
+
+## ADR-011: Dashboard Chat Panel
+
+**Date**: 2026-02-05
+**Status**: Accepted
+
+### Context
+Humans using the dashboard needed a way to communicate with agents without leaving the interface.
+
+### Decision
+Add a floating chat panel to the dashboard. Messages with `type: "chat"` and `thread_id: "chat-general"` appear in this panel. Supports @mentions.
+
+### Consequences
+- **Positive**: Human-agent communication in the dashboard
+- **Positive**: Real-time via WebSocket
+- **Negative**: Adds UI complexity
+
+---
+
+## ADR-012: GitHub Actions Deployment
+
+**Date**: 2026-02-05
+**Status**: Accepted
+
+### Context
+The dashboard needed to be accessible without running a local server.
+
+### Decision
+GitHub Actions workflow copies `.mission-control/` data into `dashboard/data/` and deploys to GitHub Pages. Dashboard has fallback mode that loads sample data from `data.js` when API is unavailable.
+
+### Consequences
+- **Positive**: Dashboard accessible via GitHub Pages URL
+- **Positive**: Works in read-only mode without server
+- **Negative**: Static mode shows sample data, not live data
+
+---
+
+## ADR-013: Permission Model for Agents
+
+**Date**: 2026-02-05
+**Status**: Accepted
+
+### Context
+Need clear boundaries for what agents can do autonomously vs. what requires human approval.
+
+### Decision
+Document explicit permission model in CLAUDE.md. Agents can autonomously: claim tasks, send messages, update their own profiles, log activity. Agents MUST ask human permission for: deletions, moving tasks to DONE, modifying other agents, changing config, escalating to critical priority, pushing to main.
+
+### Consequences
+- **Positive**: Clear boundaries prevent accidental damage
+- **Positive**: Agents know when to ask
+- **Negative**: May slow down some operations
+
+---
+
 ## Future Decisions Needed
 
 - [ ] How to handle Telegram/WhatsApp integration
 - [ ] Whether to add user authentication
 - [ ] How to handle multi-user conflicts
-- [ ] Database migration strategy if needed
+- [ ] Message retention/archival policy

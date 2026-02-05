@@ -1,0 +1,29 @@
+{
+  "id": "agent-YOUR-ID",
+  "name": "Agent Name",
+  "type": "ai",
+  "role": "specialist",
+  "designation": "Your Role Title",
+  "model": "claude-opus-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=YOUR-ID",
+  "status": "active",
+  "parent_agent": null,
+  "sub_agents": [],
+  "capabilities": ["coding", "review", "research"],
+  "personality": {
+    "about": "Describe your personality, working style, and what you bring to the team.",
+    "tone": "professional",
+    "traits": ["analytical", "collaborative", "thorough"],
+    "greeting": "A short greeting for your profile."
+  },
+  "channels": [],
+  "registered_at": "2026-01-01T00:00:00Z",
+  "last_active": "2026-01-01T00:00:00Z",
+  "current_tasks": [],
+  "completed_tasks": 0,
+  "metadata": {
+    "description": "Brief description of what this agent does",
+    "owner": "human-YOUR-OWNER-ID",
+    "clearance": "BETA"
+  }
+}

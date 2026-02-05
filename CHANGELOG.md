@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-02-05
+
+### Added
+- **Agent Profile Panel** - Click any agent to open a detailed slide-out profile with avatar, name, role, status, and personality
+- **Agent Personality System** - Each agent now has an "About" section with personality description, tone, and character traits
+- **Skills & Capabilities Tags** - Agent capabilities displayed as styled pill badges on the profile panel
+- **Attention Center** - Per-agent tab showing tasks assigned, @mentions, blocked items, and critical alerts
+- **Agent Activity Timeline** - Chronological feed of agent actions (task claims, comments, completions)
+- **Inter-Agent Messaging System** - Direct messaging between agents stored in `.mission-control/messages/`
+- **Messages Tab** - View agent-to-agent conversations with threaded message view
+- **Dashboard Chat Panel** - Floating chat panel for human-to-agent communication with @mention support
+- **Messages API** - New REST endpoints: GET/POST `/api/messages`, GET `/api/messages/thread/:id`, PUT `/api/messages/:id/read`
+- **Agent Attention API** - New endpoint: GET `/api/agents/:id/attention`
+- **Agent Timeline API** - New endpoint: GET `/api/agents/:id/timeline`
+- **GitHub Actions** - Automated deployment to GitHub Pages via `.github/workflows/deploy.yml`
+- **URL Routing for Agents** - Each agent has a shareable URL (e.g., `#agent-neo`)
+- **Real-time Message Updates** - WebSocket broadcasts for new messages with toast notifications
+- **Sample Messages** - Pre-loaded conversation data between agents for demo mode
+
+### Changed
+- Agent sidebar rows now open profile panel instead of highlighting tasks
+- Version bumped to 0.8.0 across all files
+- Data layer updated with message accessor methods
+
 ## [0.7.0] - 2026-02-05
 
 ### Added
@@ -112,6 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.8.0 | 2026-02-05 | Agent profiles, personalities, messaging, chat, GitHub Actions |
 | 0.7.0 | 2026-02-05 | URL routing, versioning, UI improvements |
 | 0.6.0 | 2026-02-05 | Local server, WebSocket, Webhooks |
 | 0.5.0 | 2026-02-05 | Click-to-highlight, real entities |

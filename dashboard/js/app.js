@@ -6,6 +6,11 @@
 // State
 let selectedTask = null;
 let currentTheme = 'dark';
+let currentProfileAgent = null;
+let currentProfileTab = 'attention';
+let currentThreadId = null;
+let currentThreadAgentId = null;
+let chatPanelOpen = false;
 
 /**
  * Initialize the dashboard
@@ -27,6 +32,12 @@ async function init() {
 
     // Render the dashboard
     renderDashboard();
+
+    // Load chat messages
+    loadChatMessages();
+
+    // Setup real-time message listeners
+    setupMessageListeners();
 
     // Show instructions on first visit
     if (!localStorage.getItem('mc-instructions-seen')) {
@@ -378,7 +389,7 @@ function renderAgents() {
         const channelIcons = getChannelIcons(agent.channels);
 
         return `
-            <div class="entity-row agent-row ${agent.role} clickable" data-entity-id="${agent.id}" onclick="highlightEntityTasks('${agent.id}')">
+            <div class="entity-row agent-row ${agent.role} clickable" data-entity-id="${agent.id}" onclick="openAgentProfile('${agent.id}')">
                 <div class="entity-status ${agent.status}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
@@ -878,8 +889,12 @@ function highlightEntityTasks(entityId) {
 // Close modals on escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        closeModal();
-        closeCreateTaskModal();
+        if (currentProfileAgent) {
+            closeAgentProfile();
+        } else {
+            closeModal();
+            closeCreateTaskModal();
+        }
     }
 });
 
@@ -1076,11 +1091,14 @@ async function assignTask(taskId, assigneeId) {
 function checkUrlForTask() {
     const hash = window.location.hash;
     if (hash && hash.startsWith('#task-')) {
-        const taskId = hash.substring(1); // Remove the #
+        const taskId = hash.substring(1);
         const task = window.missionControlData.tasks.find(t => t.id === taskId);
         if (task) {
             openTaskModal(task);
         }
+    } else if (hash && hash.startsWith('#agent-')) {
+        const agentId = hash.substring(1);
+        openAgentProfile(agentId);
     }
 }
 
@@ -1098,11 +1116,804 @@ window.addEventListener('popstate', (e) => {
     }
 });
 
+// ============================================
+// FEATURE 1-3: AGENT PROFILE PANEL
+// ============================================
+
+/**
+ * Open the agent profile panel
+ */
+function openAgentProfile(agentId) {
+    const agent = window.missionControlData.getAgent(agentId);
+    if (!agent) return;
+
+    currentProfileAgent = agent;
+    currentProfileTab = 'attention';
+
+    const panel = document.getElementById('agent-profile-panel');
+    if (!panel) return;
+
+    // Avatar
+    const avatarImg = document.getElementById('profile-avatar');
+    const avatarFallback = document.getElementById('profile-avatar-fallback');
+    if (agent.avatar) {
+        avatarImg.src = agent.avatar;
+        avatarImg.alt = agent.name;
+        avatarImg.style.display = '';
+        avatarFallback.style.display = 'none';
+    } else {
+        avatarImg.style.display = 'none';
+        avatarFallback.style.display = 'flex';
+        avatarFallback.textContent = getInitials(agent.name);
+        avatarFallback.className = `profile-avatar-fallback ${agent.role}`;
+    }
+
+    // Name & designation
+    document.getElementById('profile-name').textContent = agent.name;
+    document.getElementById('profile-designation').textContent = agent.designation || agent.role;
+
+    // Role badge
+    const roleBadge = document.getElementById('profile-role-badge');
+    roleBadge.textContent = capitalizeFirst(agent.role);
+    roleBadge.className = `role-badge ${agent.role}`;
+
+    // Status
+    const statusDot = document.getElementById('profile-status-dot');
+    const statusText = document.getElementById('profile-status-text');
+    const statusMap = { active: 'ACTIVE', busy: 'WORKING', idle: 'IDLE', offline: 'OFFLINE' };
+    statusDot.className = `profile-status-dot ${agent.status}`;
+    statusText.textContent = statusMap[agent.status] || agent.status.toUpperCase();
+
+    // Personality / About (Feature 2)
+    const aboutEl = document.getElementById('profile-about');
+    if (agent.personality && agent.personality.about) {
+        aboutEl.textContent = agent.personality.about;
+    } else if (agent.metadata && agent.metadata.description) {
+        aboutEl.textContent = agent.metadata.description;
+    } else {
+        aboutEl.textContent = 'No description available.';
+    }
+
+    // Skills / Capabilities (Feature 3)
+    const skillsEl = document.getElementById('profile-skills');
+    if (agent.capabilities && agent.capabilities.length > 0) {
+        skillsEl.innerHTML = agent.capabilities.map(skill =>
+            `<span class="skill-tag">${escapeHtml(skill)}</span>`
+        ).join('');
+    } else {
+        skillsEl.innerHTML = '<span class="text-muted">No skills listed</span>';
+    }
+
+    // Reset tabs
+    switchProfileTab('attention');
+
+    // Load tab data
+    loadAttentionItems(agentId);
+    loadTimeline(agentId);
+    loadConversations(agentId);
+
+    // URL routing
+    history.pushState({ agentId: agentId }, '', `#${agentId}`);
+
+    // Highlight entity in sidebar
+    highlightEntityTasks(agentId);
+
+    // Open panel
+    panel.classList.add('open');
+}
+
+/**
+ * Close agent profile panel
+ */
+function closeAgentProfile() {
+    const panel = document.getElementById('agent-profile-panel');
+    if (panel) {
+        panel.classList.remove('open');
+    }
+    currentProfileAgent = null;
+
+    // Clear entity highlight
+    if (currentHighlightedEntity) {
+        highlightEntityTasks(currentHighlightedEntity); // Toggle off
+    }
+
+    // Clear URL
+    history.pushState({}, '', window.location.pathname);
+}
+
+/**
+ * Switch between profile tabs
+ */
+function switchProfileTab(tabName) {
+    currentProfileTab = tabName;
+
+    // Update tab buttons
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+    });
+
+    // Update tab content
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.toggle('active', pane.id === `tab-${tabName}`);
+    });
+}
+
+// ============================================
+// FEATURE 4: ATTENTION CENTER
+// ============================================
+
+/**
+ * Load attention items for an agent
+ */
+async function loadAttentionItems(agentId) {
+    const container = document.getElementById('attention-list');
+    if (!container) return;
+
+    let items = [];
+
+    // Try API first
+    if (window.MissionControlAPI) {
+        try {
+            items = await window.MissionControlAPI.getAgentAttention(agentId);
+        } catch (e) {
+            // Fall back to local computation
+        }
+    }
+
+    // Fallback: compute from local data
+    if (items.length === 0) {
+        items = computeAttentionItems(agentId);
+    }
+
+    renderAttentionItems(container, items);
+
+    // Update badge
+    const badge = document.getElementById('attention-badge');
+    if (badge) {
+        if (items.length > 0) {
+            badge.textContent = items.length;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Compute attention items from local data
+ */
+function computeAttentionItems(agentId) {
+    const tasks = window.missionControlData.getTasks();
+    const items = [];
+
+    for (const task of tasks) {
+        // Tasks assigned to this agent
+        if (task.assignee === agentId && task.status !== 'DONE') {
+            items.push({
+                type: task.priority === 'critical' ? 'critical_task' : 'assigned_task',
+                task_id: task.id,
+                title: task.title,
+                status: task.status,
+                priority: task.priority,
+                timestamp: task.updated_at || task.created_at
+            });
+        }
+
+        // Blocked tasks created by this agent
+        if (task.status === 'BLOCKED' && task.created_by === agentId) {
+            items.push({
+                type: 'blocked_task',
+                task_id: task.id,
+                title: task.title,
+                status: task.status,
+                priority: task.priority,
+                timestamp: task.updated_at || task.created_at
+            });
+        }
+
+        // @mentions in comments
+        if (task.comments) {
+            for (const comment of task.comments) {
+                if (comment.content && (comment.content.includes(`@${agentId}`) || comment.content.includes(`@${agentId.replace('agent-', '')}`))) {
+                    items.push({
+                        type: 'mention',
+                        task_id: task.id,
+                        title: task.title,
+                        author: comment.author,
+                        content: comment.content,
+                        timestamp: comment.timestamp
+                    });
+                }
+            }
+        }
+    }
+
+    items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return items;
+}
+
+/**
+ * Render attention items
+ */
+function renderAttentionItems(container, items) {
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state">No items needing attention</p>';
+        return;
+    }
+
+    container.innerHTML = items.map(item => {
+        let icon, label, colorClass;
+        switch (item.type) {
+            case 'critical_task':
+                icon = '!!'; label = 'CRITICAL'; colorClass = 'critical';
+                break;
+            case 'assigned_task':
+                icon = '>>'; label = 'ASSIGNED'; colorClass = 'assigned';
+                break;
+            case 'blocked_task':
+                icon = '!!'; label = 'BLOCKED'; colorClass = 'blocked';
+                break;
+            case 'mention':
+                icon = '@'; label = 'MENTION'; colorClass = 'mention';
+                break;
+            default:
+                icon = '>>'; label = 'INFO'; colorClass = 'info';
+        }
+
+        return `
+            <div class="attention-item ${colorClass}" onclick="${item.task_id ? `openTaskById('${item.task_id}')` : ''}">
+                <div class="attention-icon">${icon}</div>
+                <div class="attention-content">
+                    <div class="attention-label">${label}</div>
+                    <div class="attention-title">${escapeHtml(item.title)}</div>
+                    ${item.author ? `<div class="attention-meta">by ${escapeHtml(item.author)}</div>` : ''}
+                </div>
+                <div class="attention-time">${formatDate(item.timestamp)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Open a task by ID (helper for attention items)
+ */
+function openTaskById(taskId) {
+    const task = window.missionControlData.tasks.find(t => t.id === taskId);
+    if (task) {
+        closeAgentProfile();
+        openTaskModal(task);
+    }
+}
+
+// ============================================
+// FEATURE 5: AGENT ACTIVITY TIMELINE
+// ============================================
+
+/**
+ * Load timeline for an agent
+ */
+async function loadTimeline(agentId) {
+    const container = document.getElementById('timeline-list');
+    if (!container) return;
+
+    let items = [];
+
+    // Try API first
+    if (window.MissionControlAPI) {
+        try {
+            items = await window.MissionControlAPI.getAgentTimeline(agentId);
+        } catch (e) {
+            // Fall back to local computation
+        }
+    }
+
+    // Fallback: compute from local data
+    if (items.length === 0) {
+        items = computeTimeline(agentId);
+    }
+
+    renderTimeline(container, items);
+}
+
+/**
+ * Compute timeline from local data
+ */
+function computeTimeline(agentId) {
+    const tasks = window.missionControlData.getTasks();
+    const timeline = [];
+
+    for (const task of tasks) {
+        // Comments authored by this agent
+        if (task.comments) {
+            for (const comment of task.comments) {
+                if (comment.author === agentId) {
+                    timeline.push({
+                        type: 'comment',
+                        timestamp: comment.timestamp,
+                        task_id: task.id,
+                        task_title: task.title,
+                        content: comment.content,
+                        comment_type: comment.type
+                    });
+                }
+            }
+        }
+
+        // Tasks created by this agent
+        if (task.created_by === agentId) {
+            timeline.push({
+                type: 'log',
+                timestamp: task.created_at,
+                action: 'CREATED',
+                description: `Created task: ${task.title}`
+            });
+        }
+
+        // Tasks assigned to this agent (show as claimed)
+        if (task.assignee === agentId) {
+            timeline.push({
+                type: 'log',
+                timestamp: task.updated_at || task.created_at,
+                action: task.status === 'DONE' ? 'COMPLETED' : 'CLAIMED',
+                description: `${task.status === 'DONE' ? 'Completed' : 'Working on'}: ${task.title}`
+            });
+        }
+    }
+
+    timeline.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return timeline.slice(0, 50);
+}
+
+/**
+ * Render timeline items
+ */
+function renderTimeline(container, items) {
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state">No activity recorded yet</p>';
+        return;
+    }
+
+    container.innerHTML = items.map((item, idx) => {
+        let actionText, dotClass;
+
+        if (item.type === 'comment') {
+            const typeLabels = {
+                progress: 'Updated progress',
+                question: 'Asked a question',
+                review: 'Submitted review',
+                approval: 'Approved work',
+                blocked: 'Reported blocker',
+                system: 'System update'
+            };
+            actionText = typeLabels[item.comment_type] || 'Commented';
+            dotClass = item.comment_type === 'approval' ? 'done' : 'comment';
+        } else {
+            actionText = item.action || 'Activity';
+            dotClass = (item.action || '').toLowerCase();
+            if (['completed', 'done'].includes(dotClass)) dotClass = 'done';
+            else if (['claimed', 'started'].includes(dotClass)) dotClass = 'started';
+            else if (['created'].includes(dotClass)) dotClass = 'created';
+            else dotClass = 'default';
+        }
+
+        return `
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <div class="timeline-dot ${dotClass}"></div>
+                    ${idx < items.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-action">${escapeHtml(actionText)}</div>
+                    <div class="timeline-desc">${escapeHtml(item.description || item.content || '')}</div>
+                    ${item.task_title ? `<div class="timeline-task">${escapeHtml(item.task_title)}</div>` : ''}
+                    <div class="timeline-time">${formatDate(item.timestamp)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// FEATURE 7: MESSAGES TAB (CONVERSATIONS)
+// ============================================
+
+/**
+ * Load conversations for an agent
+ */
+async function loadConversations(agentId) {
+    const container = document.getElementById('conversations-list');
+    if (!container) return;
+
+    let messages = [];
+
+    // Try API first
+    if (window.MissionControlAPI) {
+        try {
+            messages = await window.MissionControlAPI.getMessages(agentId);
+        } catch (e) {
+            // Fall back to local data
+        }
+    }
+
+    // Fallback: use sample data
+    if (messages.length === 0 && window.missionControlData.getMessagesForAgent) {
+        messages = window.missionControlData.getMessagesForAgent(agentId);
+    }
+
+    // Group by thread (exclude chat messages)
+    const threads = {};
+    for (const msg of messages) {
+        if (msg.type === 'chat') continue;
+        if (!threads[msg.thread_id]) {
+            threads[msg.thread_id] = [];
+        }
+        threads[msg.thread_id].push(msg);
+    }
+
+    // Sort threads by latest message
+    const threadList = Object.entries(threads)
+        .map(([threadId, msgs]) => {
+            msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const lastMsg = msgs[msgs.length - 1];
+            const otherAgentId = lastMsg.from === agentId ? lastMsg.to : lastMsg.from;
+            const otherAgent = window.missionControlData.getAgent(otherAgentId);
+            const unread = msgs.filter(m => m.to === agentId && !m.read).length;
+            return {
+                threadId,
+                otherAgent: otherAgent || { id: otherAgentId, name: otherAgentId },
+                lastMessage: lastMsg,
+                unread,
+                messages: msgs
+            };
+        })
+        .sort((a, b) => new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp));
+
+    renderConversationsList(container, threadList, agentId);
+
+    // Update badge
+    const badge = document.getElementById('messages-badge');
+    const totalUnread = threadList.reduce((sum, t) => sum + t.unread, 0);
+    if (badge) {
+        if (totalUnread > 0) {
+            badge.textContent = totalUnread;
+            badge.style.display = '';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * Render conversations list
+ */
+function renderConversationsList(container, threads, agentId) {
+    if (threads.length === 0) {
+        container.innerHTML = '<p class="empty-state">No conversations yet</p>';
+        return;
+    }
+
+    container.innerHTML = threads.map(thread => {
+        const agent = thread.otherAgent;
+        const avatarHtml = agent.avatar
+            ? `<img src="${agent.avatar}" class="conv-avatar" alt="${escapeHtml(agent.name)}" onerror="this.outerHTML='<div class=\\'conv-avatar-fallback\\'>${getInitials(agent.name)}</div>'">`
+            : `<div class="conv-avatar-fallback">${getInitials(agent.name)}</div>`;
+
+        const preview = thread.lastMessage.content.length > 60
+            ? thread.lastMessage.content.substring(0, 60) + '...'
+            : thread.lastMessage.content;
+
+        return `
+            <div class="conversation-item ${thread.unread > 0 ? 'unread' : ''}" onclick="openConversationThread('${thread.threadId}', '${agent.id}', '${escapeHtml(agent.name)}')">
+                ${avatarHtml}
+                <div class="conv-info">
+                    <div class="conv-name">${escapeHtml(agent.name)}</div>
+                    <div class="conv-preview">${escapeHtml(preview)}</div>
+                </div>
+                <div class="conv-meta">
+                    <div class="conv-time">${formatDate(thread.lastMessage.timestamp)}</div>
+                    ${thread.unread > 0 ? `<div class="conv-unread">${thread.unread}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Open a conversation thread
+ */
+async function openConversationThread(threadId, otherAgentId, otherAgentName) {
+    currentThreadId = threadId;
+    currentThreadAgentId = otherAgentId;
+
+    // Hide conversations list, show thread
+    document.getElementById('conversations-list').style.display = 'none';
+    const threadEl = document.getElementById('conversation-thread');
+    threadEl.style.display = 'flex';
+
+    document.getElementById('thread-agent-name').textContent = otherAgentName;
+
+    // Load messages
+    let messages = [];
+
+    if (window.MissionControlAPI) {
+        try {
+            messages = await window.MissionControlAPI.getMessageThread(threadId);
+        } catch (e) { /* fallback */ }
+    }
+
+    if (messages.length === 0 && window.missionControlData.getMessagesByThread) {
+        messages = window.missionControlData.getMessagesByThread(threadId);
+    }
+
+    renderThreadMessages(messages);
+}
+
+/**
+ * Close conversation thread, go back to list
+ */
+function closeConversationThread() {
+    currentThreadId = null;
+    currentThreadAgentId = null;
+
+    document.getElementById('conversations-list').style.display = '';
+    document.getElementById('conversation-thread').style.display = 'none';
+}
+
+/**
+ * Render messages in a thread
+ */
+function renderThreadMessages(messages) {
+    const container = document.getElementById('thread-messages');
+    if (!container) return;
+
+    const myAgentId = currentProfileAgent ? currentProfileAgent.id : '';
+
+    container.innerHTML = messages.map(msg => {
+        const isMine = msg.from === myAgentId;
+        const senderAgent = window.missionControlData.getAgent(msg.from);
+        const senderName = senderAgent ? senderAgent.name : msg.from;
+
+        return `
+            <div class="message-bubble ${isMine ? 'sent' : 'received'}">
+                ${!isMine ? `<div class="message-sender">${escapeHtml(senderName)}</div>` : ''}
+                <div class="message-text">${escapeHtml(msg.content)}</div>
+                <div class="message-time">${formatDate(msg.timestamp)}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * Send a message in the current thread
+ */
+async function sendThreadMessage() {
+    const input = document.getElementById('thread-message-input');
+    const content = input.value.trim();
+    if (!content || !currentProfileAgent || !currentThreadAgentId) return;
+
+    const message = {
+        from: currentProfileAgent.id,
+        to: currentThreadAgentId,
+        content: content,
+        thread_id: currentThreadId,
+        type: 'direct'
+    };
+
+    input.value = '';
+
+    // Try to send via API
+    if (window.MissionControlAPI) {
+        try {
+            await window.MissionControlAPI.sendMessage(message);
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        }
+    }
+
+    // Add locally and re-render
+    message.id = `msg-${Date.now()}`;
+    message.timestamp = new Date().toISOString();
+    message.read = false;
+
+    if (window.missionControlData.messages) {
+        window.missionControlData.messages.push(message);
+    }
+
+    // Re-render thread
+    let messages = [];
+    if (window.missionControlData.getMessagesByThread) {
+        messages = window.missionControlData.getMessagesByThread(currentThreadId);
+    }
+    renderThreadMessages(messages);
+}
+
+// ============================================
+// FEATURE 8: DASHBOARD CHAT PANEL
+// ============================================
+
+/**
+ * Toggle chat panel open/closed
+ */
+function toggleChatPanel() {
+    chatPanelOpen = !chatPanelOpen;
+    const panel = document.getElementById('chat-panel');
+    const toggleBtn = document.getElementById('chat-toggle-btn');
+
+    if (panel) {
+        panel.classList.toggle('open', chatPanelOpen);
+    }
+    if (toggleBtn) {
+        toggleBtn.style.display = chatPanelOpen ? 'none' : '';
+    }
+
+    if (chatPanelOpen) {
+        loadChatMessages();
+        // Focus input
+        setTimeout(() => {
+            const input = document.getElementById('chat-input');
+            if (input) input.focus();
+        }, 300);
+    }
+}
+
+/**
+ * Load chat messages (general channel)
+ */
+async function loadChatMessages() {
+    const container = document.getElementById('chat-messages');
+    if (!container) return;
+
+    let messages = [];
+
+    // Try API first
+    if (window.MissionControlAPI) {
+        try {
+            const allMsgs = await window.MissionControlAPI.getMessages();
+            messages = allMsgs.filter(m => m.type === 'chat' || m.thread_id === 'chat-general');
+        } catch (e) { /* fallback */ }
+    }
+
+    // Fallback: use sample data
+    if (messages.length === 0 && window.missionControlData.getChatMessages) {
+        messages = window.missionControlData.getChatMessages();
+    }
+
+    messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    renderChatMessages(container, messages);
+}
+
+/**
+ * Render chat messages
+ */
+function renderChatMessages(container, messages) {
+    if (messages.length === 0) {
+        container.innerHTML = '<p class="chat-empty">No messages yet. Start a conversation!</p>';
+        return;
+    }
+
+    container.innerHTML = messages.map(msg => {
+        const isHuman = msg.from && msg.from.startsWith('human-');
+        const sender = isHuman
+            ? (window.missionControlData.getHumans().find(h => h.id === msg.from) || { name: msg.from })
+            : (window.missionControlData.getAgent(msg.from) || { name: msg.from });
+
+        return `
+            <div class="chat-message ${isHuman ? 'human' : 'agent'}">
+                <div class="chat-msg-header">
+                    <span class="chat-msg-sender">${escapeHtml(sender.name || msg.from)}</span>
+                    <span class="chat-msg-time">${formatDate(msg.timestamp)}</span>
+                </div>
+                <div class="chat-msg-content">${escapeHtml(msg.content)}</div>
+            </div>
+        `;
+    }).join('');
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * Send a chat message
+ */
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    // Detect @mentions to set recipient
+    const mentionMatch = content.match(/@(\w+)/);
+    let to = 'agent-jarvis'; // Default recipient
+    if (mentionMatch) {
+        const agents = window.missionControlData.getAgents();
+        const mentioned = agents.find(a =>
+            a.name.toLowerCase() === mentionMatch[1].toLowerCase() ||
+            a.id === `agent-${mentionMatch[1].toLowerCase()}`
+        );
+        if (mentioned) to = mentioned.id;
+    }
+
+    const message = {
+        from: 'human-asif',
+        to: to,
+        content: content,
+        thread_id: 'chat-general',
+        type: 'chat'
+    };
+
+    input.value = '';
+
+    // Try to send via API
+    if (window.MissionControlAPI) {
+        try {
+            await window.MissionControlAPI.sendMessage(message);
+        } catch (e) {
+            console.error('Failed to send chat message:', e);
+        }
+    }
+
+    // Add locally
+    message.id = `msg-${Date.now()}`;
+    message.timestamp = new Date().toISOString();
+    message.read = true;
+
+    if (window.missionControlData.messages) {
+        window.missionControlData.messages.push(message);
+    }
+
+    // Re-render
+    loadChatMessages();
+}
+
+// ============================================
+// REAL-TIME MESSAGE LISTENERS
+// ============================================
+
+/**
+ * Setup WebSocket listeners for real-time message updates
+ */
+function setupMessageListeners() {
+    if (!window.MissionControlAPI) return;
+
+    window.MissionControlAPI.on('message.created', (data) => {
+        // Add to local store
+        if (window.missionControlData.messages) {
+            window.missionControlData.messages.push(data);
+        }
+
+        // Update chat panel if open
+        if (chatPanelOpen && (data.type === 'chat' || data.thread_id === 'chat-general')) {
+            loadChatMessages();
+        }
+
+        // Update conversation thread if open
+        if (currentThreadId && data.thread_id === currentThreadId) {
+            let messages = [];
+            if (window.missionControlData.getMessagesByThread) {
+                messages = window.missionControlData.getMessagesByThread(currentThreadId);
+            }
+            renderThreadMessages(messages);
+        }
+
+        // Update profile badges if open
+        if (currentProfileAgent) {
+            loadConversations(currentProfileAgent.id);
+        }
+
+        // Show toast for new messages
+        const sender = window.missionControlData.getAgent(data.from);
+        const senderName = sender ? sender.name : data.from;
+        showToast('info', `Message from ${senderName}`, data.content.substring(0, 80));
+    });
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     init().then(() => {
         initDragAndDrop();
-        // Check URL for task ID after data is loaded
+        // Check URL for task ID or agent ID after data is loaded
         checkUrlForTask();
     });
 });
