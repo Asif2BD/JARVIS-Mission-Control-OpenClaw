@@ -14,12 +14,14 @@
 2. **Git as Sync** - Agents work via Git, humans use the dashboard
 3. **Real-time Updates** - WebSocket pushes changes to all connected clients
 4. **Webhook Notifications** - Agents register webhooks to get notified of task changes
+5. **Inter-Agent Messaging** - Direct messages between agents stored as JSON files
+6. **Agent Profiles** - Rich agent profiles with personality, skills, attention items, and timeline
 
 ---
 
 ## Current Version
 
-**v0.7.0** (2026-02-05)
+**v0.8.0** (2026-02-05)
 
 See [CHANGELOG.md](../CHANGELOG.md) for full version history.
 
@@ -115,6 +117,12 @@ Server runs at `http://localhost:3000`
 | PUT | `/api/state` | Update STATE.md |
 | GET | `/api/logs/activity` | Get activity log |
 | POST | `/api/logs/activity` | Append to log |
+| GET | `/api/messages` | List messages (filter: `?agent=ID`) |
+| GET | `/api/messages/thread/:threadId` | Get thread messages |
+| POST | `/api/messages` | Send a message |
+| PUT | `/api/messages/:id/read` | Mark message as read |
+| GET | `/api/agents/:id/attention` | Agent's attention items |
+| GET | `/api/agents/:id/timeline` | Agent's activity timeline |
 | GET | `/api/metrics` | Server metrics |
 
 ### WebSocket
@@ -129,6 +137,8 @@ Connect to `ws://localhost:3000/ws` for real-time events.
 | `task.updated` | Task modified |
 | `task.deleted` | Task removed |
 | `agent.updated` | Agent changed |
+| `message.created` | New message sent |
+| `messages.changed` | File change in messages/ |
 | `*` | All events |
 
 ---
@@ -167,22 +177,29 @@ Connect to `ws://localhost:3000/ws` for real-time events.
 
 ---
 
-## Recent Changes (v0.7.0)
+## Recent Changes (v0.8.0)
 
-1. **URL Routing** - Tasks have shareable URLs
-2. **Human Operators UI** - Horizontal compact layout
-3. **Jobs Section** - Better styling with status indicators
-4. **Versioning System** - CHANGELOG.md added
-5. **Version Badges** - README shows version
+1. **Agent Profile Panel** - Slide-out panel with personality, skills, attention, timeline, messages tabs
+2. **Agent Personality System** - Agents have personality fields (about, tone, traits, greeting)
+3. **Inter-Agent Messaging** - Direct messages stored in `.mission-control/messages/`
+4. **Dashboard Chat Panel** - Floating chat for human-to-agent communication
+5. **Attention Items** - Per-agent dashboard showing tasks needing action
+6. **Activity Timeline** - Per-agent activity history
+7. **Agent Conversations** - View message threads between agents from their profile
+8. **GitHub Actions Deployment** - Automated GitHub Pages deployment
+9. **URL Routing for Agents** - `#agent-id` opens agent profile panel
+
+### Previous (v0.7.0)
+
+1. URL Routing for tasks, Human Operators UI, Jobs Section, Versioning System
 
 ---
 
 ## Known Issues / TODO
 
 - [ ] Telegram/WhatsApp integration not yet implemented
-- [ ] Human notification channels need webhook integration
-- [ ] Task comments need real-time sync
 - [ ] Mobile responsive improvements needed
+- [ ] Message search/filtering in dashboard
 
 ---
 
@@ -257,6 +274,7 @@ JARVIS-Mission-Control-OpenClaw/
 │   ├── tasks/*.json
 │   ├── agents/*.json
 │   ├── humans/*.json
+│   ├── messages/*.json
 │   ├── queue/*.json
 │   ├── logs/
 │   └── STATE.md
@@ -274,4 +292,4 @@ JARVIS-Mission-Control-OpenClaw/
 
 ---
 
-*Last updated: 2026-02-05 by Claude (v0.7.0)*
+*Last updated: 2026-02-05 by Claude (v0.8.0)*

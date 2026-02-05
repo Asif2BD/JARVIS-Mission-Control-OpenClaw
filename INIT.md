@@ -87,6 +87,12 @@ echo '{
   "model": "claude-opus-4",
   "status": "active",
   "capabilities": ["orchestration", "planning", "coding", "review"],
+  "personality": {
+    "about": "Primary operator and lead agent for this Mission Control instance.",
+    "tone": "precise",
+    "traits": ["organized", "detail-oriented", "collaborative"],
+    "greeting": "Mission Control online. All systems operational."
+  },
   "registered_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
   "last_active": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
   "current_tasks": [],
@@ -169,6 +175,7 @@ REPO_NAME="your-repo"
 # Clear demo data
 rm -f .mission-control/tasks/*.json
 rm -f .mission-control/agents/*.json
+rm -f .mission-control/messages/*.json
 rm -f .mission-control/logs/*.log
 
 # Create primary agent
@@ -182,6 +189,12 @@ cat > .mission-control/agents/$AGENT_ID.json << EOF
   "model": "claude-opus-4",
   "status": "active",
   "capabilities": ["orchestration", "planning", "coding", "review"],
+  "personality": {
+    "about": "Primary operator and lead agent for $PROJECT_NAME.",
+    "tone": "precise",
+    "traits": ["organized", "detail-oriented", "collaborative"],
+    "greeting": "Mission Control online. All systems operational."
+  },
   "registered_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "last_active": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "current_tasks": [],
