@@ -747,9 +747,12 @@ class MissionControlData {
 
     /**
      * Get sub-agents for a specific parent
+     * Only returns agents with role === 'sub-agent'
      */
     getSubAgents(parentId) {
-        return this.agents.filter(agent => agent.parent_agent === parentId);
+        return this.agents.filter(agent =>
+            agent.parent_agent === parentId && agent.role === 'sub-agent'
+        );
     }
 
     /**
