@@ -3,8 +3,11 @@
    A dramatic, futuristic mission control interface
    ============================================ */
 
-/* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+/* Fonts loaded via HTML <link> for better performance:
+   - Orbitron: Headers, logo, titles
+   - Rajdhani: Body text, labels
+   - Share Tech Mono: Code, IDs, technical text
+*/
 
 /* ============================================
    CSS CUSTOM PROPERTIES (Theme Variables)
