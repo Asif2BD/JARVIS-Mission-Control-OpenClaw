@@ -609,6 +609,9 @@ function openTaskModal(task) {
         `).join('') :
         '<p class="text-muted">No comments yet</p>';
 
+    // Update URL with task ID
+    history.pushState({ taskId: task.id }, '', `#${task.id}`);
+
     // Show modal
     modal.classList.add('open');
 }
@@ -620,6 +623,9 @@ function closeModal() {
     const modal = document.getElementById('task-modal');
     modal.classList.remove('open');
     selectedTask = null;
+
+    // Clear URL hash
+    history.pushState({}, '', window.location.pathname);
 }
 
 /**
@@ -1060,9 +1066,43 @@ async function assignTask(taskId, assigneeId) {
     initDragAndDrop();
 }
 
+// ============================================
+// URL ROUTING - Deep linking to tasks
+// ============================================
+
+/**
+ * Check URL hash and open task if present
+ */
+function checkUrlForTask() {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#task-')) {
+        const taskId = hash.substring(1); // Remove the #
+        const task = window.missionControlData.tasks.find(t => t.id === taskId);
+        if (task) {
+            openTaskModal(task);
+        }
+    }
+}
+
+/**
+ * Handle browser back/forward navigation
+ */
+window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.taskId) {
+        const task = window.missionControlData.tasks.find(t => t.id === e.state.taskId);
+        if (task) {
+            openTaskModal(task);
+        }
+    } else {
+        closeModal();
+    }
+});
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     init().then(() => {
         initDragAndDrop();
+        // Check URL for task ID after data is loaded
+        checkUrlForTask();
     });
 });
