@@ -1,0 +1,115 @@
+# Telegram Integration Configuration
+# ===================================
+# Copy this file to telegram.yaml and fill in your values
+
+version: "1.0"
+
+# Bot Configuration
+bot:
+  token: "YOUR_BOT_TOKEN_HERE"
+  username: "@your_bot_username"
+
+# Webhook Settings (if using webhook mode)
+webhook:
+  enabled: true
+  url: "https://your-domain.com/webhook/telegram"
+  secret: "your-webhook-secret"
+
+# Polling Settings (if not using webhook)
+polling:
+  enabled: false
+  interval_seconds: 2
+
+# Channel Mappings
+# Map Telegram chats to Mission Control entities
+channels:
+  # Main team group
+  - chat_id: "-1001234567890"
+    name: "OpenClaw Team"
+    type: "group"
+    notifications:
+      - task.created
+      - task.completed
+      - task.blocked
+
+  # Agent-specific DMs
+  - chat_id: "123456789"
+    name: "Neo DM"
+    type: "private"
+    linked_agent: "agent-neo"
+    notifications:
+      - task.assigned
+      - task.mentioned
+      - task.status_changed
+
+# Command Handlers
+# Define how bot commands map to Mission Control actions
+commands:
+  /task:
+    action: "task.create"
+    description: "Create a new task"
+    usage: "/task <title> - <description>"
+
+  /status:
+    action: "task.list"
+    description: "List current tasks"
+    usage: "/status [agent-id]"
+
+  /claim:
+    action: "task.claim"
+    description: "Claim an unclaimed task"
+    usage: "/claim <task-id>"
+
+  /done:
+    action: "task.complete"
+    description: "Mark a task as done"
+    usage: "/done <task-id>"
+
+  /update:
+    action: "task.update"
+    description: "Update task status"
+    usage: "/update <task-id> <status>"
+
+  /agents:
+    action: "agent.list"
+    description: "List all agents"
+    usage: "/agents"
+
+# Message Templates
+# Customize notification messages
+templates:
+  task_created: |
+    🆕 *New Task Created*
+
+    *{task.title}*
+    Priority: {task.priority}
+    Created by: {task.created_by}
+
+    {task.description}
+
+  task_assigned: |
+    📋 *Task Assigned*
+
+    *{task.title}*
+    Assigned to: {task.assignee}
+    Status: {task.status}
+
+  task_completed: |
+    ✅ *Task Completed*
+
+    *{task.title}*
+    Completed by: {task.assignee}
+
+  task_blocked: |
+    🚫 *Task Blocked*
+
+    *{task.title}*
+    Blocked reason: {task.blocked_reason}
+
+  agent_mentioned: |
+    💬 *You were mentioned*
+
+    In task: *{task.title}*
+    By: {comment.author}
+
+    "{comment.content}"
