@@ -170,8 +170,90 @@
             </div>
         </div>
 
-        <!-- Right Sidebar - Queue & Settings -->
+        <!-- Right Sidebar - Reports, Queue & Settings -->
         <aside class="sidebar-right">
+            <!-- Reports Section -->
+            <div class="right-section reports-section">
+                <div class="right-section-header">
+                    <h2 class="right-section-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Reports & Files
+                    </h2>
+                    <span class="reports-count" id="reports-count">0 files</span>
+                </div>
+                <div class="reports-tabs">
+                    <button class="reports-tab active" data-dir="reports" onclick="switchFilesTab('reports')">Reports</button>
+                    <button class="reports-tab" data-dir="logs" onclick="switchFilesTab('logs')">Logs</button>
+                    <button class="reports-tab" data-dir="archived-tasks" onclick="switchFilesTab('archived-tasks')">Archive</button>
+                </div>
+                <div class="reports-list" id="reports-list">
+                    <!-- Reports will be populated by JavaScript -->
+                    <p class="empty-state">Loading reports...</p>
+                </div>
+            </div>
+
+            <!-- Resource Management Section -->
+            <div class="right-section resources-section">
+                <div class="right-section-header">
+                    <h2 class="right-section-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        Resources
+                    </h2>
+                    <button class="btn-icon-sm" onclick="openResourcesModal()" title="Manage Resources">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="resource-summary" id="resource-summary">
+                    <!-- Quick resource stats -->
+                    <div class="resource-stat">
+                        <span class="resource-stat-icon">🔑</span>
+                        <span class="resource-stat-value" id="credentials-count">0</span>
+                        <span class="resource-stat-label">Credentials</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="resource-stat-icon">💻</span>
+                        <span class="resource-stat-value" id="resources-count">0</span>
+                        <span class="resource-stat-label">Resources</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="resource-stat-icon">📅</span>
+                        <span class="resource-stat-value" id="bookings-count">0</span>
+                        <span class="resource-stat-label">Bookings</span>
+                    </div>
+                </div>
+                <!-- Quota Warnings -->
+                <div class="quota-warnings" id="quota-warnings" style="display:none">
+                    <div class="quota-warning-header">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Quota Warnings
+                    </div>
+                    <div id="quota-warning-list" class="quota-warning-list"></div>
+                </div>
+                <!-- Cost Summary -->
+                <div class="cost-summary" id="cost-summary">
+                    <div class="cost-total">
+                        <span class="cost-label">Total Costs</span>
+                        <span class="cost-value" id="total-costs">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Scheduled Jobs Section -->
             <div class="right-section">
                 <div class="right-section-header">
@@ -368,12 +450,64 @@
                     <div class="labels" id="modal-labels"></div>
                 </div>
                 <div class="task-field">
+                    <label>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                        Attachments
+                    </label>
+                    <div class="attachments-list" id="modal-attachments">
+                        <p class="text-muted">No attachments</p>
+                    </div>
+                </div>
+                <div class="task-field">
                     <label>Comments</label>
                     <div class="comments-list" id="modal-comments"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Viewer Modal -->
+    <div class="modal file-viewer-modal" id="file-viewer-modal">
+        <div class="modal-content file-viewer-content">
+            <div class="modal-header">
+                <div class="file-viewer-header-info">
+                    <span class="file-type-badge" id="file-type-badge">MD</span>
+                    <h2 id="file-viewer-title">filename.md</h2>
+                </div>
+                <button class="close-btn" onclick="closeFileViewer()" aria-label="Close">&times;</button>
+            </div>
+            <div class="file-viewer-meta">
+                <span id="file-viewer-size">0 KB</span>
+                <span class="meta-divider">•</span>
+                <span id="file-viewer-modified">Modified: --</span>
+            </div>
+            <div class="modal-body file-viewer-body">
+                <div id="file-viewer-content" class="file-content">
+                    <!-- Content will be rendered here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="copyFileContent()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy
+                </button>
+                <button class="btn btn-secondary" onclick="downloadFile()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download
+                </button>
+                <button class="btn btn-primary" onclick="closeFileViewer()">Close</button>
             </div>
         </div>
     </div>
@@ -473,6 +607,407 @@
             <li>Webhooks for agent notifications</li>
         </ul>
         <button class="btn btn-secondary" onclick="toggleInstructions()">Got it!</button>
+    </div>
+
+    <!-- Resource Management Modal -->
+    <div class="modal resources-modal" id="resources-modal">
+        <div class="modal-content resources-modal-content">
+            <div class="modal-header">
+                <h2>🔧 Resource Management</h2>
+                <button class="close-btn" onclick="closeResourcesModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Resource Tabs -->
+                <div class="resource-tabs">
+                    <button class="resource-tab active" data-tab="credentials" onclick="switchResourceTab('credentials')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Credentials Vault
+                    </button>
+                    <button class="resource-tab" data-tab="resources" onclick="switchResourceTab('resources')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        Resources
+                    </button>
+                    <button class="resource-tab" data-tab="bookings" onclick="switchResourceTab('bookings')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Bookings
+                    </button>
+                    <button class="resource-tab" data-tab="costs" onclick="switchResourceTab('costs')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        Costs
+                    </button>
+                    <button class="resource-tab" data-tab="quotas" onclick="switchResourceTab('quotas')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        Quotas
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="resource-tab-content">
+                    <!-- Credentials Tab -->
+                    <div id="resource-tab-credentials" class="resource-pane active">
+                        <div class="resource-toolbar">
+                            <h3>🔐 Credentials Vault</h3>
+                            <button class="btn btn-sm btn-primary" onclick="openAddCredentialForm()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Credential
+                            </button>
+                        </div>
+                        <p class="resource-description">Securely store and manage API keys, tokens, and secrets. All values are encrypted.</p>
+                        <div id="credentials-list" class="credentials-list">
+                            <p class="empty-state">Loading credentials...</p>
+                        </div>
+                    </div>
+
+                    <!-- Resources Tab -->
+                    <div id="resource-tab-resources" class="resource-pane">
+                        <div class="resource-toolbar">
+                            <h3>💻 Resources</h3>
+                            <button class="btn btn-sm btn-primary" onclick="openAddResourceForm()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Resource
+                            </button>
+                        </div>
+                        <p class="resource-description">Manage shared resources like servers, GPUs, and services.</p>
+                        <div id="resources-list" class="resources-list">
+                            <p class="empty-state">Loading resources...</p>
+                        </div>
+                    </div>
+
+                    <!-- Bookings Tab -->
+                    <div id="resource-tab-bookings" class="resource-pane">
+                        <div class="resource-toolbar">
+                            <h3>📅 Resource Bookings</h3>
+                            <button class="btn btn-sm btn-primary" onclick="openAddBookingForm()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Book Resource
+                            </button>
+                        </div>
+                        <p class="resource-description">Reserve resources for specific time slots.</p>
+                        <div id="bookings-list" class="bookings-list">
+                            <p class="empty-state">Loading bookings...</p>
+                        </div>
+                    </div>
+
+                    <!-- Costs Tab -->
+                    <div id="resource-tab-costs" class="resource-pane">
+                        <div class="resource-toolbar">
+                            <h3>💰 Cost Tracking</h3>
+                            <button class="btn btn-sm btn-primary" onclick="openAddCostForm()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Record Cost
+                            </button>
+                        </div>
+                        <p class="resource-description">Track API usage, hosting fees, and other costs per agent.</p>
+                        <div class="cost-overview" id="cost-overview">
+                            <!-- Cost summary charts/stats -->
+                        </div>
+                        <div id="costs-list" class="costs-list">
+                            <p class="empty-state">Loading costs...</p>
+                        </div>
+                    </div>
+
+                    <!-- Quotas Tab -->
+                    <div id="resource-tab-quotas" class="resource-pane">
+                        <div class="resource-toolbar">
+                            <h3>📊 Quota Management</h3>
+                            <button class="btn btn-sm btn-primary" onclick="openAddQuotaForm()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Set Quota
+                            </button>
+                        </div>
+                        <p class="resource-description">Set usage limits with warnings at 80% and hard stops at 100%.</p>
+                        <div id="quotas-list" class="quotas-list">
+                            <p class="empty-state">Loading quotas...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Credential Form Modal -->
+    <div class="modal" id="add-credential-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Credential</h2>
+                <button class="close-btn" onclick="closeAddCredentialForm()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-credential-form">
+                    <div class="form-field">
+                        <label for="cred-name">Name</label>
+                        <input type="text" id="cred-name" placeholder="e.g., OpenAI API Key" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="cred-type">Type</label>
+                        <select id="cred-type">
+                            <option value="api_key">API Key</option>
+                            <option value="token">Token</option>
+                            <option value="password">Password</option>
+                            <option value="certificate">Certificate</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="cred-service">Service</label>
+                        <input type="text" id="cred-service" placeholder="e.g., OpenAI, AWS, GitHub">
+                    </div>
+                    <div class="form-field">
+                        <label for="cred-value">Value (will be encrypted)</label>
+                        <input type="password" id="cred-value" placeholder="Enter secret value..." required>
+                    </div>
+                    <div class="form-field">
+                        <label for="cred-description">Description</label>
+                        <textarea id="cred-description" rows="2" placeholder="Optional description..."></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label for="cred-owner">Owner</label>
+                        <select id="cred-owner">
+                            <option value="system">System</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddCredentialForm()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCredential()">Save Credential</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Resource Form Modal -->
+    <div class="modal" id="add-resource-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Resource</h2>
+                <button class="close-btn" onclick="closeAddResourceForm()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-resource-form">
+                    <div class="form-field">
+                        <label for="res-name">Name</label>
+                        <input type="text" id="res-name" placeholder="e.g., GPU Server #1" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="res-type">Type</label>
+                        <select id="res-type">
+                            <option value="server">Server</option>
+                            <option value="gpu">GPU</option>
+                            <option value="service">Service</option>
+                            <option value="license">License</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="res-description">Description</label>
+                        <textarea id="res-description" rows="2" placeholder="Resource description..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="res-cost">Cost/Hour ($)</label>
+                            <input type="number" id="res-cost" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-field">
+                            <label for="res-max-hours">Max Booking (hours)</label>
+                            <input type="number" id="res-max-hours" min="1" value="24">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="res-tags">Tags (comma-separated)</label>
+                        <input type="text" id="res-tags" placeholder="compute, training, ml">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddResourceForm()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveResource()">Save Resource</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Booking Form Modal -->
+    <div class="modal" id="add-booking-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Book Resource</h2>
+                <button class="close-btn" onclick="closeAddBookingForm()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-booking-form">
+                    <div class="form-field">
+                        <label for="book-resource">Resource</label>
+                        <select id="book-resource" required>
+                            <option value="">Select a resource...</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="book-agent">Agent</label>
+                        <select id="book-agent">
+                            <option value="">Select an agent...</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="book-start">Start Time</label>
+                            <input type="datetime-local" id="book-start" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="book-end">End Time</label>
+                            <input type="datetime-local" id="book-end" required>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="book-purpose">Purpose</label>
+                        <textarea id="book-purpose" rows="2" placeholder="What will this be used for?"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddBookingForm()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBooking()">Book Resource</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Cost Form Modal -->
+    <div class="modal" id="add-cost-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Record Cost</h2>
+                <button class="close-btn" onclick="closeAddCostForm()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-cost-form">
+                    <div class="form-field">
+                        <label for="cost-type">Type</label>
+                        <select id="cost-type">
+                            <option value="api_usage">API Usage</option>
+                            <option value="hosting">Hosting</option>
+                            <option value="booking">Resource Booking</option>
+                            <option value="license">License</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="cost-description">Description</label>
+                        <input type="text" id="cost-description" placeholder="e.g., Anthropic API calls" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="cost-amount">Amount ($)</label>
+                            <input type="number" id="cost-amount" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="cost-agent">Agent</label>
+                            <select id="cost-agent">
+                                <option value="">Global / Shared</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="cost-category">Category</label>
+                        <input type="text" id="cost-category" placeholder="e.g., AI, Infrastructure">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddCostForm()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveCost()">Record Cost</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Quota Form Modal -->
+    <div class="modal" id="add-quota-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set Quota</h2>
+                <button class="close-btn" onclick="closeAddQuotaForm()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-quota-form">
+                    <div class="form-field">
+                        <label for="quota-type">Quota Type</label>
+                        <select id="quota-type">
+                            <option value="api_calls">API Calls</option>
+                            <option value="cost">Cost ($)</option>
+                            <option value="tokens">Tokens</option>
+                            <option value="storage">Storage (MB)</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="quota-agent">Agent</label>
+                        <select id="quota-agent">
+                            <option value="">Global (all agents)</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="quota-limit">Limit</label>
+                            <input type="number" id="quota-limit" min="1" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="quota-period">Period</label>
+                            <select id="quota-period">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly" selected>Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="quota-warning">Warning Threshold (%)</label>
+                            <input type="number" id="quota-warning" min="0" max="100" value="80">
+                        </div>
+                        <div class="form-field">
+                            <label for="quota-hard-stop">
+                                <input type="checkbox" id="quota-hard-stop" checked>
+                                Hard Stop at 100%
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAddQuotaForm()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveQuota()">Set Quota</button>
+            </div>
+        </div>
     </div>
 
     <script src="./js/api.js"></script>

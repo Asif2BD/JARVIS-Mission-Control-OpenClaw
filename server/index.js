@@ -16,6 +16,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
 const http = require('http');
+const ResourceManager = require('./resource-manager');
 
 // Configuration
 const PORT = process.env.PORT || 3000;
@@ -699,6 +700,229 @@ app.get('/api/agents/:id/timeline', async (req, res) => {
 
         // Limit to 50 entries
         res.json(timeline.slice(0, 50));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// RESOURCE MANAGEMENT
+// ============================================
+
+// Initialize Resource Manager
+const resourceManager = new ResourceManager(MISSION_CONTROL_DIR);
+
+// --- CREDENTIALS VAULT ---
+
+app.get('/api/credentials', async (req, res) => {
+    try {
+        const credentials = await resourceManager.listCredentials();
+        res.json(credentials);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/credentials/:id', async (req, res) => {
+    try {
+        // Only include value if explicitly requested and authorized
+        const includeValue = req.query.includeValue === 'true';
+        const credential = await resourceManager.getCredential(req.params.id, includeValue);
+        res.json(credential);
+    } catch (error) {
+        res.status(404).json({ error: 'Credential not found' });
+    }
+});
+
+app.post('/api/credentials', async (req, res) => {
+    try {
+        const credential = await resourceManager.storeCredential(req.body);
+        await logActivity(req.body.owner || 'system', 'CREATED', `Credential: ${credential.name} (${credential.id})`);
+        broadcast('credential.created', credential);
+        res.status(201).json(credential);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/credentials/:id', async (req, res) => {
+    try {
+        await resourceManager.deleteCredential(req.params.id);
+        await logActivity('system', 'DELETED', `Credential: ${req.params.id}`);
+        broadcast('credential.deleted', { id: req.params.id });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- RESOURCES ---
+
+app.get('/api/resources', async (req, res) => {
+    try {
+        const resources = await resourceManager.listResources();
+        res.json(resources);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/resources/:id', async (req, res) => {
+    try {
+        const resource = await resourceManager.getResource(req.params.id);
+        res.json(resource);
+    } catch (error) {
+        res.status(404).json({ error: 'Resource not found' });
+    }
+});
+
+app.post('/api/resources', async (req, res) => {
+    try {
+        const resource = await resourceManager.createResource(req.body);
+        await logActivity(req.body.owner || 'system', 'CREATED', `Resource: ${resource.name} (${resource.id})`);
+        broadcast('resource.created', resource);
+        res.status(201).json(resource);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- BOOKINGS ---
+
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const filters = {
+            resource_id: req.query.resource_id,
+            agent_id: req.query.agent_id,
+            status: req.query.status,
+            from_date: req.query.from_date,
+            to_date: req.query.to_date
+        };
+        const bookings = await resourceManager.listBookings(filters);
+        res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const booking = await resourceManager.bookResource(req.body);
+        await logActivity(req.body.booked_by || 'system', 'BOOKED', `Resource: ${booking.resource_name} from ${booking.start_time} to ${booking.end_time}`);
+        broadcast('booking.created', booking);
+        res.status(201).json(booking);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.delete('/api/bookings/:id', async (req, res) => {
+    try {
+        const booking = await resourceManager.cancelBooking(req.params.id);
+        await logActivity('system', 'CANCELLED', `Booking: ${booking.id}`);
+        broadcast('booking.cancelled', booking);
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- COSTS ---
+
+app.get('/api/costs', async (req, res) => {
+    try {
+        const filters = {
+            agent_id: req.query.agent_id,
+            type: req.query.type,
+            from_date: req.query.from_date,
+            to_date: req.query.to_date
+        };
+        const summary = await resourceManager.getCostSummary(filters);
+        res.json(summary);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/costs', async (req, res) => {
+    try {
+        const cost = await resourceManager.recordCost(req.body);
+        await logActivity(req.body.agent_id || 'system', 'COST_RECORDED', `${cost.type}: $${cost.amount} - ${cost.description}`);
+        broadcast('cost.recorded', cost);
+        res.status(201).json(cost);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- QUOTAS ---
+
+app.get('/api/quotas', async (req, res) => {
+    try {
+        const agentId = req.query.agent_id || null;
+        const quotas = await resourceManager.getQuotas(agentId);
+        res.json(quotas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/quotas', async (req, res) => {
+    try {
+        const quota = await resourceManager.setQuota(req.body);
+        await logActivity('system', 'QUOTA_SET', `${quota.type} quota for ${quota.agent_id || 'global'}: ${quota.limit}`);
+        broadcast('quota.updated', quota);
+        res.status(201).json(quota);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/quotas/:id/usage', async (req, res) => {
+    try {
+        const { usage } = req.body;
+        const result = await resourceManager.updateQuotaUsage(req.params.id, usage);
+        
+        if (result.warning) {
+            broadcast('quota.warning', result);
+        }
+        if (result.exceeded) {
+            broadcast('quota.exceeded', result);
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/quotas/:id/reset', async (req, res) => {
+    try {
+        const quota = await resourceManager.resetQuota(req.params.id);
+        await logActivity('system', 'QUOTA_RESET', `Reset quota: ${quota.id}`);
+        broadcast('quota.reset', quota);
+        res.json(quota);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/quotas/check', async (req, res) => {
+    try {
+        const { agent_id, type, amount } = req.query;
+        const result = await resourceManager.checkQuota(agent_id, type, parseFloat(amount) || 1);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- RESOURCE METRICS ---
+
+app.get('/api/resources/metrics', async (req, res) => {
+    try {
+        const metrics = await resourceManager.getMetrics();
+        res.json(metrics);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
