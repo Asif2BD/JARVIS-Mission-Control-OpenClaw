@@ -4,6 +4,27 @@ A robust, Git-based Mission Control system for orchestrating AI agents and human
 
 > **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance. Do not modify this original repository directly.
 
+---
+
+## 🚀 Tell Your Agent This
+
+Copy and paste this instruction to any AI agent to get started:
+
+```
+Fork https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw to my GitHub account,
+read CLAUDE.md to learn how it works, and set up Mission Control for my project.
+```
+
+Or more detailed:
+
+```
+Clone JARVIS Mission Control from https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw
+into my own repo, read CLAUDE.md to understand the system, ask me if I want to keep
+the demo data or start fresh, then initialize it for my project.
+```
+
+---
+
 ## Quick Start for AI Agents
 
 ```

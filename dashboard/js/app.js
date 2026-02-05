@@ -16,6 +16,9 @@ async function init() {
     // Initialize theme
     initTheme();
 
+    // Load saved dashboard name
+    loadDashboardName();
+
     // Load data
     await window.missionControlData.loadData();
 
@@ -170,7 +173,7 @@ function createTaskCard(task) {
 }
 
 /**
- * Render the humans section
+ * Render the humans section - compact inline design
  */
 function renderHumans() {
     const humans = window.missionControlData.getHumans();
@@ -184,25 +187,20 @@ function renderHumans() {
     subtitle.textContent = `${activeCount} online`;
 
     container.innerHTML = humans.map(human => `
-        <div class="human-card">
-            <div class="human-header">
-                <div class="human-avatar">${getInitials(human.name)}</div>
-                <div class="human-info">
-                    <div class="human-name">${escapeHtml(human.name)}</div>
-                    <div class="human-designation">${escapeHtml(human.designation || human.role)}</div>
-                </div>
-                <div class="human-status-indicator ${human.status}"></div>
+        <div class="entity-row human-row">
+            <div class="entity-status ${human.status}"></div>
+            <div class="entity-avatar human">${getInitials(human.name)}</div>
+            <div class="entity-info">
+                <span class="entity-name">${escapeHtml(human.name)}</span>
+                <span class="entity-role ${human.role}">${human.role}</span>
             </div>
-            <div class="human-meta">
-                <span class="human-role-badge ${human.role}">${human.role}</span>
-                <span class="human-completed">${human.completed_tasks || 0} tasks</span>
-            </div>
+            <span class="entity-tasks">${human.completed_tasks || 0}</span>
         </div>
     `).join('');
 }
 
 /**
- * Render the agents sidebar with sub-agent support
+ * Render the agents sidebar - compact inline design
  */
 function renderAgents() {
     const allAgents = window.missionControlData.getAgents();
@@ -214,113 +212,176 @@ function renderAgents() {
     // Update subtitle
     const activeCount = allAgents.filter(a => a.status === 'active' || a.status === 'busy').length;
     const subAgentCount = allAgents.filter(a => a.role === 'sub-agent').length;
-    subtitle.textContent = `${activeCount} online (${subAgentCount} sub-agents)`;
+    subtitle.textContent = `${activeCount} online${subAgentCount > 0 ? ` (${subAgentCount} sub)` : ''}`;
 
-    // Separate parent agents and sub-agents
-    const parentAgents = allAgents.filter(a => !a.parent_agent || a.role !== 'sub-agent');
+    // Get all agents except sub-agents
+    const parentAgents = allAgents.filter(a => a.role !== 'sub-agent');
 
     container.innerHTML = parentAgents.map(agent => {
         const subAgents = window.missionControlData.getSubAgents(agent.id);
-        const isLead = agent.role === 'lead';
-        const hasSubAgents = subAgents.length > 0;
+        const activeTasks = agent.current_tasks ? agent.current_tasks.length : 0;
 
         return `
-            <div class="agent-card ${isLead ? 'agent-lead' : ''} ${hasSubAgents ? 'has-sub-agents' : ''}">
-                <div class="agent-header">
-                    <div class="agent-avatar ${agent.role}">${getInitials(agent.name)}</div>
-                    <div class="agent-info">
-                        <div class="agent-name">${escapeHtml(agent.name)}</div>
-                        <div class="agent-designation">${escapeHtml(agent.designation || agent.role)}</div>
-                    </div>
-                    <div class="agent-status-indicator ${agent.status}"></div>
+            <div class="entity-row agent-row ${agent.role}">
+                <div class="entity-status ${agent.status}"></div>
+                <div class="entity-avatar agent ${agent.role}">${getInitials(agent.name)}</div>
+                <div class="entity-info">
+                    <span class="entity-name">${escapeHtml(agent.name)}</span>
+                    ${activeTasks > 0 ? `<span class="entity-active">${activeTasks}</span>` : ''}
                 </div>
-                <div class="agent-meta">
-                    <span class="agent-tasks-count">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 11l3 3L22 4"></path>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                        </svg>
-                        ${agent.current_tasks ? agent.current_tasks.length : 0} active
-                    </span>
-                    <span class="agent-completed">
-                        ${agent.completed_tasks || 0} done
-                    </span>
+                <span class="entity-tasks">${agent.completed_tasks || 0}</span>
+            </div>
+            ${subAgents.length > 0 ? subAgents.map(sub => `
+                <div class="entity-row sub-agent-row">
+                    <div class="entity-status ${sub.status}"></div>
+                    <div class="entity-avatar sub-agent">↳</div>
+                    <div class="entity-info">
+                        <span class="entity-name sub">${escapeHtml(sub.name)}</span>
+                    </div>
+                    <span class="entity-tasks">${sub.completed_tasks || 0}</span>
                 </div>
-                ${agent.metadata && agent.metadata.clearance ? `
-                    <div class="agent-clearance clearance-${agent.metadata.clearance.toLowerCase()}">
-                        ${agent.metadata.clearance}
-                    </div>
-                ` : ''}
-                ${hasSubAgents ? `
-                    <div class="sub-agents-container">
-                        <div class="sub-agents-header">
-                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                            Sub-agents (${subAgents.length})
-                        </div>
-                        <div class="sub-agents-list">
-                            ${subAgents.map(sub => `
-                                <div class="sub-agent-card">
-                                    <div class="sub-agent-avatar">${getInitials(sub.name)}</div>
-                                    <div class="sub-agent-info">
-                                        <span class="sub-agent-name">${escapeHtml(sub.name)}</span>
-                                        <span class="sub-agent-status ${sub.status}"></span>
-                                    </div>
-                                    <span class="sub-agent-tasks">${sub.completed_tasks || 0}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
+            `).join('') : ''}
+        `;
+    }).join('');
+}
+
+/**
+ * Render scheduled jobs in the right sidebar
+ */
+function renderQueue() {
+    const queue = window.missionControlData.getQueue();
+    const container = document.getElementById('jobs-list');
+    const countEl = document.getElementById('jobs-running');
+
+    if (!container) return;
+
+    // Update running count
+    const runningCount = queue.filter(q => q.status === 'running').length;
+    if (countEl) countEl.textContent = `${runningCount} running`;
+
+    container.innerHTML = queue.map(item => {
+        const successRate = item.run_count > 0
+            ? Math.round((item.success_count / item.run_count) * 100)
+            : 100;
+        const humanSchedule = cronToHuman(item.schedule);
+
+        return `
+            <div class="job-card ${item.status}">
+                <div class="job-header">
+                    <span class="job-status-dot ${item.status}"></span>
+                    <span class="job-name">${escapeHtml(item.name)}</span>
+                </div>
+                <div class="job-schedule">
+                    <span class="job-frequency">${humanSchedule}</span>
+                    <span class="job-type ${item.type}">${item.type}</span>
+                </div>
+                <div class="job-stats">
+                    <span class="job-runs">${item.run_count} runs</span>
+                    <span class="job-rate ${successRate < 90 ? 'warning' : ''}">${successRate}% success</span>
+                </div>
+                ${item.last_run ? `<div class="job-last-run">Last: ${formatDate(item.last_run)}</div>` : ''}
             </div>
         `;
     }).join('');
 }
 
 /**
- * Render the task queue
+ * Convert cron syntax to human-readable format
  */
-function renderQueue() {
-    const queue = window.missionControlData.getQueue();
-    const container = document.getElementById('queue-list');
-    const subtitle = document.getElementById('queue-subtitle');
+function cronToHuman(schedule) {
+    if (!schedule) return 'Unknown';
 
-    if (!container) return;
+    // Handle special cases
+    if (schedule === 'continuous') return 'Always running';
+    if (schedule === 'manual') return 'Manual trigger';
 
-    // Update subtitle
-    const runningCount = queue.filter(q => q.status === 'running').length;
-    subtitle.textContent = `${runningCount} jobs running`;
+    const parts = schedule.split(' ');
+    if (parts.length !== 5) return schedule;
 
-    container.innerHTML = queue.map(item => {
-        const successRate = item.run_count > 0
-            ? Math.round((item.success_count / item.run_count) * 100)
-            : 100;
+    const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
 
-        return `
-            <div class="queue-card queue-${item.status}">
-                <div class="queue-header">
-                    <div class="queue-type-icon ${item.type}">
-                        ${getQueueIcon(item.type)}
-                    </div>
-                    <div class="queue-info">
-                        <div class="queue-name">${escapeHtml(item.name)}</div>
-                        <div class="queue-schedule">${escapeHtml(item.schedule)}</div>
-                    </div>
-                    <div class="queue-status-indicator ${item.status}"></div>
-                </div>
-                <div class="queue-meta">
-                    <span class="queue-runs">${item.run_count} runs</span>
-                    <span class="queue-success-rate ${successRate < 90 ? 'warning' : ''}">${successRate}%</span>
-                </div>
-                ${item.last_run ? `
-                    <div class="queue-last-run">
-                        Last: ${formatDate(item.last_run)}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }).join('');
+    // Every X minutes
+    if (minute.startsWith('*/') && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const mins = minute.substring(2);
+        return `Every ${mins} min`;
+    }
+
+    // Every hour at specific minute
+    if (minute !== '*' && !minute.includes('/') && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        return minute === '0' ? 'Every hour' : `Hourly at :${minute.padStart(2, '0')}`;
+    }
+
+    // Every X hours
+    if (minute === '0' && hour.startsWith('*/') && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const hrs = hour.substring(2);
+        return `Every ${hrs} hours`;
+    }
+
+    // Daily at specific time
+    if (minute !== '*' && hour !== '*' && !hour.includes('/') && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+        const h = parseInt(hour);
+        const m = minute.padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+        return `Daily at ${h12}:${m} ${ampm}`;
+    }
+
+    // Weekdays at specific time
+    if (minute !== '*' && hour !== '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5') {
+        const h = parseInt(hour);
+        const m = minute.padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+        return `Weekdays ${h12}:${m} ${ampm}`;
+    }
+
+    // Weekly
+    if (minute !== '*' && hour !== '*' && dayOfMonth === '*' && month === '*' && /^[0-6]$/.test(dayOfWeek)) {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return `Weekly on ${days[parseInt(dayOfWeek)]}`;
+    }
+
+    // Fallback - return simplified version
+    return schedule;
+}
+
+/**
+ * Save dashboard name to localStorage
+ */
+function saveDashboardName() {
+    const input = document.getElementById('dashboard-name');
+    if (input && input.value.trim()) {
+        const name = input.value.trim();
+        localStorage.setItem('mc-dashboard-name', name);
+        updateDashboardName(name);
+        alert('Dashboard name saved!');
+    }
+}
+
+/**
+ * Update dashboard name in header
+ */
+function updateDashboardName(name) {
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        const icon = logo.querySelector('.logo-icon');
+        logo.innerHTML = '';
+        if (icon) logo.appendChild(icon);
+        logo.appendChild(document.createTextNode(' ' + name));
+    }
+    document.title = name;
+}
+
+/**
+ * Load saved dashboard name
+ */
+function loadDashboardName() {
+    const savedName = localStorage.getItem('mc-dashboard-name');
+    if (savedName) {
+        updateDashboardName(savedName);
+        const input = document.getElementById('dashboard-name');
+        if (input) input.value = savedName;
+    }
 }
 
 /**
