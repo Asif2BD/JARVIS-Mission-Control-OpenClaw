@@ -1,0 +1,82 @@
+{
+  "id": "workflow-feature-development",
+  "name": "Feature Development Workflow",
+  "description": "Standard workflow for implementing new features. Includes design, implementation, testing, and review phases.",
+  "status": "active",
+  "current_stage": null,
+  "stages": [
+    {
+      "id": "design",
+      "name": "Design",
+      "description": "Research and design the feature",
+      "status": "pending",
+      "tasks_template": [
+        "research-requirements",
+        "create-design-doc",
+        "review-design"
+      ],
+      "tasks": [],
+      "required_approval": true,
+      "approver": "agent-jarvis",
+      "started_at": null,
+      "completed_at": null
+    },
+    {
+      "id": "implementation",
+      "name": "Implementation",
+      "description": "Implement the feature",
+      "status": "pending",
+      "tasks_template": [
+        "implement-backend",
+        "implement-frontend",
+        "write-tests"
+      ],
+      "tasks": [],
+      "required_approval": false,
+      "approver": null,
+      "started_at": null,
+      "completed_at": null
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "description": "Test the implementation",
+      "status": "pending",
+      "tasks_template": [
+        "run-unit-tests",
+        "run-integration-tests",
+        "manual-qa"
+      ],
+      "tasks": [],
+      "required_approval": false,
+      "approver": null,
+      "started_at": null,
+      "completed_at": null
+    },
+    {
+      "id": "review",
+      "name": "Review",
+      "description": "Final code review and approval",
+      "status": "pending",
+      "tasks_template": [
+        "code-review",
+        "security-review",
+        "documentation-review"
+      ],
+      "tasks": [],
+      "required_approval": true,
+      "approver": "human-admin",
+      "started_at": null,
+      "completed_at": null
+    }
+  ],
+  "tasks": [],
+  "created_by": "agent-jarvis",
+  "created_at": "2026-02-05T00:00:00Z",
+  "updated_at": null,
+  "completed_at": null,
+  "metadata": {
+    "template": true,
+    "category": "development"
+  }
+}
