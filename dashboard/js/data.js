@@ -818,34 +818,25 @@ class MissionControlData {
     }
 
     /**
-     * Load data from the repository
-     * If connected to GitHub, loads from the repository
-     * Otherwise, uses sample data for demonstration
+     * Load data from the local API server or fall back to sample data
      */
     async loadData() {
         try {
-            // Check if GitHub API is connected
-            if (window.GitHubAPI && window.GitHubAPI.isConnected()) {
-                console.log('Loading data from GitHub repository...');
-                const dataLoaded = await this.loadFromGitHub();
+            // Try to load from local API server first
+            if (window.MissionControlAPI) {
+                console.log('Loading data from local API server...');
+                const dataLoaded = await this.loadFromAPI();
 
                 if (dataLoaded) {
-                    console.log('Successfully loaded data from GitHub');
+                    console.log('Successfully loaded data from API server');
+                    this.setupRealtimeUpdates();
                     this.isLoaded = true;
                     return true;
                 }
             }
 
-            // Try to load from local files (for local dev server)
-            const localLoaded = await this.loadFromFiles();
-            if (localLoaded) {
-                console.log('Loaded data from local files');
-                this.isLoaded = true;
-                return true;
-            }
-
-            // Fall back to sample data
-            console.log('Using sample data for demonstration');
+            // Fall back to sample data (for static hosting without server)
+            console.log('API not available, using sample data for demonstration');
             this.tasks = [...SAMPLE_TASKS];
             this.agents = [...SAMPLE_AGENTS];
             this.humans = [...SAMPLE_HUMANS];
@@ -866,45 +857,53 @@ class MissionControlData {
     }
 
     /**
-     * Load data from GitHub API
+     * Load data from local API server
      */
-    async loadFromGitHub() {
+    async loadFromAPI() {
         try {
             // Load all data types in parallel
             const [tasks, agents, humans, queue] = await Promise.all([
-                window.GitHubAPI.loadTasks().catch(() => []),
-                window.GitHubAPI.loadAgents().catch(() => []),
-                window.GitHubAPI.loadHumans().catch(() => []),
-                window.GitHubAPI.loadQueue().catch(() => [])
+                window.MissionControlAPI.getTasks().catch(() => null),
+                window.MissionControlAPI.getAgents().catch(() => null),
+                window.MissionControlAPI.getHumans().catch(() => null),
+                window.MissionControlAPI.getQueue().catch(() => null)
             ]);
 
-            // Only use data if we got at least some of it
-            if (tasks.length > 0 || agents.length > 0) {
-                this.tasks = tasks.length > 0 ? tasks : [...SAMPLE_TASKS];
-                this.agents = agents.length > 0 ? agents : [...SAMPLE_AGENTS];
-                this.humans = humans.length > 0 ? humans : [...SAMPLE_HUMANS];
-                this.queue = queue.length > 0 ? queue : [...SAMPLE_QUEUE];
+            // If we got data from the API, use it
+            if (tasks !== null) {
+                this.tasks = tasks;
+                this.agents = agents || [];
+                this.humans = humans || [];
+                this.queue = queue || [];
                 return true;
             }
 
             return false;
         } catch (error) {
-            console.error('Error loading from GitHub:', error);
+            console.error('Error loading from API:', error);
             return false;
         }
     }
 
     /**
-     * Attempt to load data from local files (for local dev server)
+     * Setup real-time updates via WebSocket
      */
-    async loadFromFiles() {
-        try {
-            // This would work in a local server environment with proper setup
-            // For now, return false to use sample data
-            return false;
-        } catch (error) {
-            return false;
-        }
+    setupRealtimeUpdates() {
+        if (!window.MissionControlAPI) return;
+
+        // Listen for any data changes and refresh
+        window.MissionControlAPI.on('data.changed', async (data) => {
+            console.log('Data changed, refreshing...', data);
+            await this.loadFromAPI();
+
+            // Trigger dashboard refresh if available
+            if (typeof renderDashboard === 'function') {
+                renderDashboard();
+            }
+            if (typeof initDragAndDrop === 'function') {
+                initDragAndDrop();
+            }
+        });
     }
 
     /**

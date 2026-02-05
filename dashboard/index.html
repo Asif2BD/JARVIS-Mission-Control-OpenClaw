@@ -199,21 +199,13 @@
                     </h2>
                 </div>
                 <div class="settings-list">
-                    <!-- GitHub Connection -->
-                    <div class="setting-item github-settings">
-                        <label>GitHub Connection</label>
-                        <div id="github-status" class="github-status disconnected">
-                            <span class="status-dot disconnected"></span> Not connected
+                    <!-- Server Connection Status -->
+                    <div class="setting-item">
+                        <label>Server Status</label>
+                        <div id="server-status" class="server-status">
+                            <span class="status-dot" id="server-status-dot"></span>
+                            <span id="server-status-text">Checking...</span>
                         </div>
-                        <div id="github-repo-info" class="github-repo-info">Using demo data</div>
-
-                        <div id="github-connect-form" class="github-form">
-                            <input type="text" id="github-owner" placeholder="Owner (e.g., username)">
-                            <input type="text" id="github-repo" placeholder="Repository name">
-                            <input type="password" id="github-token" placeholder="Personal Access Token">
-                            <button class="btn-small btn-connect" id="github-connect-btn" onclick="connectGitHub()">Connect</button>
-                        </div>
-                        <button class="btn-small btn-disconnect" id="github-disconnect-btn" onclick="disconnectGitHub()" style="display: none;">Disconnect</button>
                     </div>
 
                     <!-- Dashboard Name -->
@@ -335,22 +327,23 @@
     <!-- Instructions Panel -->
     <div class="instructions-panel" id="instructions-panel">
         <h3>Getting Started</h3>
-        <p>This dashboard reads data from the <code>.mission-control/</code> directory.</p>
-        <h4>For Local Development:</h4>
+        <p>This dashboard connects to the local Mission Control server.</p>
+        <h4>To Start:</h4>
         <ol>
-            <li>Start a local server: <code>python -m http.server 8000</code></li>
-            <li>Open <code>http://localhost:8000/dashboard/</code></li>
-            <li>Data will be loaded from the repository</li>
+            <li>Install dependencies: <code>cd server && npm install</code></li>
+            <li>Start server: <code>npm start</code></li>
+            <li>Open <code>http://localhost:3000</code></li>
         </ol>
-        <h4>For GitHub Pages:</h4>
-        <ol>
-            <li>Enable GitHub Pages in repository settings</li>
-            <li>Tasks will be loaded via GitHub API</li>
-        </ol>
+        <h4>Features:</h4>
+        <ul>
+            <li>Real-time updates via WebSocket</li>
+            <li>Data stored as JSON files in <code>.mission-control/</code></li>
+            <li>Webhooks for agent notifications</li>
+        </ul>
         <button class="btn btn-secondary" onclick="toggleInstructions()">Got it!</button>
     </div>
 
-    <script src="js/github-api.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
 </body>
