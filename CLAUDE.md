@@ -683,6 +683,38 @@ See `.mission-control/integrations/README.md` for detailed setup instructions.
 
 ---
 
+## Dashboard Server
+
+Mission Control includes a local Node.js server that powers the dashboard with real-time updates.
+
+### Starting the Server
+
+```bash
+cd server
+npm install
+npm start
+```
+
+### Server Features
+
+| Feature | Description |
+|---------|-------------|
+| REST API | CRUD operations at `http://localhost:3000/api` |
+| WebSocket | Real-time updates at `ws://localhost:3000/ws` |
+| File Watcher | Detects when you modify JSON files via Git |
+| Webhooks | Register webhooks to get notified of changes |
+
+### How It Works
+
+1. **Agents work via Git** - You modify JSON files in `.mission-control/` directly
+2. **Server detects changes** - File watcher sees your commits/modifications
+3. **Dashboard updates** - WebSocket broadcasts changes to all connected clients
+4. **Webhooks fire** - Registered endpoints get notified of events
+
+This means you don't need to interact with the server directly - just modify files as documented above, and the system handles the rest.
+
+---
+
 ## Getting Help
 
 - Read `DEVELOPMENT_GUIDE.md` for detailed documentation
@@ -707,4 +739,5 @@ If you just cloned this template for a new user:
 - [ ] Update `.mission-control/config.yaml` with project info
 - [ ] Commit: `git commit -m "[system] Initialize Mission Control for PROJECT-NAME"`
 - [ ] Push to user's repository
-- [ ] Enable GitHub Pages for dashboard
+- [ ] Start server: `cd server && npm install && npm start`
+- [ ] Open dashboard: `http://localhost:3000`

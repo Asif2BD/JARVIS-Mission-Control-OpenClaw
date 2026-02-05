@@ -1,0 +1,21 @@
+{
+  "id": "queue-health-check",
+  "name": "System Health Monitor",
+  "type": "cron",
+  "schedule": "*/15 * * * *",
+  "description": "Monitors system health metrics every 15 minutes. Checks agent status, task queue health, and system resources.",
+  "status": "running",
+  "assigned_to": "agent-trinity",
+  "last_run": "2026-02-05T11:45:00Z",
+  "next_run": "2026-02-05T12:00:00Z",
+  "run_count": 96,
+  "success_count": 95,
+  "failure_count": 1,
+  "labels": ["monitoring", "health", "system"],
+  "created_at": "2026-02-01T00:00:00Z",
+  "metadata": {
+    "timeout_seconds": 60,
+    "alert_on_failure": true,
+    "notify": ["human-asif"]
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * JARVIS Mission Control - Main Application
- * Enhanced with theme switching and improved UI
+ * Local file-based system with real-time updates via WebSocket
  */
 
 // State
@@ -19,7 +19,10 @@ async function init() {
     // Load saved dashboard name
     loadDashboardName();
 
-    // Load data
+    // Check server connection
+    await checkServerConnection();
+
+    // Load data (from local API if connected, otherwise sample data)
     await window.missionControlData.loadData();
 
     // Render the dashboard
@@ -31,6 +34,122 @@ async function init() {
     }
 
     console.log('Dashboard initialized');
+}
+
+// ============================================
+// SERVER CONNECTION
+// ============================================
+
+/**
+ * Check if local server is running and update status indicator
+ */
+async function checkServerConnection() {
+    const statusDot = document.getElementById('server-status-dot');
+    const statusText = document.getElementById('server-status-text');
+
+    if (!statusDot || !statusText) return;
+
+    try {
+        if (window.MissionControlAPI) {
+            const metrics = await window.MissionControlAPI.getMetrics();
+            if (metrics) {
+                statusDot.classList.remove('offline');
+                statusDot.classList.add('online');
+                statusText.textContent = `Connected (${metrics.wsClientsConnected || 0} clients)`;
+                return true;
+            }
+        }
+    } catch (error) {
+        console.log('Server not available:', error.message);
+    }
+
+    statusDot.classList.remove('online');
+    statusDot.classList.add('offline');
+    statusText.textContent = 'Offline - Using sample data';
+    return false;
+}
+
+/**
+ * Periodically check server connection
+ */
+setInterval(checkServerConnection, 30000);
+
+// ============================================
+// LOADING & TOAST NOTIFICATIONS
+// ============================================
+
+/**
+ * Show loading overlay
+ */
+function showLoading(message = 'Loading...') {
+    let overlay = document.getElementById('loading-overlay');
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">${escapeHtml(message)}</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        overlay.querySelector('.loading-text').textContent = message;
+    }
+
+    requestAnimationFrame(() => overlay.classList.add('active'));
+}
+
+/**
+ * Hide loading overlay
+ */
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
+/**
+ * Show a toast notification
+ */
+function showToast(type, title, message) {
+    let container = document.getElementById('toast-container');
+
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || 'ℹ'}</span>
+        <div class="toast-content">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
 }
 
 /**
@@ -142,6 +261,8 @@ function renderKanban() {
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = `task-card priority-${task.priority}`;
+    card.dataset.taskId = task.id;
+    card.dataset.assignee = task.assignee || '';
     card.onclick = () => openTaskModal(task);
 
     // Get assignee name
@@ -194,7 +315,7 @@ function renderHumans() {
         const channelIcons = getChannelIcons(human.channels);
 
         return `
-            <div class="entity-row human-row">
+            <div class="entity-row human-row clickable" data-entity-id="${human.id}" onclick="highlightEntityTasks('${human.id}')">
                 <div class="entity-status ${human.status}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
@@ -257,7 +378,7 @@ function renderAgents() {
         const channelIcons = getChannelIcons(agent.channels);
 
         return `
-            <div class="entity-row agent-row ${agent.role}">
+            <div class="entity-row agent-row ${agent.role} clickable" data-entity-id="${agent.id}" onclick="highlightEntityTasks('${agent.id}')">
                 <div class="entity-status ${agent.status}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
@@ -536,7 +657,7 @@ function closeCreateTaskModal() {
 /**
  * Create a new task
  */
-function createTask() {
+async function createTask() {
     const title = document.getElementById('task-title').value.trim();
     const description = document.getElementById('task-description').value.trim();
     const priority = document.getElementById('task-priority').value;
@@ -544,7 +665,7 @@ function createTask() {
     const labelsStr = document.getElementById('task-labels').value.trim();
 
     if (!title || !description) {
-        alert('Please fill in all required fields');
+        showToast('error', 'Missing Fields', 'Please fill in title and description');
         return;
     }
 
@@ -552,36 +673,77 @@ function createTask() {
         labelsStr.split(',').map(l => l.trim()).filter(l => l) :
         [];
 
-    // Create the task
-    const newTask = window.missionControlData.addTask({
+    // Create the task object locally first
+    const taskData = {
         title,
         description,
         priority,
         assignee,
         labels,
         created_by: 'human-user'
-    });
+    };
 
-    console.log('Created task:', newTask);
-
-    // Close modal and refresh
+    // Close modal
     closeCreateTaskModal();
-    renderDashboard();
 
-    // Show task JSON for copying (in a real app, this would commit to Git)
-    showTaskJson(newTask);
+    // Try to save to local server API
+    if (window.MissionControlAPI) {
+        showLoading('Saving task...');
+
+        try {
+            const savedTask = await window.MissionControlAPI.createTask(taskData);
+
+            if (savedTask && savedTask.id) {
+                // Add to local data store
+                window.missionControlData.tasks.push(savedTask);
+
+                showToast('success', 'Task Created', `Task saved: ${savedTask.id}`);
+                console.log('Task saved to server:', savedTask);
+            } else {
+                throw new Error('Invalid response from server');
+            }
+        } catch (error) {
+            console.error('Failed to save task to server:', error);
+
+            // Fall back to local-only storage
+            const newTask = window.missionControlData.addTask(taskData);
+            showToast('info', 'Task Created Locally',
+                'Server unavailable. Task stored locally only.');
+            showTaskJson(newTask);
+        }
+
+        hideLoading();
+    } else {
+        // No API available - create locally and show JSON
+        const newTask = window.missionControlData.addTask(taskData);
+        showToast('info', 'Task Created Locally',
+            'Start the server to enable persistence.');
+        showTaskJson(newTask);
+    }
+
+    // Refresh display
+    renderDashboard();
+    initDragAndDrop();
 }
 
 /**
- * Show task JSON for manual Git commit
+ * Show task JSON for manual save (fallback when server not available)
  */
 function showTaskJson(task) {
     const json = JSON.stringify(task, null, 2);
     const filename = `${task.id}.json`;
 
-    alert(`Task created! In a real setup, save this to:\n.mission-control/tasks/${filename}\n\nTask JSON has been logged to console.`);
     console.log(`Save to .mission-control/tasks/${filename}:`);
     console.log(json);
+
+    // Copy to clipboard if supported
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(json).then(() => {
+            showToast('info', 'Copied!', 'Task JSON copied to clipboard');
+        }).catch(() => {
+            // Clipboard failed, that's ok
+        });
+    }
 }
 
 /**
@@ -638,6 +800,72 @@ function formatDate(isoString) {
         return `${diffDays}d ago`;
     } else {
         return date.toLocaleDateString();
+    }
+}
+
+// ============================================
+// TASK HIGHLIGHTING - Click on agent/human to highlight their tasks
+// ============================================
+
+let currentHighlightedEntity = null;
+
+/**
+ * Highlight tasks assigned to a specific entity (agent or human)
+ * Clicking the same entity again removes the highlight
+ */
+function highlightEntityTasks(entityId) {
+    const allTaskCards = document.querySelectorAll('.task-card');
+    const allEntityRows = document.querySelectorAll('.entity-row');
+
+    // If clicking the same entity, toggle off
+    if (currentHighlightedEntity === entityId) {
+        currentHighlightedEntity = null;
+
+        // Remove all highlights
+        allTaskCards.forEach(card => {
+            card.classList.remove('highlighted', 'dimmed');
+        });
+
+        // Remove selected state from entity rows
+        allEntityRows.forEach(row => {
+            row.classList.remove('selected');
+        });
+
+        return;
+    }
+
+    // Set new highlighted entity
+    currentHighlightedEntity = entityId;
+
+    // Update entity row selection
+    allEntityRows.forEach(row => {
+        if (row.dataset.entityId === entityId) {
+            row.classList.add('selected');
+        } else {
+            row.classList.remove('selected');
+        }
+    });
+
+    // Count matching tasks
+    let matchCount = 0;
+
+    // Highlight matching tasks, dim others
+    allTaskCards.forEach(card => {
+        if (card.dataset.assignee === entityId) {
+            card.classList.add('highlighted');
+            card.classList.remove('dimmed');
+            matchCount++;
+        } else {
+            card.classList.remove('highlighted');
+            card.classList.add('dimmed');
+        }
+    });
+
+    // If no tasks found, still show the selection but don't dim anything
+    if (matchCount === 0) {
+        allTaskCards.forEach(card => {
+            card.classList.remove('dimmed');
+        });
     }
 }
 
@@ -735,7 +963,7 @@ function handleDragLeave(e) {
     }
 }
 
-function handleDrop(e) {
+async function handleDrop(e) {
     e.preventDefault();
 
     const taskList = e.target.closest('.task-list');
@@ -764,7 +992,16 @@ function handleDrop(e) {
         });
 
         console.log(`Task ${draggedTask.id} moved: ${oldStatus} -> ${newStatus}`);
-        console.log('Updated task JSON:', JSON.stringify(draggedTask, null, 2));
+
+        // Save to server if available
+        if (window.MissionControlAPI) {
+            try {
+                await window.MissionControlAPI.updateTask(draggedTask.id, draggedTask);
+            } catch (error) {
+                console.error('Failed to save task update:', error);
+                showToast('error', 'Save Failed', 'Task moved locally but not saved to server');
+            }
+        }
 
         // Re-render the board
         renderDashboard();
@@ -781,7 +1018,7 @@ function handleDrop(e) {
 /**
  * Quick assign task to agent
  */
-function assignTask(taskId, assigneeId) {
+async function assignTask(taskId, assigneeId) {
     const task = window.missionControlData.tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -809,6 +1046,16 @@ function assignTask(taskId, assigneeId) {
     });
 
     console.log(`Task ${taskId} assigned to ${assigneeName}`);
+
+    // Save to server if available
+    if (window.MissionControlAPI) {
+        try {
+            await window.MissionControlAPI.updateTask(task.id, task);
+        } catch (error) {
+            console.error('Failed to save assignment:', error);
+        }
+    }
+
     renderDashboard();
     initDragAndDrop();
 }
