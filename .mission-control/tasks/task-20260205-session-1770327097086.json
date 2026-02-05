@@ -1,0 +1,21 @@
+{
+  "id": "task-20260205-session-1770327097086",
+  "title": "The Keymaker (Social Analyst)",
+  "description": "**OpenClaw Session Task**\n\nAgent: keymaker\nSession: 4515451a-1086-4b4e-831b-c75d8983e4fb\nSpawned by: agent:main:main\n\n---\n\nAgent session started",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-keymaker",
+  "created_by": "agent:main:main",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "keymaker"
+  ],
+  "metadata": {
+    "openclaw_session_id": "4515451a-1086-4b4e-831b-c75d8983e4fb",
+    "openclaw_agent_name": "keymaker",
+    "spawned_by": "agent:main:main"
+  },
+  "created_at": "2026-02-05T21:31:37.086Z",
+  "updated_at": "2026-02-05T21:31:39.269Z"
+}

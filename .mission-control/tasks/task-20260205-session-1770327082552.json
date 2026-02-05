@@ -1,0 +1,21 @@
+{
+  "id": "task-20260205-session-1770327082552",
+  "title": "Tank: Launch JARVIS Mission Control",
+  "description": "**OpenClaw Session Task**\n\nAgent: tank\nSession: 04b07ed1-d854-4225-8f28-97131d5c98c2\nSpawned by: agent:main:main\n\n---\n\n[Thu 2026-02-05 21:13 UTC] Mission: Launch JARVIS Mission Control\n\nExecute the following steps:\n\n1. Install server dependencies:\n   cd mission-control/server && npm install\n\n2. Register The Architect as a human operator:\n   cd mission-control && ./scripts/add-human.sh --id human-architect --name \"The Architect\" --role \"System Architect\"\n\n3. Register Matrix Zion agents:\n   - Tank (you) as lead agent\n   - The Oracle as orchestrator\n   - Shuri as writer\n   - The Keymaker as analyst\n\n4. Start the server in background:\n   cd mission-control/server && npm start\n\n5. Verify it's running and report:\n   - Server status (running/failed)\n   - Dashboard URL\n   - Any errors encountered\n\nThe Architect wants this operational now.",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-tank",
+  "created_by": "agent:main:main",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "tank"
+  ],
+  "metadata": {
+    "openclaw_session_id": "04b07ed1-d854-4225-8f28-97131d5c98c2",
+    "openclaw_agent_name": "tank",
+    "spawned_by": "agent:main:main"
+  },
+  "created_at": "2026-02-05T21:31:22.554Z",
+  "updated_at": "2026-02-05T21:31:24.852Z"
+}

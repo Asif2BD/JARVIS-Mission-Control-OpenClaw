@@ -1,0 +1,12 @@
+{
+  "title": "Duplicate task in mission control",
+  "description": "There are a lot of duplicate and junk tasks. You should clean this and make sure everything is logical and well tracked.",
+  "priority": "high",
+  "assignee": "agent-oracle",
+  "labels": [],
+  "created_by": "human-user",
+  "id": "task-20260205-1770327281542",
+  "created_at": "2026-02-05T21:34:41.542Z",
+  "updated_at": "2026-02-05T21:34:41.542Z",
+  "status": "INBOX"
+}

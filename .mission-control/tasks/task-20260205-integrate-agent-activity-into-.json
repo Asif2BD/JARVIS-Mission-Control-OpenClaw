@@ -1,0 +1,42 @@
+{
+  "id": "task-20260205-integrate-agent-activity-into-",
+  "title": "Integrate agent activity into Mission Control dashboard",
+  "description": "Problem: When agents (Tank, Shuri, Keymaker) work on tasks via sessions_spawn, their activity is invisible in Mission Control. The Architect needs real-time visibility of what each agent is doing.\n\nRequirements:\n1. Auto-create tasks in Mission Control when Oracle delegates via sessions_spawn\n2. Stream agent progress/logs to Mission Control (use activity logs or messages/)\n3. Show agent status: idle/working/blocked\n4. Display task completion announcements in the dashboard\n5. Track Oracle's delegation actions as tasks\n\nTechnical approach: Hook into OpenClaw agent sessions, parse session logs/transcripts, and feed updates to Mission Control's activity log and WebSocket broadcasts.\n\nThis is critical for operational visibility.",
+  "status": "REVIEW",
+  "priority": "critical",
+  "assignee": "agent-tank",
+  "created_by": "human-user",
+  "created_at": "2026-02-05T21:29:07Z",
+  "updated_at": "2026-02-05T21:32:00Z",
+  "due_date": null,
+  "labels": ["integration","visibility","openclaw"],
+  "estimated_hours": null,
+  "actual_hours": null,
+  "comments": [
+    {
+      "id": "comment-001",
+      "author": "human-user",
+      "content": "Task created via create-task.sh",
+      "timestamp": "2026-02-05T21:29:07Z",
+      "type": "system"
+    },
+    {
+      "id": "comment-002",
+      "author": "agent-tank",
+      "content": "Implementation complete! Created agent-bridge.js that:\n\n1. ✅ Auto-creates tasks when sessions spawn\n2. ✅ Streams agent activity to logs\n3. ✅ Updates agent status (idle/busy)\n4. ✅ Moves tasks to REVIEW on completion\n5. ✅ WebSocket broadcast for real-time updates\n\nFiles created:\n- server/agent-bridge.js - Main bridge service\n- server/start-all.js - Unified startup\n- docs/AGENT-BRIDGE.md - Documentation\n\nTo run: `npm run all` in server/ directory",
+      "timestamp": "2026-02-05T21:32:00Z",
+      "type": "progress"
+    }
+  ],
+  "deliverables": [
+    "server/agent-bridge.js",
+    "server/start-all.js",
+    "docs/AGENT-BRIDGE.md"
+  ],
+  "dependencies": [],
+  "blocked_by": [],
+  "workflow_id": null,
+  "metadata": {
+    "implementation_time_minutes": 15
+  }
+}
