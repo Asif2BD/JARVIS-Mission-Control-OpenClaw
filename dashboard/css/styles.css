@@ -1562,6 +1562,45 @@ body::after {
     color: var(--neon-cyan);
 }
 
+/* Human rows - compact horizontal pills */
+.entity-row.human-row {
+    flex: 0 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    min-width: 120px;
+    max-width: 160px;
+}
+
+.entity-row.human-row:hover {
+    border-color: var(--neon-green);
+    background: var(--bg-card-hover);
+}
+
+.entity-row.human-row.selected {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
+}
+
+.entity-row.human-row .entity-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.entity-row.human-row .entity-name {
+    font-size: 0.75rem;
+}
+
+.entity-row.human-row .entity-role {
+    font-size: 0.5625rem;
+}
+
+.entity-row.human-row .entity-tasks {
+    display: none;
+}
+
 .entity-status {
     width: 8px;
     height: 8px;
@@ -1824,16 +1863,17 @@ body::after {
 }
 
 /* ============================================
-   HUMAN OPERATORS
+   HUMAN OPERATORS - Horizontal Compact Layout
    ============================================ */
 
 .humans-list {
     padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    max-height: 150px;
-    overflow-y: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    max-height: none;
+    overflow-y: visible;
 }
 
 .human-card {
@@ -2274,15 +2314,54 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    max-height: 300px;
+    overflow-y: auto;
 }
 
-/* Job Cards */
+/* Empty state for jobs */
+.jobs-list:empty::after {
+    content: 'No scheduled jobs';
+    display: block;
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--text-muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+}
+
+/* Job Cards - Compact and Clean */
 .job-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: var(--spacing-sm);
     transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.job-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--border-color);
+    transition: background var(--transition-fast);
+}
+
+.job-card.running::before {
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+}
+
+.job-card.paused::before {
+    background: var(--neon-yellow);
+}
+
+.job-card.failed::before {
+    background: var(--neon-red);
 }
 
 .job-card:hover {
