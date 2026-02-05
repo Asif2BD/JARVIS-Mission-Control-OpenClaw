@@ -1,6 +1,6 @@
 /**
  * JARVIS Mission Control - Main Application
- * Enhanced with theme switching and improved UI
+ * Enhanced with theme switching, GitHub API integration, and improved UI
  */
 
 // State
@@ -19,7 +19,10 @@ async function init() {
     // Load saved dashboard name
     loadDashboardName();
 
-    // Load data
+    // Initialize GitHub API
+    initGitHubSettings();
+
+    // Load data (from GitHub if connected, otherwise sample data)
     await window.missionControlData.loadData();
 
     // Render the dashboard
@@ -31,6 +34,156 @@ async function init() {
     }
 
     console.log('Dashboard initialized');
+}
+
+// ============================================
+// GITHUB API INTEGRATION
+// ============================================
+
+/**
+ * Initialize GitHub settings UI from saved config
+ */
+function initGitHubSettings() {
+    if (window.GitHubAPI && window.GitHubAPI.config.connected) {
+        // Restore saved values to form (but not the token for security)
+        const ownerInput = document.getElementById('github-owner');
+        const repoInput = document.getElementById('github-repo');
+
+        if (ownerInput) ownerInput.value = window.GitHubAPI.config.owner || '';
+        if (repoInput) repoInput.value = window.GitHubAPI.config.repo || '';
+
+        window.GitHubAPI.updateConnectionStatus();
+    }
+}
+
+/**
+ * Connect to GitHub
+ */
+async function connectGitHub() {
+    const owner = document.getElementById('github-owner').value.trim();
+    const repo = document.getElementById('github-repo').value.trim();
+    const token = document.getElementById('github-token').value.trim();
+
+    if (!owner || !repo || !token) {
+        showToast('error', 'Missing Fields', 'Please fill in all GitHub fields');
+        return;
+    }
+
+    showLoading('Connecting to GitHub...');
+
+    try {
+        const result = await window.GitHubAPI.connect(token, owner, repo);
+
+        if (result.success) {
+            showToast('success', 'Connected!', `Successfully connected to ${owner}/${repo}`);
+
+            // Clear token from input for security
+            document.getElementById('github-token').value = '';
+
+            // Reload data from GitHub
+            await window.missionControlData.loadData();
+            renderDashboard();
+            initDragAndDrop();
+        } else {
+            showToast('error', 'Connection Failed', result.error || 'Unknown error');
+        }
+    } catch (error) {
+        showToast('error', 'Connection Error', error.message);
+    }
+
+    hideLoading();
+}
+
+/**
+ * Disconnect from GitHub
+ */
+function disconnectGitHub() {
+    window.GitHubAPI.disconnect();
+    showToast('info', 'Disconnected', 'Now using demo data');
+
+    // Reload sample data
+    window.missionControlData.loadData().then(() => {
+        renderDashboard();
+        initDragAndDrop();
+    });
+}
+
+// ============================================
+// LOADING & TOAST NOTIFICATIONS
+// ============================================
+
+/**
+ * Show loading overlay
+ */
+function showLoading(message = 'Loading...') {
+    let overlay = document.getElementById('loading-overlay');
+
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">${escapeHtml(message)}</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        overlay.querySelector('.loading-text').textContent = message;
+    }
+
+    requestAnimationFrame(() => overlay.classList.add('active'));
+}
+
+/**
+ * Hide loading overlay
+ */
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
+/**
+ * Show a toast notification
+ */
+function showToast(type, title, message) {
+    let container = document.getElementById('toast-container');
+
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || 'ℹ'}</span>
+        <div class="toast-content">
+            <div class="toast-title">${escapeHtml(title)}</div>
+            <div class="toast-message">${escapeHtml(message)}</div>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
 }
 
 /**
@@ -538,7 +691,7 @@ function closeCreateTaskModal() {
 /**
  * Create a new task
  */
-function createTask() {
+async function createTask() {
     const title = document.getElementById('task-title').value.trim();
     const description = document.getElementById('task-description').value.trim();
     const priority = document.getElementById('task-priority').value;
@@ -546,7 +699,7 @@ function createTask() {
     const labelsStr = document.getElementById('task-labels').value.trim();
 
     if (!title || !description) {
-        alert('Please fill in all required fields');
+        showToast('error', 'Missing Fields', 'Please fill in title and description');
         return;
     }
 
@@ -554,7 +707,7 @@ function createTask() {
         labelsStr.split(',').map(l => l.trim()).filter(l => l) :
         [];
 
-    // Create the task
+    // Create the task object
     const newTask = window.missionControlData.addTask({
         title,
         description,
@@ -566,24 +719,65 @@ function createTask() {
 
     console.log('Created task:', newTask);
 
-    // Close modal and refresh
+    // Close modal
     closeCreateTaskModal();
-    renderDashboard();
 
-    // Show task JSON for copying (in a real app, this would commit to Git)
-    showTaskJson(newTask);
+    // If connected to GitHub, save to repository
+    if (window.GitHubAPI && window.GitHubAPI.isConnected()) {
+        showLoading('Saving task to GitHub...');
+
+        try {
+            await window.GitHubAPI.saveTask(newTask);
+
+            // Log activity
+            await window.GitHubAPI.logActivity(
+                'dashboard',
+                'CREATED',
+                `Task: ${newTask.title} (${newTask.id})`
+            );
+
+            showToast('success', 'Task Created', `Task saved to repository: ${newTask.id}`);
+        } catch (error) {
+            console.error('Failed to save task to GitHub:', error);
+            showToast('error', 'Save Failed', error.message);
+
+            // Show the JSON for manual save as fallback
+            showTaskJson(newTask);
+        }
+
+        hideLoading();
+    } else {
+        // Not connected - show instructions for manual save
+        showTaskJson(newTask);
+    }
+
+    // Refresh display
+    renderDashboard();
+    initDragAndDrop();
 }
 
 /**
- * Show task JSON for manual Git commit
+ * Show task JSON for manual Git commit (fallback when not connected)
  */
 function showTaskJson(task) {
     const json = JSON.stringify(task, null, 2);
     const filename = `${task.id}.json`;
 
-    alert(`Task created! In a real setup, save this to:\n.mission-control/tasks/${filename}\n\nTask JSON has been logged to console.`);
+    // Create a more helpful modal or notification
+    showToast('info', 'Task Created Locally',
+        `Connect to GitHub to auto-save, or manually save to .mission-control/tasks/${filename}`);
+
     console.log(`Save to .mission-control/tasks/${filename}:`);
     console.log(json);
+
+    // Copy to clipboard if supported
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(json).then(() => {
+            showToast('info', 'Copied!', 'Task JSON copied to clipboard');
+        }).catch(() => {
+            // Clipboard failed, that's ok
+        });
+    }
 }
 
 /**

@@ -819,51 +819,87 @@ class MissionControlData {
 
     /**
      * Load data from the repository
-     * In production, this would fetch from actual files
+     * If connected to GitHub, loads from the repository
+     * Otherwise, uses sample data for demonstration
      */
     async loadData() {
         try {
-            // Try to load from actual files first
-            const dataLoaded = await this.loadFromFiles();
+            // Check if GitHub API is connected
+            if (window.GitHubAPI && window.GitHubAPI.isConnected()) {
+                console.log('Loading data from GitHub repository...');
+                const dataLoaded = await this.loadFromGitHub();
 
-            if (!dataLoaded) {
-                // Fall back to sample data
-                console.log('Using sample data for demonstration');
-                this.tasks = SAMPLE_TASKS;
-                this.agents = SAMPLE_AGENTS;
-                this.humans = SAMPLE_HUMANS;
-                this.queue = SAMPLE_QUEUE;
+                if (dataLoaded) {
+                    console.log('Successfully loaded data from GitHub');
+                    this.isLoaded = true;
+                    return true;
+                }
             }
+
+            // Try to load from local files (for local dev server)
+            const localLoaded = await this.loadFromFiles();
+            if (localLoaded) {
+                console.log('Loaded data from local files');
+                this.isLoaded = true;
+                return true;
+            }
+
+            // Fall back to sample data
+            console.log('Using sample data for demonstration');
+            this.tasks = [...SAMPLE_TASKS];
+            this.agents = [...SAMPLE_AGENTS];
+            this.humans = [...SAMPLE_HUMANS];
+            this.queue = [...SAMPLE_QUEUE];
 
             this.isLoaded = true;
             return true;
         } catch (error) {
             console.error('Error loading data:', error);
             // Fall back to sample data
-            this.tasks = SAMPLE_TASKS;
-            this.agents = SAMPLE_AGENTS;
-            this.humans = SAMPLE_HUMANS;
-            this.queue = SAMPLE_QUEUE;
+            this.tasks = [...SAMPLE_TASKS];
+            this.agents = [...SAMPLE_AGENTS];
+            this.humans = [...SAMPLE_HUMANS];
+            this.queue = [...SAMPLE_QUEUE];
             this.isLoaded = true;
             return true;
         }
     }
 
     /**
-     * Attempt to load data from actual files
+     * Load data from GitHub API
+     */
+    async loadFromGitHub() {
+        try {
+            // Load all data types in parallel
+            const [tasks, agents, humans, queue] = await Promise.all([
+                window.GitHubAPI.loadTasks().catch(() => []),
+                window.GitHubAPI.loadAgents().catch(() => []),
+                window.GitHubAPI.loadHumans().catch(() => []),
+                window.GitHubAPI.loadQueue().catch(() => [])
+            ]);
+
+            // Only use data if we got at least some of it
+            if (tasks.length > 0 || agents.length > 0) {
+                this.tasks = tasks.length > 0 ? tasks : [...SAMPLE_TASKS];
+                this.agents = agents.length > 0 ? agents : [...SAMPLE_AGENTS];
+                this.humans = humans.length > 0 ? humans : [...SAMPLE_HUMANS];
+                this.queue = queue.length > 0 ? queue : [...SAMPLE_QUEUE];
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            console.error('Error loading from GitHub:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Attempt to load data from local files (for local dev server)
      */
     async loadFromFiles() {
         try {
-            // This would work in a local server environment
-            // For GitHub Pages, you'd use the GitHub API
-
-            // Try loading tasks
-            const tasksResponse = await fetch('../.mission-control/tasks/');
-            if (!tasksResponse.ok) {
-                return false;
-            }
-
-            // Parse directory listing (this is server-dependent)
+            // This would work in a local server environment with proper setup
             // For now, return false to use sample data
             return false;
         } catch (error) {

@@ -199,6 +199,24 @@
                     </h2>
                 </div>
                 <div class="settings-list">
+                    <!-- GitHub Connection -->
+                    <div class="setting-item github-settings">
+                        <label>GitHub Connection</label>
+                        <div id="github-status" class="github-status disconnected">
+                            <span class="status-dot disconnected"></span> Not connected
+                        </div>
+                        <div id="github-repo-info" class="github-repo-info">Using demo data</div>
+
+                        <div id="github-connect-form" class="github-form">
+                            <input type="text" id="github-owner" placeholder="Owner (e.g., username)">
+                            <input type="text" id="github-repo" placeholder="Repository name">
+                            <input type="password" id="github-token" placeholder="Personal Access Token">
+                            <button class="btn-small btn-connect" id="github-connect-btn" onclick="connectGitHub()">Connect</button>
+                        </div>
+                        <button class="btn-small btn-disconnect" id="github-disconnect-btn" onclick="disconnectGitHub()" style="display: none;">Disconnect</button>
+                    </div>
+
+                    <!-- Dashboard Name -->
                     <div class="setting-item">
                         <label for="dashboard-name">Dashboard Name</label>
                         <input type="text" id="dashboard-name" value="JARVIS Mission Control" placeholder="Enter dashboard name...">
@@ -332,6 +350,7 @@
         <button class="btn btn-secondary" onclick="toggleInstructions()">Got it!</button>
     </div>
 
+    <script src="js/github-api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
 </body>
