@@ -1,0 +1,16 @@
+{
+  "id": "human-architect",
+  "name": "The Architect",
+  "type": "human",
+  "role": "System Architect",
+  "designation": "Project Owner",
+  
+  "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=architect",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "channels": [],
+  "metadata": {
+    "clearance": "OMEGA",
+    "timezone": "UTC"
+  }
+}
