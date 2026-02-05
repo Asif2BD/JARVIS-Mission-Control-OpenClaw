@@ -268,28 +268,28 @@ const SAMPLE_TASKS = [
 // Human operators - separate from AI agents
 const SAMPLE_HUMANS = [
     {
-        "id": "human-admin",
-        "name": "System Administrator",
+        "id": "human-asif",
+        "name": "Asif",
         "type": "human",
         "role": "admin",
         "designation": "Project Owner",
-        "email": "admin@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=admin&backgroundColor=10b981",
+        "email": "asif@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=asif&backgroundColor=10b981",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
-        "completed_tasks": 12,
+        "completed_tasks": 24,
         "last_seen": "2026-02-05T11:45:00Z",
         "channels": [
             {
                 "type": "telegram",
-                "id": "@admin_user",
+                "id": "@asif_admin",
                 "chat_id": "123456789",
                 "notifications": ["task.assigned", "task.completed", "task.blocked", "agent.mentioned"]
             },
             {
                 "type": "email",
-                "id": "admin@example.com",
+                "id": "asif@example.com",
                 "notifications": ["task.completed", "system.daily_report"]
             }
         ],
@@ -300,56 +300,110 @@ const SAMPLE_HUMANS = [
         }
     },
     {
-        "id": "human-reviewer",
-        "name": "Code Reviewer",
+        "id": "human-nobin",
+        "name": "Nobin",
+        "type": "human",
+        "role": "admin",
+        "designation": "Lead Developer",
+        "email": "nobin@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=nobin&backgroundColor=0ea5e9",
+        "status": "online",
+        "capabilities": ["all", "override", "approve"],
+        "current_tasks": [],
+        "completed_tasks": 42,
+        "last_seen": "2026-02-05T11:30:00Z",
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@nobin_dev",
+                "chat_id": "987654321",
+                "notifications": ["task.assigned", "task.review_requested", "task.commented"]
+            }
+        ],
+        "metadata": {
+            "description": "Lead developer overseeing all technical implementations.",
+            "clearance": "OMEGA",
+            "timezone": "Asia/Dhaka"
+        }
+    },
+    {
+        "id": "human-jewel",
+        "name": "Jewel",
         "type": "human",
         "role": "reviewer",
-        "designation": "Senior Engineer",
-        "email": "reviewer@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=reviewer&backgroundColor=a855f7",
+        "designation": "Code Reviewer",
+        "email": "jewel@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=jewel&backgroundColor=a855f7",
         "status": "away",
         "capabilities": ["review", "approve", "comment"],
         "current_tasks": [],
-        "completed_tasks": 34,
+        "completed_tasks": 67,
         "last_seen": "2026-02-05T10:30:00Z",
         "channels": [
             {
                 "type": "telegram",
-                "id": "@code_reviewer",
-                "chat_id": "987654321",
+                "id": "@jewel_review",
+                "chat_id": "456789123",
                 "notifications": ["task.review_requested", "task.commented"]
             }
         ],
         "metadata": {
-            "description": "Human code reviewer and quality assurance.",
+            "description": "Human code reviewer and quality assurance specialist.",
             "clearance": "ALPHA",
             "timezone": "America/New_York"
         }
     },
     {
-        "id": "human-stakeholder",
-        "name": "Product Manager",
+        "id": "human-cipher",
+        "name": "Cipher",
+        "type": "human",
+        "role": "reviewer",
+        "designation": "Security Analyst",
+        "email": "cipher@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=cipher&backgroundColor=ff3366",
+        "status": "online",
+        "capabilities": ["review", "approve", "security-audit"],
+        "current_tasks": [],
+        "completed_tasks": 31,
+        "last_seen": "2026-02-05T11:50:00Z",
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@cipher_sec",
+                "chat_id": "789123456",
+                "notifications": ["task.assigned", "security.alert", "task.blocked"]
+            }
+        ],
+        "metadata": {
+            "description": "Security analyst reviewing security-related tasks and audits.",
+            "clearance": "ALPHA",
+            "timezone": "Europe/London"
+        }
+    },
+    {
+        "id": "human-tony",
+        "name": "Tony",
         "type": "human",
         "role": "observer",
-        "designation": "Stakeholder",
-        "email": "pm@example.com",
-        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=stakeholder&backgroundColor=6b7280",
+        "designation": "Product Manager",
+        "email": "tony@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=tony&backgroundColor=fbbf24",
         "status": "offline",
         "capabilities": ["view", "comment"],
         "current_tasks": [],
-        "completed_tasks": 0,
+        "completed_tasks": 8,
         "last_seen": "2026-02-04T18:00:00Z",
         "channels": [
             {
                 "type": "email",
-                "id": "pm@example.com",
+                "id": "tony@example.com",
                 "notifications": ["task.completed", "system.weekly_report"]
             }
         ],
         "metadata": {
-            "description": "Product stakeholder with view access.",
+            "description": "Product manager overseeing project direction and priorities.",
             "clearance": "OBSERVER",
-            "timezone": "Europe/London"
+            "timezone": "America/Los_Angeles"
         }
     }
 ];

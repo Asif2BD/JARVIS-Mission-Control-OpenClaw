@@ -142,6 +142,8 @@ function renderKanban() {
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = `task-card priority-${task.priority}`;
+    card.dataset.taskId = task.id;
+    card.dataset.assignee = task.assignee || '';
     card.onclick = () => openTaskModal(task);
 
     // Get assignee name
@@ -194,7 +196,7 @@ function renderHumans() {
         const channelIcons = getChannelIcons(human.channels);
 
         return `
-            <div class="entity-row human-row">
+            <div class="entity-row human-row clickable" data-entity-id="${human.id}" onclick="highlightEntityTasks('${human.id}')">
                 <div class="entity-status ${human.status}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
@@ -257,7 +259,7 @@ function renderAgents() {
         const channelIcons = getChannelIcons(agent.channels);
 
         return `
-            <div class="entity-row agent-row ${agent.role}">
+            <div class="entity-row agent-row ${agent.role} clickable" data-entity-id="${agent.id}" onclick="highlightEntityTasks('${agent.id}')">
                 <div class="entity-status ${agent.status}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
@@ -638,6 +640,72 @@ function formatDate(isoString) {
         return `${diffDays}d ago`;
     } else {
         return date.toLocaleDateString();
+    }
+}
+
+// ============================================
+// TASK HIGHLIGHTING - Click on agent/human to highlight their tasks
+// ============================================
+
+let currentHighlightedEntity = null;
+
+/**
+ * Highlight tasks assigned to a specific entity (agent or human)
+ * Clicking the same entity again removes the highlight
+ */
+function highlightEntityTasks(entityId) {
+    const allTaskCards = document.querySelectorAll('.task-card');
+    const allEntityRows = document.querySelectorAll('.entity-row');
+
+    // If clicking the same entity, toggle off
+    if (currentHighlightedEntity === entityId) {
+        currentHighlightedEntity = null;
+
+        // Remove all highlights
+        allTaskCards.forEach(card => {
+            card.classList.remove('highlighted', 'dimmed');
+        });
+
+        // Remove selected state from entity rows
+        allEntityRows.forEach(row => {
+            row.classList.remove('selected');
+        });
+
+        return;
+    }
+
+    // Set new highlighted entity
+    currentHighlightedEntity = entityId;
+
+    // Update entity row selection
+    allEntityRows.forEach(row => {
+        if (row.dataset.entityId === entityId) {
+            row.classList.add('selected');
+        } else {
+            row.classList.remove('selected');
+        }
+    });
+
+    // Count matching tasks
+    let matchCount = 0;
+
+    // Highlight matching tasks, dim others
+    allTaskCards.forEach(card => {
+        if (card.dataset.assignee === entityId) {
+            card.classList.add('highlighted');
+            card.classList.remove('dimmed');
+            matchCount++;
+        } else {
+            card.classList.remove('highlighted');
+            card.classList.add('dimmed');
+        }
+    });
+
+    // If no tasks found, still show the selection but don't dim anything
+    if (matchCount === 0) {
+        allTaskCards.forEach(card => {
+            card.classList.remove('dimmed');
+        });
     }
 }
 
