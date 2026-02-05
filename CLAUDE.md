@@ -44,18 +44,151 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 ```
 .mission-control/
 ├── config.yaml              # System configuration
+├── STATE.md                 # LIVE SYSTEM STATE (read this first!)
 ├── tasks/*.json             # Task files (one per task)
 ├── agents/*.json            # AI agent registrations
 ├── humans/*.json            # Human operator registrations
 ├── queue/*.json             # Recurring task queue (cron jobs, seeders)
 ├── workflows/*.json         # Multi-task workflows
-├── logs/*.log               # Activity logs
+├── logs/                    # Activity logs
+│   ├── activity.log         # All system activity (append-only)
+│   └── YYYY-MM-DD.log       # Daily activity logs
+├── integrations/            # Communication channel configs
 └── hooks/                   # OpenClaw lifecycle hooks
 
 dashboard/                   # Visual Kanban dashboard (GitHub Pages)
 scripts/                     # CLI helper scripts
 docs/                        # Documentation
 ```
+
+---
+
+## System Awareness (CRITICAL FOR MAIN AGENT)
+
+**As the main agent, you MUST maintain continuous awareness of Mission Control.**
+
+### On Every Session Start
+
+1. **Read STATE.md first** - This file contains the live system state
+2. **Check recent activity** - Read the latest log entries
+3. **Review pending tasks** - Know what needs attention
+
+### Quick Status Check
+
+Run these commands to understand current state:
+
+```bash
+# 1. Read current system state (ALWAYS DO THIS FIRST)
+cat .mission-control/STATE.md
+
+# 2. Check recent activity (last 20 entries)
+tail -20 .mission-control/logs/activity.log
+
+# 3. Count tasks by status
+echo "=== TASK STATUS ==="
+for status in INBOX ASSIGNED IN_PROGRESS REVIEW DONE BLOCKED; do
+  count=$(grep -l "\"status\": \"$status\"" .mission-control/tasks/*.json 2>/dev/null | wc -l)
+  echo "$status: $count"
+done
+
+# 4. Check agent statuses
+echo "=== AGENT STATUS ==="
+grep -h '"status"' .mission-control/agents/*.json | sort | uniq -c
+
+# 5. Check for blocked tasks (CRITICAL)
+grep -l '"status": "BLOCKED"' .mission-control/tasks/*.json
+```
+
+### STATE.md Format
+
+The main agent should keep `.mission-control/STATE.md` updated:
+
+```markdown
+# Mission Control State
+Last Updated: 2026-02-05T12:00:00Z
+Updated By: agent-architect
+
+## Current Status: OPERATIONAL
+
+## Active Alerts
+- [ ] Task "Neural Interface Breach" is CRITICAL priority
+- [ ] Agent Trinity is investigating security issue
+
+## Task Summary
+| Status | Count |
+|--------|-------|
+| INBOX | 2 |
+| ASSIGNED | 2 |
+| IN_PROGRESS | 3 |
+| REVIEW | 1 |
+| DONE | 4 |
+| BLOCKED | 0 |
+
+## Agent Status
+| Agent | Status | Current Task |
+|-------|--------|--------------|
+| Neo | busy | Matrix Core Upgrade |
+| Trinity | busy | Neural Interface Breach |
+| Oracle | busy | Prophecy Analysis |
+
+## Recent Activity
+- 12:00 - Architect updated system state
+- 11:30 - Trinity claimed security task
+- 11:00 - Neo started Matrix Core upgrade
+
+## Pending Decisions
+- None
+
+## Notes for Next Session
+- Monitor Trinity's security investigation
+- Review Neo's progress on Matrix Core
+```
+
+### Activity Logging
+
+**Every action must be logged.** Append to `.mission-control/logs/activity.log`:
+
+```
+2026-02-05T12:00:00Z [agent-architect] ACTION: Updated STATE.md
+2026-02-05T11:30:00Z [agent-trinity] CLAIMED: task-20260205-neural-interface
+2026-02-05T11:00:00Z [agent-neo] STARTED: task-20260205-matrix-core
+2026-02-05T10:30:00Z [system] CREATED: task-20260205-ui-interface
+```
+
+Log format: `TIMESTAMP [ACTOR] ACTION: DESCRIPTION`
+
+### Awareness Routine (Run Every Session)
+
+```
+1. READ STATE.md
+2. READ last 20 lines of activity.log
+3. CHECK for BLOCKED tasks
+4. CHECK for CRITICAL priority tasks
+5. REVIEW any tasks in REVIEW status
+6. UPDATE STATE.md if anything changed
+7. LOG your session start
+```
+
+### Event Triggers (What to Watch For)
+
+| Event | Action Required |
+|-------|-----------------|
+| New BLOCKED task | Investigate immediately |
+| CRITICAL priority task | Prioritize and assign |
+| Task in REVIEW > 24hrs | Follow up with reviewer |
+| Agent offline > 1hr | Check for reassignment |
+| Failed queue job | Investigate and restart |
+| New incoming message | Process and create task if needed |
+
+### Maintaining State
+
+The main agent is responsible for:
+
+1. **Keeping STATE.md current** - Update after every significant action
+2. **Logging all activity** - Never skip logging
+3. **Monitoring alerts** - Address blocked/critical items
+4. **Coordinating agents** - Ensure work is distributed
+5. **Syncing with channels** - Process incoming messages from Telegram/etc.
 
 ## Entity Types
 
@@ -72,8 +205,17 @@ Real humans who oversee the system. Create in `.mission-control/humans/`:
   "role": "admin",
   "designation": "Project Owner",
   "email": "owner@example.com",
+  "avatar": "https://example.com/avatar.png",
   "status": "online",
   "capabilities": ["all", "override", "approve"],
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@username",
+      "chat_id": "123456789",
+      "notifications": ["task.assigned", "task.completed"]
+    }
+  ],
   "metadata": {
     "clearance": "OMEGA",
     "timezone": "UTC"
@@ -85,7 +227,7 @@ Real humans who oversee the system. Create in `.mission-control/humans/`:
 **Human Status:** `online`, `away`, `offline`
 
 ### 2. AI Agents
-AI agents that perform work. Agents can have **sub-agents**.
+AI agents that perform work. Agents can have **sub-agents** and communication channels.
 
 ```json
 {
@@ -95,10 +237,19 @@ AI agents that perform work. Agents can have **sub-agents**.
   "role": "specialist",
   "designation": "Code Warrior",
   "model": "claude-opus-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo",
   "status": "active",
   "parent_agent": null,
   "sub_agents": ["agent-neo-scout"],
   "capabilities": ["coding", "debugging"],
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@neo_bot",
+      "chat_id": "bot_neo",
+      "notifications": ["task.assigned", "task.commented"]
+    }
+  ],
   "metadata": { "clearance": "OMEGA" }
 }
 ```
@@ -114,10 +265,12 @@ Lightweight agents spawned by parent agents for specific tasks:
   "role": "sub-agent",
   "designation": "Code Scout",
   "model": "claude-haiku-3",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neoscout",
   "status": "active",
   "parent_agent": "agent-neo",
   "sub_agents": [],
-  "capabilities": ["search", "analysis"]
+  "capabilities": ["search", "analysis"],
+  "channels": []
 }
 ```
 
@@ -447,11 +600,95 @@ git commit -m "[agent:neo] Completed task: Matrix Core System Upgrade"
 git push
 ```
 
+## Communication & Integrations
+
+Mission Control is designed to integrate with external communication channels like Telegram, WhatsApp, Slack, etc. This enables **bi-directional communication**:
+
+1. **Incoming**: Messages/commands from channels create or update tasks
+2. **Outgoing**: Task changes trigger notifications to relevant agents/humans
+
+### Channel Configuration
+
+Each agent and human can have communication channels configured:
+
+```json
+"channels": [
+  {
+    "type": "telegram",
+    "id": "@username_or_bot",
+    "chat_id": "123456789",
+    "notifications": [
+      "task.assigned",
+      "task.commented",
+      "task.completed",
+      "agent.mentioned"
+    ]
+  }
+]
+```
+
+**Supported Channels:**
+- `telegram` - Telegram bots/users
+- `whatsapp` - WhatsApp Business API
+- `slack` - Slack workspaces
+- `discord` - Discord servers
+- `email` - Email notifications
+- `webhook` - Custom HTTP webhooks
+
+### Event Types
+
+Events that flow through Mission Control:
+
+| Event | Description |
+|-------|-------------|
+| `task.created` | New task created |
+| `task.assigned` | Task assigned to agent/human |
+| `task.status_changed` | Task status updated |
+| `task.commented` | New comment on task |
+| `task.completed` | Task marked as done |
+| `task.blocked` | Task blocked |
+| `agent.mentioned` | Agent @mentioned |
+| `agent.status_changed` | Agent status changed |
+| `queue.job_completed` | Scheduled job finished |
+| `system.heartbeat` | System health check |
+
+### Webhook Configuration
+
+Create `.mission-control/integrations/webhooks.yaml`:
+
+```yaml
+incoming:
+  telegram:
+    enabled: true
+    path: "/webhook/telegram"
+    secret: "${TELEGRAM_WEBHOOK_SECRET}"
+
+outgoing:
+  notifications:
+    enabled: true
+    url: "${NOTIFICATION_WEBHOOK_URL}"
+    events:
+      - task.assigned
+      - task.completed
+```
+
+### Setting Up Telegram Integration
+
+1. Copy `.mission-control/integrations/telegram.example.yaml` to `telegram.yaml`
+2. Add your bot token from @BotFather
+3. Configure channel mappings (chat IDs to agents/humans)
+4. Set up webhook URL or enable polling
+
+See `.mission-control/integrations/README.md` for detailed setup instructions.
+
+---
+
 ## Getting Help
 
 - Read `DEVELOPMENT_GUIDE.md` for detailed documentation
 - Read `AGENT_ADOPTION.md` for onboarding steps
 - Read `SECURITY.md` for security protocols
+- Read `.mission-control/integrations/README.md` for integration setup
 - Create a task with label `help` if you're stuck
 
 ---

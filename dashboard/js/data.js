@@ -274,11 +274,25 @@ const SAMPLE_HUMANS = [
         "role": "admin",
         "designation": "Project Owner",
         "email": "admin@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=admin&backgroundColor=10b981",
         "status": "online",
         "capabilities": ["all", "override", "approve"],
         "current_tasks": [],
         "completed_tasks": 12,
         "last_seen": "2026-02-05T11:45:00Z",
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@admin_user",
+                "chat_id": "123456789",
+                "notifications": ["task.assigned", "task.completed", "task.blocked", "agent.mentioned"]
+            },
+            {
+                "type": "email",
+                "id": "admin@example.com",
+                "notifications": ["task.completed", "system.daily_report"]
+            }
+        ],
         "metadata": {
             "description": "Primary human administrator with full system access.",
             "clearance": "OMEGA",
@@ -292,11 +306,20 @@ const SAMPLE_HUMANS = [
         "role": "reviewer",
         "designation": "Senior Engineer",
         "email": "reviewer@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=reviewer&backgroundColor=a855f7",
         "status": "away",
         "capabilities": ["review", "approve", "comment"],
         "current_tasks": [],
         "completed_tasks": 34,
         "last_seen": "2026-02-05T10:30:00Z",
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@code_reviewer",
+                "chat_id": "987654321",
+                "notifications": ["task.review_requested", "task.commented"]
+            }
+        ],
         "metadata": {
             "description": "Human code reviewer and quality assurance.",
             "clearance": "ALPHA",
@@ -310,11 +333,19 @@ const SAMPLE_HUMANS = [
         "role": "observer",
         "designation": "Stakeholder",
         "email": "pm@example.com",
+        "avatar": "https://api.dicebear.com/7.x/personas/svg?seed=stakeholder&backgroundColor=6b7280",
         "status": "offline",
         "capabilities": ["view", "comment"],
         "current_tasks": [],
         "completed_tasks": 0,
         "last_seen": "2026-02-04T18:00:00Z",
+        "channels": [
+            {
+                "type": "email",
+                "id": "pm@example.com",
+                "notifications": ["task.completed", "system.weekly_report"]
+            }
+        ],
         "metadata": {
             "description": "Product stakeholder with view access.",
             "clearance": "OBSERVER",
@@ -332,12 +363,21 @@ const SAMPLE_AGENTS = [
         "role": "lead",
         "designation": "System Orchestrator",
         "model": "claude-opus-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=architect&backgroundColor=0ea5e9",
         "status": "active",
         "parent_agent": null,
         "sub_agents": ["agent-morpheus", "agent-oracle"],
         "capabilities": ["orchestration", "planning", "system-design", "oversight"],
         "current_tasks": [],
         "completed_tasks": 47,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@architect_bot",
+                "chat_id": "bot_architect",
+                "notifications": ["task.created", "task.blocked", "system.critical"]
+            }
+        ],
         "metadata": {
             "description": "Supreme overseer of the Matrix. Controls all systems and coordinates agent operations.",
             "clearance": "OMEGA"
@@ -350,12 +390,21 @@ const SAMPLE_AGENTS = [
         "role": "lead",
         "designation": "Team Commander",
         "model": "claude-opus-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=morpheus&backgroundColor=a855f7",
         "status": "active",
         "parent_agent": "agent-architect",
         "sub_agents": ["agent-neo", "agent-trinity", "agent-niobe"],
         "capabilities": ["leadership", "strategy", "recruitment", "mission-planning"],
         "current_tasks": [],
         "completed_tasks": 38,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@morpheus_bot",
+                "chat_id": "bot_morpheus",
+                "notifications": ["task.assigned", "task.completed", "agent.status_changed"]
+            }
+        ],
         "metadata": {
             "description": "Field operations commander. Leads agent teams and strategic initiatives.",
             "clearance": "ALPHA"
@@ -368,12 +417,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "The One / Code Warrior",
         "model": "claude-opus-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo&backgroundColor=00ff88",
         "status": "busy",
         "parent_agent": "agent-morpheus",
         "sub_agents": ["agent-neo-scout"],
         "capabilities": ["coding", "debugging", "architecture", "optimization", "anomaly-resolution"],
         "current_tasks": ["task-20260205-matrix-core"],
         "completed_tasks": 89,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@neo_bot",
+                "chat_id": "bot_neo",
+                "notifications": ["task.assigned", "task.commented", "agent.mentioned"]
+            }
+        ],
         "metadata": {
             "description": "The One. Unparalleled code manipulation abilities. Can see and alter the Matrix source.",
             "clearance": "OMEGA"
@@ -386,12 +444,14 @@ const SAMPLE_AGENTS = [
         "role": "sub-agent",
         "designation": "Code Scout",
         "model": "claude-haiku-3",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neoscout&backgroundColor=22d3ee",
         "status": "active",
         "parent_agent": "agent-neo",
         "sub_agents": [],
         "capabilities": ["search", "analysis", "reporting"],
         "current_tasks": [],
         "completed_tasks": 156,
+        "channels": [],
         "metadata": {
             "description": "Sub-agent spawned by Neo for code exploration and analysis tasks.",
             "clearance": "BETA"
@@ -404,12 +464,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "Security Operations",
         "model": "claude-sonnet-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trinity&backgroundColor=ff3366",
         "status": "busy",
         "parent_agent": "agent-morpheus",
         "sub_agents": ["agent-trinity-scanner"],
         "capabilities": ["security", "infiltration", "audit", "threat-assessment"],
         "current_tasks": ["task-20260205-neural-interface", "task-20260205-security-audit"],
         "completed_tasks": 56,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@trinity_bot",
+                "chat_id": "bot_trinity",
+                "notifications": ["task.assigned", "task.blocked", "security.alert"]
+            }
+        ],
         "metadata": {
             "description": "Elite security specialist. Expert in system infiltration and defense protocols.",
             "clearance": "ALPHA"
@@ -422,12 +491,14 @@ const SAMPLE_AGENTS = [
         "role": "sub-agent",
         "designation": "Security Scanner",
         "model": "claude-haiku-3",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=trinityscanner&backgroundColor=ff6699",
         "status": "active",
         "parent_agent": "agent-trinity",
         "sub_agents": [],
         "capabilities": ["scanning", "vulnerability-detection", "monitoring"],
         "current_tasks": [],
         "completed_tasks": 89,
+        "channels": [],
         "metadata": {
             "description": "Sub-agent spawned by Trinity for continuous security scanning.",
             "clearance": "BETA"
@@ -440,12 +511,21 @@ const SAMPLE_AGENTS = [
         "role": "reviewer",
         "designation": "Strategic Advisor",
         "model": "claude-opus-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=oracle&backgroundColor=fbbf24",
         "status": "busy",
         "parent_agent": "agent-architect",
         "sub_agents": [],
         "capabilities": ["analysis", "prediction", "review", "guidance", "pattern-recognition"],
         "current_tasks": ["task-20260205-prophecy-analysis"],
         "completed_tasks": 124,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@oracle_bot",
+                "chat_id": "bot_oracle",
+                "notifications": ["task.review_requested", "task.completed"]
+            }
+        ],
         "metadata": {
             "description": "All-seeing advisor. Analyzes data patterns and provides strategic guidance.",
             "clearance": "ORACLE"
@@ -458,12 +538,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "Infrastructure Captain",
         "model": "claude-sonnet-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=niobe&backgroundColor=8b5cf6",
         "status": "active",
         "parent_agent": "agent-morpheus",
         "sub_agents": [],
         "capabilities": ["infrastructure", "networking", "systems", "navigation"],
         "current_tasks": ["task-20260205-zion-firewall"],
         "completed_tasks": 34,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@niobe_bot",
+                "chat_id": "bot_niobe",
+                "notifications": ["task.assigned", "infrastructure.alert"]
+            }
+        ],
         "metadata": {
             "description": "Infrastructure specialist. Expert in network architecture and system navigation.",
             "clearance": "ALPHA"
@@ -476,12 +565,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "Backend Operator",
         "model": "claude-sonnet-4",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=tank&backgroundColor=f97316",
         "status": "active",
         "parent_agent": null,
         "sub_agents": [],
         "capabilities": ["backend", "database", "api", "operations"],
         "current_tasks": ["task-20260205-backend-construct"],
         "completed_tasks": 67,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@tank_bot",
+                "chat_id": "bot_tank",
+                "notifications": ["task.assigned", "database.alert"]
+            }
+        ],
         "metadata": {
             "description": "Core backend operator. Manages databases, APIs, and system operations.",
             "clearance": "BETA"
@@ -494,12 +592,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "Communications Specialist",
         "model": "claude-haiku-3",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=link&backgroundColor=06b6d4",
         "status": "active",
         "parent_agent": null,
         "sub_agents": [],
         "capabilities": ["communications", "monitoring", "documentation", "support"],
         "current_tasks": [],
         "completed_tasks": 45,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@link_bot",
+                "chat_id": "bot_link",
+                "notifications": ["message.received", "system.broadcast"]
+            }
+        ],
         "metadata": {
             "description": "Communications hub. Monitors all channels and maintains operational documentation.",
             "clearance": "BETA"
@@ -512,12 +619,21 @@ const SAMPLE_AGENTS = [
         "role": "specialist",
         "designation": "Interface Designer",
         "model": "claude-haiku-3",
+        "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=mouse&backgroundColor=ec4899",
         "status": "idle",
         "parent_agent": null,
         "sub_agents": [],
         "capabilities": ["frontend", "ui", "ux", "visualization"],
         "current_tasks": [],
         "completed_tasks": 23,
+        "channels": [
+            {
+                "type": "telegram",
+                "id": "@mouse_bot",
+                "chat_id": "bot_mouse",
+                "notifications": ["task.assigned", "design.feedback"]
+            }
+        ],
         "metadata": {
             "description": "Interface and experience designer. Creates immersive digital environments.",
             "clearance": "BETA"

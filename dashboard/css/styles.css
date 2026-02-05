@@ -1576,6 +1576,87 @@ body::after {
     width: 20px;
 }
 
+/* Avatar Images */
+.entity-avatar-img {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.entity-avatar-img.human {
+    border-radius: 50%;
+    border: 2px solid var(--neon-green);
+}
+
+.entity-avatar-img.agent {
+    border: 2px solid var(--neon-cyan);
+}
+
+.entity-avatar-img.agent.lead {
+    border-color: var(--neon-purple);
+}
+
+.entity-avatar-img.agent.specialist {
+    border-color: var(--neon-green);
+}
+
+.entity-avatar-img.agent.reviewer {
+    border-color: var(--neon-orange);
+}
+
+.entity-avatar-img.sub-agent {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border-color);
+    opacity: 0.8;
+}
+
+/* Channel Icons */
+.channel-icons {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+}
+
+.channel-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    font-size: 0.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.channel-icon.telegram {
+    background: #0088cc;
+    color: white;
+}
+
+.channel-icon.whatsapp {
+    background: #25d366;
+    color: white;
+}
+
+.channel-icon.slack {
+    background: #4a154b;
+    color: white;
+}
+
+.channel-icon.discord {
+    background: #5865f2;
+    color: white;
+}
+
+.channel-icon.email {
+    background: var(--text-muted);
+    color: white;
+}
+
 .entity-info {
     flex: 1;
     min-width: 0;
