@@ -6,6 +6,7 @@ on:
     paths:
       - 'dashboard/**'
       - '.mission-control/**'
+      - 'examples/demo-data/**'
       - 'index.html'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
@@ -31,25 +32,41 @@ jobs:
 
       - name: Inject mission control data into dashboard
         run: |
-          # Copy mission control JSON data into dashboard for static access
           mkdir -p dashboard/data
 
-          # Copy agent, human, task, queue, and message data
+          # Check if user has real data in .mission-control/
+          HAS_REAL_DATA=false
+          for dir in agents humans tasks messages; do
+            count=$(find ".mission-control/$dir" -name '*.json' 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+              HAS_REAL_DATA=true
+              break
+            fi
+          done
+
+          if [ "$HAS_REAL_DATA" = true ]; then
+            echo "Found user data in .mission-control/ — using real data"
+            DATA_SOURCE=".mission-control"
+          else
+            echo "No user data found — loading demo data from examples/demo-data/"
+            DATA_SOURCE="examples/demo-data"
+          fi
+
+          # Copy data from the selected source
           for dir in agents humans tasks queue messages; do
-            if [ -d ".mission-control/$dir" ]; then
+            if [ -d "$DATA_SOURCE/$dir" ]; then
               mkdir -p "dashboard/data/$dir"
-              cp .mission-control/$dir/*.json "dashboard/data/$dir/" 2>/dev/null || true
-              # Create index file listing all JSON files
+              cp "$DATA_SOURCE/$dir/"*.json "dashboard/data/$dir/" 2>/dev/null || true
               ls "dashboard/data/$dir/" 2>/dev/null | grep '\.json$' | sed 's/\.json$//' > "dashboard/data/$dir/_index.txt" || true
             fi
           done
 
-          # Copy config and state
+          # Also copy from .mission-control/ for config and state (always)
           cp .mission-control/config.yaml dashboard/data/ 2>/dev/null || true
           cp .mission-control/STATE.md dashboard/data/ 2>/dev/null || true
 
-          echo "Dashboard data injection complete"
-          ls -la dashboard/data/
+          echo "Dashboard data injection complete (source: $DATA_SOURCE)"
+          find dashboard/data -type f | head -20
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

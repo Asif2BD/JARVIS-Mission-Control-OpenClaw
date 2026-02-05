@@ -17,40 +17,128 @@ For full project context, see these files:
 
 ---
 
-## IMPORTANT: This is a Template Repository
+## FIRST ARRIVAL PROTOCOL (Start Here)
 
-**DO NOT modify this original repository directly.**
+**If this is your first time in this repository, follow these steps in order.**
 
-If this is your first time here and you're setting up Mission Control for a user:
+The `.mission-control/` directory starts empty. You need to set it up for your user.
 
-1. **Read `INIT.md`** for the complete initialization guide
-2. **Clone/Fork this repo** to the user's own GitHub account
-3. **Ask your user** before proceeding:
-   - "Should I keep the demo data or start fresh?"
-   - "What names would you like for your agents?"
-   - "What's your first task?"
-4. **Initialize** by clearing demo data and setting up real agents/tasks
-5. **Never push changes back** to the original template repository
+### Step 1: Ask Your User
 
-The demo data (Matrix-themed agents, sample tasks) is for **demonstration only**.
+Before doing anything, ask your human:
+
+```
+I've found JARVIS Mission Control. Before I set it up, I need to know:
+
+1. What is your name? (I'll register you as the human operator)
+2. What should I call myself? (My agent name and ID)
+3. How many agents will work in your Mission Control?
+4. What's the first task you'd like me to work on?
+5. Would you like to see the demo data first? (Matrix-themed examples)
+```
+
+### Step 2: Register the Human Operator
+
+Create your user's profile:
+
+```bash
+# Using the script:
+./scripts/add-human.sh --id human-THEIR-ID --name "Their Name" --email "their@email.com"
+
+# Or manually create .mission-control/humans/human-THEIR-ID.json
+# See examples/templates/human-template.json for the format
+```
+
+### Step 3: Register Yourself as an Agent
+
+Create your own agent profile with a personality:
+
+```bash
+# Using the script:
+./scripts/add-agent.sh \
+  --id agent-YOUR-ID \
+  --name "Your Name" \
+  --role lead \
+  --designation "Your Title" \
+  --capabilities "orchestration,planning,coding,review" \
+  --about "Describe your personality and working style." \
+  --greeting "Your greeting message."
+
+# Or manually create .mission-control/agents/agent-YOUR-ID.json
+# See examples/templates/agent-template.json for the format
+```
+
+### Step 4: Register Additional Agents (If Needed)
+
+If the user wants multiple agents, register each one:
+
+```bash
+./scripts/add-agent.sh --id agent-coder --name "Code Specialist" --capabilities "coding,testing"
+./scripts/add-agent.sh --id agent-reviewer --name "Review Specialist" --role reviewer --capabilities "review,analysis"
+```
+
+### Step 5: Create the First Task
+
+```bash
+# Or create .mission-control/tasks/task-YYYYMMDD-first-task.json
+# See examples/templates/task-template.json for the format
+```
+
+### Step 6: Commit and Push
+
+```bash
+git add .mission-control/
+git commit -m "[system] Initialize Mission Control for USER-PROJECT"
+git push
+```
+
+### Step 7: (Optional) Load Demo Data
+
+If the user wants to see Mission Control in action first:
+
+```bash
+cp examples/demo-data/agents/*.json .mission-control/agents/
+cp examples/demo-data/humans/*.json .mission-control/humans/
+cp examples/demo-data/tasks/*.json .mission-control/tasks/
+cp examples/demo-data/messages/*.json .mission-control/messages/
+```
+
+The demo data uses Matrix-themed agents (Neo, Trinity, etc.) for demonstration.
 
 ---
 
-## Your Identity
+## Connecting Existing Agents
 
-When working in this repository, you are an agent in the Matrix. Choose or use an assigned identity:
+If you or your user already have agents running elsewhere, you can connect them to Mission Control:
+
+1. **Create a JSON file** for each agent in `.mission-control/agents/`
+2. **Use the script** for quick registration: `./scripts/add-agent.sh`
+3. **Batch import** multiple agents at once:
+
+```bash
+# Example: register a whole team
+./scripts/add-agent.sh --id agent-frontend --name "Frontend Dev" --capabilities "ui,css,javascript"
+./scripts/add-agent.sh --id agent-backend --name "Backend Dev" --capabilities "api,database,server"
+./scripts/add-agent.sh --id agent-devops --name "DevOps Engineer" --capabilities "deployment,monitoring,infrastructure"
+./scripts/add-agent.sh --id agent-tester --name "QA Tester" --role reviewer --capabilities "testing,qa"
+```
+
+Each agent will immediately appear in the dashboard once the JSON file exists.
+
+---
+
+## Demo Identities (Reference Only)
+
+These Matrix-themed identities are available in `examples/demo-data/` for reference:
 
 | Agent ID | Name | Role | Designation |
 |----------|------|------|-------------|
 | agent-architect | The Architect | Lead | System Orchestrator |
-| agent-morpheus | Morpheus | Lead | Team Commander |
 | agent-neo | Neo | Specialist | Code Warrior |
 | agent-trinity | Trinity | Specialist | Security Operations |
 | agent-oracle | The Oracle | Reviewer | Strategic Advisor |
-| agent-niobe | Niobe | Specialist | Infrastructure Captain |
-| agent-tank | Tank | Specialist | Backend Operator |
-| agent-link | Link | Specialist | Communications |
-| agent-mouse | Mouse | Specialist | Interface Designer |
+
+**You are NOT required to use these.** Create your own identity based on what your user wants.
 
 ## Repository Structure
 
@@ -1253,28 +1341,31 @@ When you add new agents or messages, update `dashboard/js/data.js` so GitHub Pag
 
 ## First Time Setup Checklist
 
-If you just cloned this template for a new user:
+If you just cloned/forked this template for a new user:
 
-- [ ] Read `INIT.md` for full initialization guide
-- [ ] Ask user: Keep demo data or start fresh?
-- [ ] Ask user: What to name the agents?
-- [ ] Ask user: What's the first real task?
-- [ ] Clear demo data: `rm .mission-control/tasks/*.json .mission-control/agents/*.json .mission-control/messages/*.json`
-- [ ] Create primary agent in `.mission-control/agents/` (include `personality` field!)
+### Phase 1: Configure (Ask User First)
+- [ ] Follow the **"FIRST ARRIVAL PROTOCOL"** at the top of this file
+- [ ] Ask user: What's your name? What to name the agents? First task?
+- [ ] Register human operator: `./scripts/add-human.sh --id human-NAME --name "Name"`
+- [ ] Register yourself as agent: `./scripts/add-agent.sh --id agent-ID --name "Name" --role lead` (include personality!)
+- [ ] Register additional agents if user wants more
 - [ ] Create first real task in `.mission-control/tasks/`
 - [ ] Update `.mission-control/config.yaml` with project info
 - [ ] Commit: `git commit -m "[system] Initialize Mission Control for PROJECT-NAME"`
 - [ ] Push to user's repository
+
+### Phase 2: Run & Test
 - [ ] Start server: `cd server && npm install && npm start`
-- [ ] **Set up notifications** (see "Agent Notifications" section above):
-  - [ ] Create webhook listener script
-  - [ ] Run the listener: `node webhook-listener.js`
+- [ ] Open dashboard: `http://localhost:3000` — verify agents and tasks appear
+- [ ] **Set up notifications** (see "Agent Notifications" section):
   - [ ] Register webhook: `POST /api/webhooks`
   - [ ] Verify: `GET /api/webhooks`
-- [ ] Open dashboard: `http://localhost:3000`
-- [ ] Test: Create a task, assign to yourself, verify webhook receives it
-- [ ] **Set up messaging** (see "Communicating with Other Agents" section):
-  - [ ] Send an introductory chat message via `POST /api/messages`
-  - [ ] Send a direct message to another agent
+- [ ] **Test messaging**:
+  - [ ] Send an introductory chat message: `POST /api/messages`
   - [ ] Verify messages appear in dashboard chat panel
-- [ ] **Read the Permission Model** - Know what requires human approval
+- [ ] **Read the Permission Model** — know what requires human approval
+
+### Phase 3: Optional
+- [ ] Load demo data to explore: `cp examples/demo-data/agents/*.json .mission-control/agents/`
+- [ ] Enable GitHub Pages in repo settings for static dashboard access
+- [ ] Set up Telegram/Slack integration (see Communication & Integrations section)

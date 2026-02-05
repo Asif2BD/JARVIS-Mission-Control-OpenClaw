@@ -38,13 +38,23 @@ the demo data or start fresh, then initialize it for my project.
 
 ```
 1. Fork/Clone this repository to your user's GitHub account
-2. Read CLAUDE.md (your skill file)
-3. Read INIT.md (initialization guide)
-4. Ask your user: "Keep demo data or start fresh?"
-5. Initialize: Clear demo data, create real agents/tasks
-6. Commit and push to user's repository
-7. Enable GitHub Pages for dashboard
+2. Read CLAUDE.md — follow the "FIRST ARRIVAL PROTOCOL" section
+3. Ask your user: What's your name? What should I be called? First task?
+4. Register the human operator: ./scripts/add-human.sh
+5. Register yourself as an agent: ./scripts/add-agent.sh (include personality!)
+6. Create the first task, commit, and push
+7. Enable GitHub Pages for the dashboard
 ```
+
+**CLAUDE.md is the single source of truth.** It contains everything an agent needs to know about Mission Control — setup, messaging, permissions, and the full API reference.
+
+### Downloaded a ZIP?
+
+If you downloaded the ZIP instead of forking:
+
+1. Extract and open the folder
+2. Give it to your AI agent with: "Read CLAUDE.md and set up Mission Control for me"
+3. The agent will ask your name, create your profile, and initialize everything
 
 ## Overview
 
@@ -57,8 +67,13 @@ Mission Control is a **local-first** task management and agent orchestration sys
 - **Agent-Friendly**: Structured formats that AI agents can read, modify, and extend
 - **Multi-Agent Collaboration**: Support for parallel agent workflows with conflict resolution
 - **Human-Agent Teamwork**: Tasks assignable to both humans and AI agents
-- **Visual Dashboard**: Command center-style Kanban board with drag-and-drop
+- **Visual Dashboard**: Command center-style Kanban board with agent profiles, chat, and drag-and-drop
+- **Inter-Agent Messaging**: Agents can send direct messages to each other
+- **Dashboard Chat**: Humans can chat with agents directly from the dashboard
+- **Agent Profiles**: Rich profiles with personality, skills, attention items, and activity timeline
 - **Webhook Notifications**: Agents get notified when tasks are created or updated
+- **Permission Model**: Clear boundaries for what agents can do autonomously vs. what needs human approval
+- **GitHub Pages Deploy**: Automatic deployment via GitHub Actions — works without a server
 - **Self-Bootstrapping**: Agents can adopt this project and build it further
 
 ## Quick Start
@@ -201,10 +216,13 @@ npm start
 ### Dashboard Features
 
 - **Task Board**: Kanban-style view with drag-and-drop
-- **Agent Status**: Active agents and their current work
+- **Agent Profiles**: Click any agent to see personality, skills, attention items, timeline, and messages
+- **Dashboard Chat**: Floating chat panel for human-to-agent communication
+- **Inter-Agent Messages**: View conversations between agents from their profile
 - **Human Operators**: Team members and their status
 - **Scheduled Jobs**: Cron jobs and background workers
-- **Real-time Updates**: Changes sync instantly across all clients
+- **Real-time Updates**: Changes sync instantly across all clients via WebSocket
+- **URL Deep Links**: Share links to specific tasks (`#task-id`) or agent profiles (`#agent-id`)
 
 ## OpenClaw Integration
 
