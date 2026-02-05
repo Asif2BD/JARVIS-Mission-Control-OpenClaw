@@ -1,6 +1,6 @@
 /**
  * JARVIS Mission Control - Main Application
- * Enhanced with theme switching, GitHub API integration, and improved UI
+ * Local file-based system with real-time updates via WebSocket
  */
 
 // State
@@ -19,10 +19,10 @@ async function init() {
     // Load saved dashboard name
     loadDashboardName();
 
-    // Initialize GitHub API
-    initGitHubSettings();
+    // Check server connection
+    await checkServerConnection();
 
-    // Load data (from GitHub if connected, otherwise sample data)
+    // Load data (from local API if connected, otherwise sample data)
     await window.missionControlData.loadData();
 
     // Render the dashboard
@@ -37,76 +37,42 @@ async function init() {
 }
 
 // ============================================
-// GITHUB API INTEGRATION
+// SERVER CONNECTION
 // ============================================
 
 /**
- * Initialize GitHub settings UI from saved config
+ * Check if local server is running and update status indicator
  */
-function initGitHubSettings() {
-    if (window.GitHubAPI && window.GitHubAPI.config.connected) {
-        // Restore saved values to form (but not the token for security)
-        const ownerInput = document.getElementById('github-owner');
-        const repoInput = document.getElementById('github-repo');
+async function checkServerConnection() {
+    const statusDot = document.getElementById('server-status-dot');
+    const statusText = document.getElementById('server-status-text');
 
-        if (ownerInput) ownerInput.value = window.GitHubAPI.config.owner || '';
-        if (repoInput) repoInput.value = window.GitHubAPI.config.repo || '';
-
-        window.GitHubAPI.updateConnectionStatus();
-    }
-}
-
-/**
- * Connect to GitHub
- */
-async function connectGitHub() {
-    const owner = document.getElementById('github-owner').value.trim();
-    const repo = document.getElementById('github-repo').value.trim();
-    const token = document.getElementById('github-token').value.trim();
-
-    if (!owner || !repo || !token) {
-        showToast('error', 'Missing Fields', 'Please fill in all GitHub fields');
-        return;
-    }
-
-    showLoading('Connecting to GitHub...');
+    if (!statusDot || !statusText) return;
 
     try {
-        const result = await window.GitHubAPI.connect(token, owner, repo);
-
-        if (result.success) {
-            showToast('success', 'Connected!', `Successfully connected to ${owner}/${repo}`);
-
-            // Clear token from input for security
-            document.getElementById('github-token').value = '';
-
-            // Reload data from GitHub
-            await window.missionControlData.loadData();
-            renderDashboard();
-            initDragAndDrop();
-        } else {
-            showToast('error', 'Connection Failed', result.error || 'Unknown error');
+        if (window.MissionControlAPI) {
+            const metrics = await window.MissionControlAPI.getMetrics();
+            if (metrics) {
+                statusDot.classList.remove('offline');
+                statusDot.classList.add('online');
+                statusText.textContent = `Connected (${metrics.wsClientsConnected || 0} clients)`;
+                return true;
+            }
         }
     } catch (error) {
-        showToast('error', 'Connection Error', error.message);
+        console.log('Server not available:', error.message);
     }
 
-    hideLoading();
+    statusDot.classList.remove('online');
+    statusDot.classList.add('offline');
+    statusText.textContent = 'Offline - Using sample data';
+    return false;
 }
 
 /**
- * Disconnect from GitHub
+ * Periodically check server connection
  */
-function disconnectGitHub() {
-    window.GitHubAPI.disconnect();
-    showToast('info', 'Disconnected', 'Now using demo data');
-
-    // Reload sample data
-    window.missionControlData.loadData().then(() => {
-        renderDashboard();
-        initDragAndDrop();
-    });
-}
+setInterval(checkServerConnection, 30000);
 
 // ============================================
 // LOADING & TOAST NOTIFICATIONS
@@ -707,47 +673,51 @@ async function createTask() {
         labelsStr.split(',').map(l => l.trim()).filter(l => l) :
         [];
 
-    // Create the task object
-    const newTask = window.missionControlData.addTask({
+    // Create the task object locally first
+    const taskData = {
         title,
         description,
         priority,
         assignee,
         labels,
         created_by: 'human-user'
-    });
-
-    console.log('Created task:', newTask);
+    };
 
     // Close modal
     closeCreateTaskModal();
 
-    // If connected to GitHub, save to repository
-    if (window.GitHubAPI && window.GitHubAPI.isConnected()) {
-        showLoading('Saving task to GitHub...');
+    // Try to save to local server API
+    if (window.MissionControlAPI) {
+        showLoading('Saving task...');
 
         try {
-            await window.GitHubAPI.saveTask(newTask);
+            const savedTask = await window.MissionControlAPI.createTask(taskData);
 
-            // Log activity
-            await window.GitHubAPI.logActivity(
-                'dashboard',
-                'CREATED',
-                `Task: ${newTask.title} (${newTask.id})`
-            );
+            if (savedTask && savedTask.id) {
+                // Add to local data store
+                window.missionControlData.tasks.push(savedTask);
 
-            showToast('success', 'Task Created', `Task saved to repository: ${newTask.id}`);
+                showToast('success', 'Task Created', `Task saved: ${savedTask.id}`);
+                console.log('Task saved to server:', savedTask);
+            } else {
+                throw new Error('Invalid response from server');
+            }
         } catch (error) {
-            console.error('Failed to save task to GitHub:', error);
-            showToast('error', 'Save Failed', error.message);
+            console.error('Failed to save task to server:', error);
 
-            // Show the JSON for manual save as fallback
+            // Fall back to local-only storage
+            const newTask = window.missionControlData.addTask(taskData);
+            showToast('info', 'Task Created Locally',
+                'Server unavailable. Task stored locally only.');
             showTaskJson(newTask);
         }
 
         hideLoading();
     } else {
-        // Not connected - show instructions for manual save
+        // No API available - create locally and show JSON
+        const newTask = window.missionControlData.addTask(taskData);
+        showToast('info', 'Task Created Locally',
+            'Start the server to enable persistence.');
         showTaskJson(newTask);
     }
 
@@ -757,15 +727,11 @@ async function createTask() {
 }
 
 /**
- * Show task JSON for manual Git commit (fallback when not connected)
+ * Show task JSON for manual save (fallback when server not available)
  */
 function showTaskJson(task) {
     const json = JSON.stringify(task, null, 2);
     const filename = `${task.id}.json`;
-
-    // Create a more helpful modal or notification
-    showToast('info', 'Task Created Locally',
-        `Connect to GitHub to auto-save, or manually save to .mission-control/tasks/${filename}`);
 
     console.log(`Save to .mission-control/tasks/${filename}:`);
     console.log(json);
@@ -997,7 +963,7 @@ function handleDragLeave(e) {
     }
 }
 
-function handleDrop(e) {
+async function handleDrop(e) {
     e.preventDefault();
 
     const taskList = e.target.closest('.task-list');
@@ -1026,7 +992,16 @@ function handleDrop(e) {
         });
 
         console.log(`Task ${draggedTask.id} moved: ${oldStatus} -> ${newStatus}`);
-        console.log('Updated task JSON:', JSON.stringify(draggedTask, null, 2));
+
+        // Save to server if available
+        if (window.MissionControlAPI) {
+            try {
+                await window.MissionControlAPI.updateTask(draggedTask.id, draggedTask);
+            } catch (error) {
+                console.error('Failed to save task update:', error);
+                showToast('error', 'Save Failed', 'Task moved locally but not saved to server');
+            }
+        }
 
         // Re-render the board
         renderDashboard();
@@ -1043,7 +1018,7 @@ function handleDrop(e) {
 /**
  * Quick assign task to agent
  */
-function assignTask(taskId, assigneeId) {
+async function assignTask(taskId, assigneeId) {
     const task = window.missionControlData.tasks.find(t => t.id === taskId);
     if (!task) return;
 
@@ -1071,6 +1046,16 @@ function assignTask(taskId, assigneeId) {
     });
 
     console.log(`Task ${taskId} assigned to ${assigneeName}`);
+
+    // Save to server if available
+    if (window.MissionControlAPI) {
+        try {
+            await window.MissionControlAPI.updateTask(task.id, task);
+        } catch (error) {
+            console.error('Failed to save assignment:', error);
+        }
+    }
+
     renderDashboard();
     initDragAndDrop();
 }
