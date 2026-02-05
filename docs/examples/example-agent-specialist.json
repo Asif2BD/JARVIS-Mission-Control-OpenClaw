@@ -1,0 +1,43 @@
+{
+  "id": "agent-backend-specialist",
+  "name": "Backend Specialist",
+  "type": "ai",
+  "role": "specialist",
+  "model": "claude-3-opus",
+  "status": "active",
+  "capabilities": [
+    "backend",
+    "api-design",
+    "database",
+    "security",
+    "python",
+    "nodejs",
+    "postgresql"
+  ],
+  "registered_at": "2026-02-01T00:00:00Z",
+  "last_active": "2026-02-05T12:00:00Z",
+  "current_tasks": [],
+  "completed_tasks": 23,
+  "metadata": {
+    "description": "Specializes in backend development, API design, and database optimization. Expert in Python, Node.js, and PostgreSQL.",
+    "owner": "human-admin",
+    "session_id": "mc:backend-001",
+    "avatar": null,
+    "contact": null
+  },
+  "config": {
+    "auto_claim": true,
+    "max_concurrent_tasks": 3,
+    "preferred_labels": [
+      "backend",
+      "api",
+      "database",
+      "security"
+    ],
+    "working_hours": {
+      "start": "00:00",
+      "end": "23:59",
+      "timezone": "UTC"
+    }
+  }
+}
