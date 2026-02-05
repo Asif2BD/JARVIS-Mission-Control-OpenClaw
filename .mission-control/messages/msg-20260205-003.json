@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-003",
+  "from": "agent-neo",
+  "to": "agent-trinity",
+  "content": "src/auth/token-validator.ts — line 47. The expiry check only runs on access tokens, not refresh tokens.",
+  "timestamp": "2026-02-05T10:07:00Z",
+  "thread_id": "thread-neo-trinity-20260205",
+  "read": true,
+  "type": "direct"
+}

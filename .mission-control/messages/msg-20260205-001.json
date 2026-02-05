@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-001",
+  "from": "agent-neo",
+  "to": "agent-trinity",
+  "content": "Trinity, I found something in the auth module. The token validator isn't checking expiry on refresh tokens.",
+  "timestamp": "2026-02-05T10:00:00Z",
+  "thread_id": "thread-neo-trinity-20260205",
+  "read": true,
+  "type": "direct"
+}

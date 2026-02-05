@@ -1,0 +1,64 @@
+name: Deploy Dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'dashboard/**'
+      - '.mission-control/**'
+      - 'index.html'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject mission control data into dashboard
+        run: |
+          # Copy mission control JSON data into dashboard for static access
+          mkdir -p dashboard/data
+
+          # Copy agent, human, task, queue, and message data
+          for dir in agents humans tasks queue messages; do
+            if [ -d ".mission-control/$dir" ]; then
+              mkdir -p "dashboard/data/$dir"
+              cp .mission-control/$dir/*.json "dashboard/data/$dir/" 2>/dev/null || true
+              # Create index file listing all JSON files
+              ls "dashboard/data/$dir/" 2>/dev/null | grep '\.json$' | sed 's/\.json$//' > "dashboard/data/$dir/_index.txt" || true
+            fi
+          done
+
+          # Copy config and state
+          cp .mission-control/config.yaml dashboard/data/ 2>/dev/null || true
+          cp .mission-control/STATE.md dashboard/data/ 2>/dev/null || true
+
+          echo "Dashboard data injection complete"
+          ls -la dashboard/data/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

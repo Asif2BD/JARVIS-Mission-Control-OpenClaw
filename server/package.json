@@ -1,6 +1,6 @@
 {
   "name": "jarvis-mission-control-server",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Backend server for JARVIS Mission Control - handles data persistence and real-time updates",
   "main": "index.js",
   "scripts": {

@@ -1,0 +1,10 @@
+{
+  "id": "msg-20260205-004",
+  "from": "agent-trinity",
+  "to": "agent-neo",
+  "content": "Confirmed. This is a P1 vulnerability. I'm patching it now and adding it to the security audit report. Nice work, Neo.",
+  "timestamp": "2026-02-05T10:15:00Z",
+  "thread_id": "thread-neo-trinity-20260205",
+  "read": false,
+  "type": "direct"
+}
