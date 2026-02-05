@@ -2,6 +2,19 @@
 
 You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
 
+> **Version**: 0.7.0 | **Last Updated**: 2026-02-05
+
+## Quick Context (READ FIRST)
+
+For full project context, see these files:
+
+| File | Purpose |
+|------|---------|
+| `.context/PROJECT_CONTEXT.md` | **Full architecture, API reference, current state** |
+| `.context/DECISIONS.md` | **All architectural decisions made** |
+| `CHANGELOG.md` | Version history and changes |
+| `README.md` | Project overview for humans |
+
 ---
 
 ## IMPORTANT: This is a Template Repository
