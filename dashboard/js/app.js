@@ -92,7 +92,9 @@ function applyTheme(theme) {
 function renderDashboard() {
     renderMetrics();
     renderKanban();
+    renderHumans();
     renderAgents();
+    renderQueue();
 }
 
 /**
@@ -168,46 +170,173 @@ function createTaskCard(task) {
 }
 
 /**
- * Render the agents sidebar
+ * Render the humans section
+ */
+function renderHumans() {
+    const humans = window.missionControlData.getHumans();
+    const container = document.getElementById('humans-list');
+    const subtitle = document.getElementById('humans-subtitle');
+
+    if (!container) return;
+
+    // Update subtitle
+    const activeCount = humans.filter(h => h.status === 'online' || h.status === 'away').length;
+    subtitle.textContent = `${activeCount} online`;
+
+    container.innerHTML = humans.map(human => `
+        <div class="human-card">
+            <div class="human-header">
+                <div class="human-avatar">${getInitials(human.name)}</div>
+                <div class="human-info">
+                    <div class="human-name">${escapeHtml(human.name)}</div>
+                    <div class="human-designation">${escapeHtml(human.designation || human.role)}</div>
+                </div>
+                <div class="human-status-indicator ${human.status}"></div>
+            </div>
+            <div class="human-meta">
+                <span class="human-role-badge ${human.role}">${human.role}</span>
+                <span class="human-completed">${human.completed_tasks || 0} tasks</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Render the agents sidebar with sub-agent support
  */
 function renderAgents() {
-    const agents = window.missionControlData.getActiveAgents();
+    const allAgents = window.missionControlData.getAgents();
     const container = document.getElementById('agents-list');
     const subtitle = document.getElementById('agents-subtitle');
 
-    // Update subtitle
-    const activeCount = agents.filter(a => a.status === 'active' || a.status === 'busy').length;
-    subtitle.textContent = `${activeCount} agent${activeCount !== 1 ? 's' : ''} online`;
+    if (!container) return;
 
-    container.innerHTML = agents.map(agent => `
-        <div class="agent-card ${agent.role === 'lead' ? 'agent-lead' : ''}">
-            <div class="agent-header">
-                <div class="agent-avatar ${agent.role}">${getInitials(agent.name)}</div>
-                <div class="agent-info">
-                    <div class="agent-name">${escapeHtml(agent.name)}</div>
-                    <div class="agent-designation">${escapeHtml(agent.designation || agent.role)}</div>
+    // Update subtitle
+    const activeCount = allAgents.filter(a => a.status === 'active' || a.status === 'busy').length;
+    const subAgentCount = allAgents.filter(a => a.role === 'sub-agent').length;
+    subtitle.textContent = `${activeCount} online (${subAgentCount} sub-agents)`;
+
+    // Separate parent agents and sub-agents
+    const parentAgents = allAgents.filter(a => !a.parent_agent || a.role !== 'sub-agent');
+
+    container.innerHTML = parentAgents.map(agent => {
+        const subAgents = window.missionControlData.getSubAgents(agent.id);
+        const isLead = agent.role === 'lead';
+        const hasSubAgents = subAgents.length > 0;
+
+        return `
+            <div class="agent-card ${isLead ? 'agent-lead' : ''} ${hasSubAgents ? 'has-sub-agents' : ''}">
+                <div class="agent-header">
+                    <div class="agent-avatar ${agent.role}">${getInitials(agent.name)}</div>
+                    <div class="agent-info">
+                        <div class="agent-name">${escapeHtml(agent.name)}</div>
+                        <div class="agent-designation">${escapeHtml(agent.designation || agent.role)}</div>
+                    </div>
+                    <div class="agent-status-indicator ${agent.status}"></div>
                 </div>
-                <div class="agent-status-indicator ${agent.status}"></div>
-            </div>
-            <div class="agent-meta">
-                <span class="agent-tasks-count">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 11l3 3L22 4"></path>
-                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                    </svg>
-                    ${agent.current_tasks ? agent.current_tasks.length : 0} active task${agent.current_tasks && agent.current_tasks.length !== 1 ? 's' : ''}
-                </span>
-                <span class="agent-completed">
-                    ${agent.completed_tasks || 0} completed
-                </span>
-            </div>
-            ${agent.metadata && agent.metadata.clearance ? `
-                <div class="agent-clearance clearance-${agent.metadata.clearance.toLowerCase()}">
-                    ${agent.metadata.clearance} CLEARANCE
+                <div class="agent-meta">
+                    <span class="agent-tasks-count">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"></path>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                        </svg>
+                        ${agent.current_tasks ? agent.current_tasks.length : 0} active
+                    </span>
+                    <span class="agent-completed">
+                        ${agent.completed_tasks || 0} done
+                    </span>
                 </div>
-            ` : ''}
-        </div>
-    `).join('');
+                ${agent.metadata && agent.metadata.clearance ? `
+                    <div class="agent-clearance clearance-${agent.metadata.clearance.toLowerCase()}">
+                        ${agent.metadata.clearance}
+                    </div>
+                ` : ''}
+                ${hasSubAgents ? `
+                    <div class="sub-agents-container">
+                        <div class="sub-agents-header">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                            Sub-agents (${subAgents.length})
+                        </div>
+                        <div class="sub-agents-list">
+                            ${subAgents.map(sub => `
+                                <div class="sub-agent-card">
+                                    <div class="sub-agent-avatar">${getInitials(sub.name)}</div>
+                                    <div class="sub-agent-info">
+                                        <span class="sub-agent-name">${escapeHtml(sub.name)}</span>
+                                        <span class="sub-agent-status ${sub.status}"></span>
+                                    </div>
+                                    <span class="sub-agent-tasks">${sub.completed_tasks || 0}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Render the task queue
+ */
+function renderQueue() {
+    const queue = window.missionControlData.getQueue();
+    const container = document.getElementById('queue-list');
+    const subtitle = document.getElementById('queue-subtitle');
+
+    if (!container) return;
+
+    // Update subtitle
+    const runningCount = queue.filter(q => q.status === 'running').length;
+    subtitle.textContent = `${runningCount} jobs running`;
+
+    container.innerHTML = queue.map(item => {
+        const successRate = item.run_count > 0
+            ? Math.round((item.success_count / item.run_count) * 100)
+            : 100;
+
+        return `
+            <div class="queue-card queue-${item.status}">
+                <div class="queue-header">
+                    <div class="queue-type-icon ${item.type}">
+                        ${getQueueIcon(item.type)}
+                    </div>
+                    <div class="queue-info">
+                        <div class="queue-name">${escapeHtml(item.name)}</div>
+                        <div class="queue-schedule">${escapeHtml(item.schedule)}</div>
+                    </div>
+                    <div class="queue-status-indicator ${item.status}"></div>
+                </div>
+                <div class="queue-meta">
+                    <span class="queue-runs">${item.run_count} runs</span>
+                    <span class="queue-success-rate ${successRate < 90 ? 'warning' : ''}">${successRate}%</span>
+                </div>
+                ${item.last_run ? `
+                    <div class="queue-last-run">
+                        Last: ${formatDate(item.last_run)}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get icon for queue item type
+ */
+function getQueueIcon(type) {
+    switch(type) {
+        case 'cron':
+            return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>';
+        case 'watcher':
+            return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        case 'seeder':
+            return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"></path></svg>';
+        default:
+            return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>';
+    }
 }
 
 /**
