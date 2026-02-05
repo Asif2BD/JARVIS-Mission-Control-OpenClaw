@@ -20,7 +20,9 @@ The dashboard auto-detects which mode to use. If the API is unreachable, it fall
 ```bash
 cd server
 npm install
-npm start
+npm start          # Server only
+npm run bridge     # Agent bridge only (requires server running)
+npm run all        # Server + agent bridge together
 ```
 
 The server starts at `http://localhost:3000`.
@@ -33,6 +35,7 @@ The server starts at `http://localhost:3000`.
 | REST API | `http://localhost:3000/api/*` | CRUD operations |
 | WebSocket | `ws://localhost:3000/ws` | Real-time event stream |
 | File Watcher | — | Auto-detects JSON file changes |
+| Agent Bridge | — | Monitors OpenClaw sessions, auto-creates tasks |
 
 ### How It Works
 
@@ -51,7 +54,8 @@ You don't need to interact with the server directly. Just modify files and commi
 |--------|----------|-------------|
 | `GET` | `/api/tasks` | List all tasks |
 | `POST` | `/api/tasks` | Create a new task |
-| `PUT` | `/api/tasks/:id` | Update a task |
+| `PUT` | `/api/tasks/:id` | Update a task (full replace) |
+| `PATCH` | `/api/tasks/:id` | Partial task update (used by agent bridge) |
 | `DELETE` | `/api/tasks/:id` | Delete a task |
 | `GET` | `/api/agents` | List all agents |
 | `PUT` | `/api/agents/:id` | Update an agent |
