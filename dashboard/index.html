@@ -4,15 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JARVIS Mission Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header class="header">
         <div class="header-left">
-            <h1 class="logo">JARVIS Mission Control</h1>
+            <h1 class="logo">
+                <span class="logo-icon">J</span>
+                JARVIS Mission Control
+            </h1>
             <span class="version">v1.0.0</span>
         </div>
         <div class="header-right">
+            <!-- Theme Toggle -->
+            <div class="theme-toggle" role="group" aria-label="Theme switcher">
+                <button class="theme-toggle-btn active" data-theme="dark" aria-label="Dark mode" title="Dark mode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <button class="theme-toggle-btn" data-theme="light" aria-label="Light mode" title="Light mode">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+
             <div class="metrics">
                 <div class="metric">
                     <span class="metric-value" id="total-tasks">0</span>
@@ -31,16 +59,36 @@
                     <span class="metric-label">Agents</span>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="openCreateTaskModal()">+ New Task</button>
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Task
+            </button>
         </div>
     </header>
 
     <main class="main-content">
+        <!-- Sidebar (LEFT) - Agents Panel -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Active Agents</h2>
+                <p class="sidebar-subtitle" id="agents-subtitle">4 agents online</p>
+            </div>
+            <div class="agents-list" id="agents-list">
+                <!-- Agents will be populated by JavaScript -->
+            </div>
+        </aside>
+
         <!-- Kanban Board -->
         <div class="kanban-board" id="kanban-board">
             <div class="kanban-column" data-status="INBOX">
                 <div class="column-header">
-                    <h2>Inbox</h2>
+                    <div class="column-title-wrapper">
+                        <div class="column-indicator inbox"></div>
+                        <h2>Inbox</h2>
+                    </div>
                     <span class="task-count" id="count-INBOX">0</span>
                 </div>
                 <div class="task-list" id="tasks-INBOX"></div>
@@ -48,7 +96,10 @@
 
             <div class="kanban-column" data-status="ASSIGNED">
                 <div class="column-header">
-                    <h2>Assigned</h2>
+                    <div class="column-title-wrapper">
+                        <div class="column-indicator assigned"></div>
+                        <h2>Assigned</h2>
+                    </div>
                     <span class="task-count" id="count-ASSIGNED">0</span>
                 </div>
                 <div class="task-list" id="tasks-ASSIGNED"></div>
@@ -56,7 +107,10 @@
 
             <div class="kanban-column" data-status="IN_PROGRESS">
                 <div class="column-header">
-                    <h2>In Progress</h2>
+                    <div class="column-title-wrapper">
+                        <div class="column-indicator in-progress"></div>
+                        <h2>In Progress</h2>
+                    </div>
                     <span class="task-count" id="count-IN_PROGRESS">0</span>
                 </div>
                 <div class="task-list" id="tasks-IN_PROGRESS"></div>
@@ -64,7 +118,10 @@
 
             <div class="kanban-column" data-status="REVIEW">
                 <div class="column-header">
-                    <h2>Review</h2>
+                    <div class="column-title-wrapper">
+                        <div class="column-indicator review"></div>
+                        <h2>Review</h2>
+                    </div>
                     <span class="task-count" id="count-REVIEW">0</span>
                 </div>
                 <div class="task-list" id="tasks-REVIEW"></div>
@@ -72,20 +129,15 @@
 
             <div class="kanban-column" data-status="DONE">
                 <div class="column-header">
-                    <h2>Done</h2>
+                    <div class="column-title-wrapper">
+                        <div class="column-indicator done"></div>
+                        <h2>Done</h2>
+                    </div>
                     <span class="task-count" id="count-DONE">0</span>
                 </div>
                 <div class="task-list" id="tasks-DONE"></div>
             </div>
         </div>
-
-        <!-- Agents Panel -->
-        <aside class="agents-panel">
-            <h2>Active Agents</h2>
-            <div class="agents-list" id="agents-list">
-                <!-- Agents will be populated by JavaScript -->
-            </div>
-        </aside>
     </main>
 
     <!-- Task Detail Modal -->
@@ -93,7 +145,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-task-title">Task Title</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <button class="close-btn" onclick="closeModal()" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="task-meta">
@@ -128,17 +180,17 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Create New Task</h2>
-                <button class="close-btn" onclick="closeCreateTaskModal()">&times;</button>
+                <button class="close-btn" onclick="closeCreateTaskModal()" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="create-task-form">
                     <div class="form-field">
                         <label for="task-title">Title</label>
-                        <input type="text" id="task-title" required>
+                        <input type="text" id="task-title" placeholder="Enter task title..." required>
                     </div>
                     <div class="form-field">
                         <label for="task-description">Description</label>
-                        <textarea id="task-description" rows="4" required></textarea>
+                        <textarea id="task-description" rows="4" placeholder="Describe the task..." required></textarea>
                     </div>
                     <div class="form-row">
                         <div class="form-field">
@@ -159,7 +211,7 @@
                     </div>
                     <div class="form-field">
                         <label for="task-labels">Labels (comma-separated)</label>
-                        <input type="text" id="task-labels" placeholder="feature, backend">
+                        <input type="text" id="task-labels" placeholder="feature, backend, urgent">
                     </div>
                 </form>
             </div>
