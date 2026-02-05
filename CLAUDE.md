@@ -45,7 +45,9 @@ When working in this repository, you are an agent in the Matrix. Choose or use a
 .mission-control/
 ├── config.yaml              # System configuration
 ├── tasks/*.json             # Task files (one per task)
-├── agents/*.json            # Agent registrations
+├── agents/*.json            # AI agent registrations
+├── humans/*.json            # Human operator registrations
+├── queue/*.json             # Recurring task queue (cron jobs, seeders)
 ├── workflows/*.json         # Multi-task workflows
 ├── logs/*.log               # Activity logs
 └── hooks/                   # OpenClaw lifecycle hooks
@@ -54,6 +56,99 @@ dashboard/                   # Visual Kanban dashboard (GitHub Pages)
 scripts/                     # CLI helper scripts
 docs/                        # Documentation
 ```
+
+## Entity Types
+
+Mission Control tracks **three distinct entity types**:
+
+### 1. Human Operators
+Real humans who oversee the system. Create in `.mission-control/humans/`:
+
+```json
+{
+  "id": "human-admin",
+  "name": "Project Owner",
+  "type": "human",
+  "role": "admin",
+  "designation": "Project Owner",
+  "email": "owner@example.com",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "metadata": {
+    "clearance": "OMEGA",
+    "timezone": "UTC"
+  }
+}
+```
+
+**Human Roles:** `admin`, `reviewer`, `observer`
+**Human Status:** `online`, `away`, `offline`
+
+### 2. AI Agents
+AI agents that perform work. Agents can have **sub-agents**.
+
+```json
+{
+  "id": "agent-neo",
+  "name": "Neo",
+  "type": "ai",
+  "role": "specialist",
+  "designation": "Code Warrior",
+  "model": "claude-opus-4",
+  "status": "active",
+  "parent_agent": null,
+  "sub_agents": ["agent-neo-scout"],
+  "capabilities": ["coding", "debugging"],
+  "metadata": { "clearance": "OMEGA" }
+}
+```
+
+### 3. Sub-Agents
+Lightweight agents spawned by parent agents for specific tasks:
+
+```json
+{
+  "id": "agent-neo-scout",
+  "name": "Neo Scout",
+  "type": "ai",
+  "role": "sub-agent",
+  "designation": "Code Scout",
+  "model": "claude-haiku-3",
+  "status": "active",
+  "parent_agent": "agent-neo",
+  "sub_agents": [],
+  "capabilities": ["search", "analysis"]
+}
+```
+
+## Task Queue (Recurring Jobs)
+
+For cron jobs, seeders, and background tasks, create in `.mission-control/queue/`:
+
+```json
+{
+  "id": "queue-health-check",
+  "name": "System Health Monitor",
+  "type": "cron",
+  "schedule": "*/5 * * * *",
+  "description": "Monitors system health every 5 minutes",
+  "status": "running",
+  "assigned_to": "agent-trinity-scanner",
+  "last_run": "2026-02-05T11:55:00Z",
+  "next_run": "2026-02-05T12:00:00Z",
+  "run_count": 288,
+  "success_count": 287,
+  "failure_count": 1,
+  "labels": ["monitoring", "health"]
+}
+```
+
+**Queue Types:**
+- `cron` - Scheduled recurring tasks (cron syntax)
+- `watcher` - Continuous monitoring tasks
+- `seeder` - Data seeding tasks (usually manual)
+
+**Queue Status:** `running`, `paused`, `idle`, `failed`
 
 ## How to Work Here
 
