@@ -1,0 +1,21 @@
+{
+  "id": "task-20260205-session-1770327780797",
+  "title": "Tank: Restart Mission Control with Agent Bridge",
+  "description": "**OpenClaw Session Task**\n\nAgent: tank\nSession: 03c1a837-1410-4143-9cab-01eed5516b64\nSpawned by: agent:main:main\n\n---\n\n[Thu 2026-02-05 21:42 UTC] **Mission: Restart Mission Control with Agent Bridge (Safe & Zero Data Loss)**\n\n**Critical Requirement:** NO DATA LOSS\n\n**Your Steps:**\n\n1. **Verify data safety first:**\n   ```bash\n   cd /root/.openclaw/workspace/agents/tank/mission-control\n   \n   # Check what data exists\n   ls -la .mission-control/tasks/\n   ls -la .mission-control/agents/\n   ls -la .mission-control/logs/\n   \n   # Commit any uncommitted data\n   git status\n   git add .mission-control/\n   git commit -m \"chore: Preserve data before restart\" || echo \"Nothing to commit\"\n   ```\n\n2. **Stop old server gracefully:**\n   ```bash\n   # Find the old process\n   ps aux | grep \"node.*index.js\" | grep -v grep\n   \n   # Kill it gracefully (SIGTERM, not SIGKILL)\n   pkill -TERM -f \"node.*mission-control.*index.js\"\n   \n   # Wait 2 seconds\n   sleep 2\n   \n   # Verify it's stopped\n   ps aux | grep \"node.*index.js\" | grep -v grep || echo \"Stopped successfully\"\n   ```\n\n3. **Start new server with agent bridge:**\n   ```bash\n   cd /root/.openclaw/workspace/agents/tank/mission-control/server\n   \n   # Install any new dependencies (in case package.json changed)\n   npm install\n   \n   # Start with agent bridge\n   npm run all &\n   \n   # Give it 3 seconds to start\n   sleep 3\n   ```\n\n4. **Verify everything works:**\n   ```bash\n   # Check processes are running\n   ps aux | grep node | grep -E \"(index.js|agent-bridge.js)\"\n   \n   # Test the server\n   curl -s http://localhost:3000/health\n   \n   # Verify data is still there\n   curl -s http://localhost:3000/api/tasks | jq length\n   curl -s http://localhost:3000/api/agents | jq length\n   ```\n\n5. **Report back:**\n   - Confirm server is running\n   - Confirm agent bridge is active\n   - Confirm all data intact (task count, agent count)\n   - Note the new PID\n\n**Safety First:** If anything fails, immediately notify The Architect before proceeding.\n\nExecute now.",
+  "status": "IN_PROGRESS",
+  "priority": "critical",
+  "assignee": "agent-tank",
+  "created_by": "agent:main:main",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "tank"
+  ],
+  "metadata": {
+    "openclaw_session_id": "03c1a837-1410-4143-9cab-01eed5516b64",
+    "openclaw_agent_name": "tank",
+    "spawned_by": "agent:main:main"
+  },
+  "created_at": "2026-02-05T21:43:00.798Z",
+  "updated_at": "2026-02-05T21:43:00.798Z"
+}

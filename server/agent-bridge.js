@@ -27,6 +27,7 @@ const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL) || 2000; // 2 seconds
 // Tracked state
 const trackedSessions = new Map(); // sessionId -> { agent, lastLine, taskId, status }
 const agentStatus = new Map(); // agentName -> { status, currentSession, lastActive }
+const TASKS_DIR = path.join(MISSION_CONTROL_DIR, 'tasks');
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -140,6 +141,73 @@ async function updateAgentStatus(agentId, status, currentTask = null) {
 }
 
 // ============================================
+// TASK DEDUPLICATION
+// ============================================
+
+/**
+ * Find existing task for a session ID (prevents duplicates on restart)
+ */
+async function findExistingTaskForSession(sessionId) {
+    try {
+        const files = await fs.readdir(TASKS_DIR);
+        for (const file of files) {
+            if (!file.endsWith('.json') || file === '.gitkeep') continue;
+            
+            const taskPath = path.join(TASKS_DIR, file);
+            const content = await fs.readFile(taskPath, 'utf-8');
+            const task = JSON.parse(content);
+            
+            // Check if this task is linked to the session
+            if (task.metadata?.openclaw_session_id === sessionId) {
+                return task;
+            }
+        }
+    } catch (e) {
+        // Directory might not exist yet
+    }
+    return null;
+}
+
+/**
+ * Rehydrate trackedSessions from existing tasks on startup
+ */
+async function rehydrateFromDisk() {
+    console.log('[Bridge] Rehydrating session tracking from existing tasks...');
+    
+    try {
+        const files = await fs.readdir(TASKS_DIR);
+        let rehydrated = 0;
+        
+        for (const file of files) {
+            if (!file.endsWith('.json') || file === '.gitkeep') continue;
+            
+            const taskPath = path.join(TASKS_DIR, file);
+            const content = await fs.readFile(taskPath, 'utf-8');
+            const task = JSON.parse(content);
+            
+            const sessionId = task.metadata?.openclaw_session_id;
+            const agentName = task.metadata?.openclaw_agent_name;
+            
+            if (sessionId && agentName && !trackedSessions.has(sessionId)) {
+                trackedSessions.set(sessionId, {
+                    agent: agentName,
+                    sessionKey: null, // Will be updated on next scan
+                    lastLine: 0,      // Will catch up on next poll
+                    taskId: task.id,
+                    status: task.status === 'REVIEW' ? 'completed' : 'working',
+                    startTime: task.created_at
+                });
+                rehydrated++;
+            }
+        }
+        
+        console.log(`[Bridge] Rehydrated ${rehydrated} sessions from disk`);
+    } catch (e) {
+        console.log('[Bridge] No existing tasks to rehydrate from');
+    }
+}
+
+// ============================================
 // SESSION PROCESSING
 // ============================================
 
@@ -219,7 +287,23 @@ async function processNewSession(agentName, sessionKey, sessionMeta) {
     
     // If spawned by Oracle/main agent, auto-create a task
     if (isSubagent || spawnedBy) {
-        // Check if task already exists
+        // FIRST: Check if we already have a task for this session on disk
+        const existingTask = await findExistingTaskForSession(sessionId);
+        if (existingTask) {
+            console.log(`[Bridge] Found existing task ${existingTask.id} for session ${sessionId} - skipping creation`);
+            taskId = existingTask.id;
+            trackedSessions.set(sessionId, {
+                agent: agentName,
+                sessionKey,
+                lastLine: lines.length,
+                taskId,
+                status: existingTask.status === 'REVIEW' ? 'completed' : 'working',
+                startTime: existingTask.created_at
+            });
+            return; // Don't create duplicate
+        }
+        
+        // Check if prompt references an existing task
         if (taskInfo.existingTaskId) {
             taskId = taskInfo.existingTaskId;
             // Update task to IN_PROGRESS and assign to this agent
@@ -510,6 +594,9 @@ async function main() {
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
     `);
+    
+    // Rehydrate from existing task files (prevents duplicates on restart)
+    await rehydrateFromDisk();
     
     // Initial scan
     await scanAllAgents();
