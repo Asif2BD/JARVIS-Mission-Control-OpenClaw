@@ -1461,3 +1461,407 @@ body::after {
     0%, 100% { border-color: var(--border-color); }
     50% { border-color: rgba(255, 51, 102, 0.5); }
 }
+
+/* ============================================
+   SIDEBAR SECTIONS
+   ============================================ */
+
+.sidebar-section {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-section:last-child {
+    border-bottom: none;
+}
+
+.sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.sidebar-title svg {
+    color: var(--neon-cyan);
+}
+
+/* ============================================
+   HUMAN OPERATORS
+   ============================================ */
+
+.humans-list {
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.human-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    transition: all var(--transition-fast);
+}
+
+.human-card:hover {
+    border-color: var(--neon-green);
+}
+
+.human-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.human-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    flex-shrink: 0;
+}
+
+.human-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.human-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.human-designation {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+}
+
+.human-status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.human-status-indicator.online {
+    background: var(--neon-green);
+    box-shadow: var(--glow-green);
+}
+
+.human-status-indicator.away {
+    background: var(--neon-yellow);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+.human-status-indicator.offline {
+    background: var(--status-inbox);
+}
+
+.human-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.human-role-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5625rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.human-role-badge.admin {
+    background: rgba(255, 51, 102, 0.15);
+    color: var(--neon-red);
+    border: 1px solid rgba(255, 51, 102, 0.3);
+}
+
+.human-role-badge.reviewer {
+    background: rgba(168, 85, 247, 0.15);
+    color: var(--neon-purple);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.human-role-badge.observer {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--text-muted);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+}
+
+.human-completed {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   SUB-AGENTS
+   ============================================ */
+
+.sub-agents-container {
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px dashed var(--border-color);
+}
+
+.sub-agents-header {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--neon-cyan);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sub-agents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sub-agent-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 4px 6px;
+    background: rgba(14, 165, 233, 0.05);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+}
+
+.sub-agent-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.5rem;
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    color: var(--neon-cyan);
+    border: 1px solid var(--border-color);
+}
+
+.sub-agent-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-width: 0;
+}
+
+.sub-agent-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sub-agent-status {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.sub-agent-status.active {
+    background: var(--neon-green);
+}
+
+.sub-agent-status.busy {
+    background: var(--neon-orange);
+}
+
+.sub-agent-status.idle {
+    background: var(--status-inbox);
+}
+
+.sub-agent-tasks {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   TASK QUEUE
+   ============================================ */
+
+.queue-list {
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.queue-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.queue-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+}
+
+.queue-card.queue-running::before {
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+}
+
+.queue-card.queue-paused::before {
+    background: var(--neon-yellow);
+}
+
+.queue-card.queue-idle::before {
+    background: var(--status-inbox);
+}
+
+.queue-card.queue-failed::before {
+    background: var(--neon-red);
+}
+
+.queue-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.queue-type-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.queue-type-icon.cron {
+    background: rgba(14, 165, 233, 0.15);
+    color: var(--neon-cyan);
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.queue-type-icon.watcher {
+    background: rgba(168, 85, 247, 0.15);
+    color: var(--neon-purple);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.queue-type-icon.seeder {
+    background: rgba(0, 255, 136, 0.15);
+    color: var(--neon-green);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.queue-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.queue-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.queue-schedule {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+}
+
+.queue-status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.queue-status-indicator.running {
+    background: var(--neon-green);
+    box-shadow: var(--glow-green);
+    animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+.queue-status-indicator.paused {
+    background: var(--neon-yellow);
+}
+
+.queue-status-indicator.idle {
+    background: var(--status-inbox);
+}
+
+.queue-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.queue-runs {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+}
+
+.queue-success-rate {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--neon-green);
+}
+
+.queue-success-rate.warning {
+    color: var(--neon-orange);
+}
+
+.queue-last-run {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5625rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
