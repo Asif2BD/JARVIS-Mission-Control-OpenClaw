@@ -170,7 +170,7 @@ function createTaskCard(task) {
 }
 
 /**
- * Render the humans section
+ * Render the humans section - compact inline design
  */
 function renderHumans() {
     const humans = window.missionControlData.getHumans();
@@ -184,25 +184,20 @@ function renderHumans() {
     subtitle.textContent = `${activeCount} online`;
 
     container.innerHTML = humans.map(human => `
-        <div class="human-card">
-            <div class="human-header">
-                <div class="human-avatar">${getInitials(human.name)}</div>
-                <div class="human-info">
-                    <div class="human-name">${escapeHtml(human.name)}</div>
-                    <div class="human-designation">${escapeHtml(human.designation || human.role)}</div>
-                </div>
-                <div class="human-status-indicator ${human.status}"></div>
+        <div class="entity-row human-row">
+            <div class="entity-status ${human.status}"></div>
+            <div class="entity-avatar human">${getInitials(human.name)}</div>
+            <div class="entity-info">
+                <span class="entity-name">${escapeHtml(human.name)}</span>
+                <span class="entity-role ${human.role}">${human.role}</span>
             </div>
-            <div class="human-meta">
-                <span class="human-role-badge ${human.role}">${human.role}</span>
-                <span class="human-completed">${human.completed_tasks || 0} tasks</span>
-            </div>
+            <span class="entity-tasks">${human.completed_tasks || 0}</span>
         </div>
     `).join('');
 }
 
 /**
- * Render the agents sidebar with sub-agent support
+ * Render the agents sidebar - compact inline design
  */
 function renderAgents() {
     const allAgents = window.missionControlData.getAgents();
@@ -214,72 +209,41 @@ function renderAgents() {
     // Update subtitle
     const activeCount = allAgents.filter(a => a.status === 'active' || a.status === 'busy').length;
     const subAgentCount = allAgents.filter(a => a.role === 'sub-agent').length;
-    subtitle.textContent = `${activeCount} online (${subAgentCount} sub-agents)`;
+    subtitle.textContent = `${activeCount} online${subAgentCount > 0 ? ` (${subAgentCount} sub)` : ''}`;
 
-    // Get all agents except sub-agents (sub-agents are shown nested under their parents)
+    // Get all agents except sub-agents
     const parentAgents = allAgents.filter(a => a.role !== 'sub-agent');
 
     container.innerHTML = parentAgents.map(agent => {
         const subAgents = window.missionControlData.getSubAgents(agent.id);
-        const isLead = agent.role === 'lead';
-        const hasSubAgents = subAgents.length > 0;
+        const activeTasks = agent.current_tasks ? agent.current_tasks.length : 0;
 
         return `
-            <div class="agent-card ${isLead ? 'agent-lead' : ''} ${hasSubAgents ? 'has-sub-agents' : ''}">
-                <div class="agent-header">
-                    <div class="agent-avatar ${agent.role}">${getInitials(agent.name)}</div>
-                    <div class="agent-info">
-                        <div class="agent-name">${escapeHtml(agent.name)}</div>
-                        <div class="agent-designation">${escapeHtml(agent.designation || agent.role)}</div>
-                    </div>
-                    <div class="agent-status-indicator ${agent.status}"></div>
+            <div class="entity-row agent-row ${agent.role}">
+                <div class="entity-status ${agent.status}"></div>
+                <div class="entity-avatar agent ${agent.role}">${getInitials(agent.name)}</div>
+                <div class="entity-info">
+                    <span class="entity-name">${escapeHtml(agent.name)}</span>
+                    ${activeTasks > 0 ? `<span class="entity-active">${activeTasks}</span>` : ''}
                 </div>
-                <div class="agent-meta">
-                    <span class="agent-tasks-count">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 11l3 3L22 4"></path>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                        </svg>
-                        ${agent.current_tasks ? agent.current_tasks.length : 0} active
-                    </span>
-                    <span class="agent-completed">
-                        ${agent.completed_tasks || 0} done
-                    </span>
-                </div>
-                ${agent.metadata && agent.metadata.clearance ? `
-                    <div class="agent-clearance clearance-${agent.metadata.clearance.toLowerCase()}">
-                        ${agent.metadata.clearance}
-                    </div>
-                ` : ''}
-                ${hasSubAgents ? `
-                    <div class="sub-agents-container">
-                        <div class="sub-agents-header">
-                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                            Sub-agents (${subAgents.length})
-                        </div>
-                        <div class="sub-agents-list">
-                            ${subAgents.map(sub => `
-                                <div class="sub-agent-card">
-                                    <div class="sub-agent-avatar">${getInitials(sub.name)}</div>
-                                    <div class="sub-agent-info">
-                                        <span class="sub-agent-name">${escapeHtml(sub.name)}</span>
-                                        <span class="sub-agent-status ${sub.status}"></span>
-                                    </div>
-                                    <span class="sub-agent-tasks">${sub.completed_tasks || 0}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
+                <span class="entity-tasks">${agent.completed_tasks || 0}</span>
             </div>
+            ${subAgents.length > 0 ? subAgents.map(sub => `
+                <div class="entity-row sub-agent-row">
+                    <div class="entity-status ${sub.status}"></div>
+                    <div class="entity-avatar sub-agent">↳</div>
+                    <div class="entity-info">
+                        <span class="entity-name sub">${escapeHtml(sub.name)}</span>
+                    </div>
+                    <span class="entity-tasks">${sub.completed_tasks || 0}</span>
+                </div>
+            `).join('') : ''}
         `;
     }).join('');
 }
 
 /**
- * Render the task queue
+ * Render the task queue - compact inline design
  */
 function renderQueue() {
     const queue = window.missionControlData.getQueue();
@@ -290,7 +254,7 @@ function renderQueue() {
 
     // Update subtitle
     const runningCount = queue.filter(q => q.status === 'running').length;
-    subtitle.textContent = `${runningCount} jobs running`;
+    subtitle.textContent = `${runningCount} running`;
 
     container.innerHTML = queue.map(item => {
         const successRate = item.run_count > 0
@@ -298,29 +262,29 @@ function renderQueue() {
             : 100;
 
         return `
-            <div class="queue-card queue-${item.status}">
-                <div class="queue-header">
-                    <div class="queue-type-icon ${item.type}">
-                        ${getQueueIcon(item.type)}
-                    </div>
-                    <div class="queue-info">
-                        <div class="queue-name">${escapeHtml(item.name)}</div>
-                        <div class="queue-schedule">${escapeHtml(item.schedule)}</div>
-                    </div>
-                    <div class="queue-status-indicator ${item.status}"></div>
+            <div class="entity-row queue-row">
+                <div class="entity-status queue-status ${item.status}"></div>
+                <div class="queue-icon ${item.type}">${getQueueTypeIcon(item.type)}</div>
+                <div class="entity-info">
+                    <span class="entity-name">${escapeHtml(item.name)}</span>
+                    <span class="queue-schedule">${escapeHtml(item.schedule)}</span>
                 </div>
-                <div class="queue-meta">
-                    <span class="queue-runs">${item.run_count} runs</span>
-                    <span class="queue-success-rate ${successRate < 90 ? 'warning' : ''}">${successRate}%</span>
-                </div>
-                ${item.last_run ? `
-                    <div class="queue-last-run">
-                        Last: ${formatDate(item.last_run)}
-                    </div>
-                ` : ''}
+                <span class="queue-rate ${successRate < 90 ? 'warning' : ''}">${successRate}%</span>
             </div>
         `;
     }).join('');
+}
+
+/**
+ * Get compact icon for queue item type
+ */
+function getQueueTypeIcon(type) {
+    switch(type) {
+        case 'cron': return '⏰';
+        case 'watcher': return '👁';
+        case 'seeder': return '🌱';
+        default: return '📋';
+    }
 }
 
 /**
