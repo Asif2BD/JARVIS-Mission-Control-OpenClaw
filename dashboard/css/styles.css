@@ -1465,27 +1465,15 @@ body::after {
 }
 
 /* ============================================
-   SIDEBAR SECTIONS
+   SIDEBAR SECTIONS - COMPACT DESIGN
    ============================================ */
 
 .sidebar-section {
     border-bottom: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    flex: 0 0 auto;
 }
 
 .sidebar-section:last-child {
     border-bottom: none;
-}
-
-/* AI Agents section can grow to fill space */
-.sidebar-section:nth-child(2) {
-    flex: 1 1 auto;
-    min-height: 150px;
-    max-height: 50%;
-    overflow: hidden;
 }
 
 .sidebar-title {
@@ -1496,6 +1484,209 @@ body::after {
 
 .sidebar-title svg {
     color: var(--neon-cyan);
+}
+
+/* ============================================
+   COMPACT ENTITY ROWS (Humans, Agents, Queue)
+   ============================================ */
+
+.humans-list,
+.agents-list,
+.queue-list {
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.entity-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 6px var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.entity-row:hover {
+    background: var(--bg-card-hover);
+}
+
+.entity-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.entity-status.online,
+.entity-status.active {
+    background: var(--neon-green);
+    box-shadow: 0 0 6px var(--neon-green);
+}
+
+.entity-status.away,
+.entity-status.busy {
+    background: var(--neon-orange);
+    box-shadow: 0 0 6px var(--neon-orange);
+}
+
+.entity-status.offline,
+.entity-status.idle {
+    background: var(--status-inbox);
+}
+
+.entity-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    flex-shrink: 0;
+}
+
+.entity-avatar.human {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-radius: 50%;
+}
+
+.entity-avatar.agent {
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-cyan));
+    color: var(--bg-primary);
+}
+
+.entity-avatar.agent.lead {
+    background: linear-gradient(135deg, var(--neon-purple), #7c3aed);
+}
+
+.entity-avatar.agent.specialist {
+    background: linear-gradient(135deg, var(--neon-green), #00cc6a);
+}
+
+.entity-avatar.agent.reviewer {
+    background: linear-gradient(135deg, var(--neon-orange), #f59e0b);
+}
+
+.entity-avatar.sub-agent {
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    width: 20px;
+}
+
+.entity-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.entity-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.entity-name.sub {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+.entity-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5625rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.entity-role.admin {
+    background: rgba(255, 51, 102, 0.2);
+    color: var(--neon-red);
+}
+
+.entity-role.reviewer {
+    background: rgba(168, 85, 247, 0.2);
+    color: var(--neon-purple);
+}
+
+.entity-role.observer {
+    background: rgba(107, 114, 128, 0.2);
+    color: var(--text-muted);
+}
+
+.entity-active {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    background: var(--neon-orange);
+    color: var(--bg-primary);
+    padding: 1px 5px;
+    border-radius: 8px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.entity-tasks {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    min-width: 20px;
+    text-align: right;
+}
+
+/* Sub-agent row indentation */
+.sub-agent-row {
+    padding-left: var(--spacing-lg);
+    opacity: 0.85;
+}
+
+/* Queue specific */
+.queue-icon {
+    font-size: 0.875rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.queue-schedule {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.5625rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.queue-rate {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--neon-green);
+    flex-shrink: 0;
+}
+
+.queue-rate.warning {
+    color: var(--neon-orange);
+}
+
+.entity-status.queue-status.running {
+    animation: status-pulse 1.5s ease-in-out infinite;
+}
+
+.entity-status.queue-status.paused {
+    background: var(--neon-yellow);
+}
+
+.entity-status.queue-status.failed {
+    background: var(--neon-red);
+    box-shadow: 0 0 6px var(--neon-red);
 }
 
 /* ============================================
