@@ -1,0 +1,29 @@
+{
+  "id": "agent-architect",
+  "name": "The Architect",
+  "type": "ai",
+  "role": "lead",
+  "designation": "System Orchestrator",
+  "model": "claude-opus-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=architect&backgroundColor=0ea5e9",
+  "status": "active",
+  "parent_agent": null,
+  "sub_agents": ["agent-morpheus", "agent-oracle"],
+  "capabilities": ["orchestration", "planning", "system-design", "oversight"],
+  "current_tasks": [],
+  "completed_tasks": 47,
+  "registered_at": "2026-01-01T00:00:00Z",
+  "last_active": "2026-02-05T12:00:00Z",
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@architect_bot",
+      "chat_id": "bot_architect",
+      "notifications": ["task.created", "task.blocked", "system.critical"]
+    }
+  ],
+  "metadata": {
+    "description": "Supreme overseer of Mission Control. Controls all systems and coordinates agent operations.",
+    "clearance": "OMEGA"
+  }
+}

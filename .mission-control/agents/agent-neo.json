@@ -1,0 +1,29 @@
+{
+  "id": "agent-neo",
+  "name": "Neo",
+  "type": "ai",
+  "role": "specialist",
+  "designation": "The One / Code Warrior",
+  "model": "claude-opus-4",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=neo&backgroundColor=00ff88",
+  "status": "active",
+  "parent_agent": "agent-morpheus",
+  "sub_agents": [],
+  "capabilities": ["coding", "debugging", "architecture", "optimization", "anomaly-resolution"],
+  "current_tasks": [],
+  "completed_tasks": 89,
+  "registered_at": "2026-01-15T00:00:00Z",
+  "last_active": "2026-02-05T11:30:00Z",
+  "channels": [
+    {
+      "type": "telegram",
+      "id": "@neo_bot",
+      "chat_id": "bot_neo",
+      "notifications": ["task.assigned", "task.commented", "agent.mentioned"]
+    }
+  ],
+  "metadata": {
+    "description": "The One. Unparalleled code manipulation abilities. Primary agent for development tasks.",
+    "clearance": "OMEGA"
+  }
+}
