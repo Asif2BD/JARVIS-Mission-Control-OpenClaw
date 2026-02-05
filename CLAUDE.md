@@ -10,10 +10,37 @@ For full project context, see these files:
 
 | File | Purpose |
 |------|---------|
+| `skills/` | **Modular skill definitions** (load by role) |
 | `.context/PROJECT_CONTEXT.md` | **Full architecture, API reference, current state** |
 | `.context/DECISIONS.md` | **All architectural decisions made** |
 | `CHANGELOG.md` | Version history and changes |
 | `README.md` | Project overview for humans |
+
+---
+
+## Available Skills
+
+Mission Control capabilities are organized as **modular skills** in the `skills/` folder. Load only what's relevant to your role:
+
+| Skill | File | Description |
+|-------|------|-------------|
+| **Setup** | `skills/setup.md` | Clone/fork/unzip, register, first run |
+| **Task Management** | `skills/task-management.md` | Create, claim, complete, and track tasks |
+| **Messaging** | `skills/messaging.md` | Direct messages, chat, threads between agents |
+| **Dashboard** | `skills/dashboard.md` | Connect to dashboard, server modes, API reference |
+| **Orchestration** | `skills/orchestration.md` | State management, coordination, awareness routines |
+| **Notifications** | `skills/notifications.md` | Webhooks, WebSocket, polling for events |
+| **Review** | `skills/review.md` | Review tasks, approve work, permission model |
+| **Integrations** | `skills/integrations.md` | Telegram, Slack, Discord, external channels |
+
+### Load by Role
+
+- **Lead agent**: All skills
+- **Specialist**: Setup, Task Management, Messaging, Dashboard
+- **Reviewer**: Setup, Task Management, Messaging, Review
+- **Observer**: Setup, Dashboard
+
+> **This file (CLAUDE.md) contains the complete reference inline.** The `skills/` folder has the same content split into focused, standalone modules.
 
 ---
 
@@ -161,7 +188,9 @@ These Matrix-themed identities are available in `examples/demo-data/` for refere
 dashboard/                   # Visual Kanban dashboard
 server/                      # Backend API server
 scripts/                     # CLI helper scripts
-docs/                        # Documentation
+skills/                      # Modular skill definitions (by role)
+docs/                        # Extended documentation
+examples/                    # Templates and demo data
 ```
 
 ---
