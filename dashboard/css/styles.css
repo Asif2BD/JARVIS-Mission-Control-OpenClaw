@@ -909,6 +909,33 @@ body::after {
     border-color: rgba(0, 212, 255, 0.2);
 }
 
+/* Highlighted task card - when entity is selected */
+.task-card.highlighted {
+    border-color: var(--neon-cyan);
+    box-shadow: var(--shadow-md), 0 0 15px rgba(0, 212, 255, 0.4), 0 0 30px rgba(0, 212, 255, 0.2);
+    transform: translateY(-2px);
+    z-index: 10;
+    position: relative;
+}
+
+.task-card.highlighted::after {
+    border-color: var(--neon-cyan);
+    opacity: 0.5;
+}
+
+/* Dimmed task card - when another entity is selected */
+.task-card.dimmed {
+    opacity: 0.35;
+    filter: grayscale(30%);
+    transform: scale(0.98);
+}
+
+.task-card.dimmed:hover {
+    opacity: 0.6;
+    filter: grayscale(0%);
+    transform: translateY(-1px) scale(0.99);
+}
+
 /* Drag and Drop States */
 .task-card.dragging {
     opacity: 0.6;
@@ -1507,6 +1534,29 @@ body::after {
 
 .entity-row:hover {
     background: var(--bg-card-hover);
+}
+
+/* Clickable entity rows */
+.entity-row.clickable {
+    cursor: pointer;
+}
+
+.entity-row.clickable:hover {
+    background: var(--bg-card-hover);
+    border-left: 2px solid var(--neon-cyan);
+    padding-left: calc(var(--spacing-sm) - 2px);
+}
+
+/* Selected entity row */
+.entity-row.selected {
+    background: rgba(14, 165, 233, 0.15);
+    border-left: 3px solid var(--neon-cyan);
+    padding-left: calc(var(--spacing-sm) - 3px);
+    box-shadow: inset 0 0 10px rgba(14, 165, 233, 0.1);
+}
+
+.entity-row.selected .entity-name {
+    color: var(--neon-cyan);
 }
 
 .entity-status {
