@@ -250,7 +250,46 @@ npm start
 
 ## OpenClaw Integration
 
-Mission Control integrates with OpenClaw through lifecycle hooks:
+Mission Control automatically integrates with OpenClaw when running on the same machine:
+
+### Agent Auto-Sync
+
+Mission Control **automatically discovers and syncs agents** from your OpenClaw installation:
+
+1. On startup, the agent-bridge reads your OpenClaw configuration
+2. For each agent defined in `openclaw.json`, a Mission Control agent file is created
+3. Agent metadata (name, model, workspace) is synced periodically (every 30 seconds)
+
+**No manual agent setup required!** Just start Mission Control and your agents appear.
+
+### Configuration
+
+The auto-sync feature can be customized via environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPENCLAW_CONFIG_PATH` | Path to openclaw.json | Auto-detected |
+| `OPENCLAW_AGENTS_DIR` | Path to OpenClaw agents directory | Auto-detected |
+| `MISSION_CONTROL_DIR` | Path to .mission-control directory | `../.mission-control` |
+| `AGENT_SYNC_INTERVAL` | Sync interval in milliseconds | `30000` (30s) |
+
+Auto-detection looks for OpenClaw config in these locations:
+1. `$OPENCLAW_CONFIG_PATH` (if set)
+2. `~/.openclaw/openclaw.json`
+3. `/root/.openclaw/openclaw.json`
+
+### Manual Sync
+
+You can also run a one-time agent sync:
+
+```bash
+cd server
+node agent-sync.js
+```
+
+### Lifecycle Hooks (Advanced)
+
+For deeper integration, you can install lifecycle hooks:
 
 ```bash
 # Install hooks

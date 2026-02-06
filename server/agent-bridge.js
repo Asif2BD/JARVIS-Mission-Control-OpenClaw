@@ -15,14 +15,44 @@
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
+const os = require('os');
 const chokidar = require('chokidar');
 const readline = require('readline');
 
-// Configuration
-const OPENCLAW_AGENTS_DIR = process.env.OPENCLAW_AGENTS_DIR || '/root/.openclaw/agents';
+// Import agent sync module for auto-discovery
+const agentSync = require('./agent-sync');
+
+// Configuration with auto-detection
 const MISSION_CONTROL_DIR = process.env.MISSION_CONTROL_DIR || path.join(__dirname, '..', '.mission-control');
 const MC_SERVER_URL = process.env.MC_SERVER_URL || 'http://localhost:3000';
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL) || 2000; // 2 seconds
+const AGENT_SYNC_INTERVAL = parseInt(process.env.AGENT_SYNC_INTERVAL) || 30000; // 30 seconds
+
+// Auto-detect OpenClaw agents directory
+function detectAgentsDir() {
+    // Priority 1: Environment variable
+    if (process.env.OPENCLAW_AGENTS_DIR && fsSync.existsSync(process.env.OPENCLAW_AGENTS_DIR)) {
+        return process.env.OPENCLAW_AGENTS_DIR;
+    }
+    
+    // Priority 2: Common locations
+    const possiblePaths = [
+        path.join(os.homedir(), '.openclaw', 'agents'),
+        '/root/.openclaw/agents',
+        path.join(process.cwd(), '.openclaw', 'agents'),
+    ];
+    
+    for (const agentPath of possiblePaths) {
+        if (fsSync.existsSync(agentPath)) {
+            return agentPath;
+        }
+    }
+    
+    // Fallback (may not exist)
+    return path.join(os.homedir(), '.openclaw', 'agents');
+}
+
+const OPENCLAW_AGENTS_DIR = detectAgentsDir();
 
 // Tracked state
 const trackedSessions = new Map(); // sessionId -> { agent, lastLine, taskId, status }
@@ -481,9 +511,24 @@ async function handleSessionEnd(sessionId, reason = 'completed') {
 
 /**
  * Scan all agents for new/active sessions
+ * Uses dynamic agent discovery from OpenClaw
  */
 async function scanAllAgents() {
-    const agents = ['main', 'tank', 'shuri', 'keymaker'];
+    // Dynamically discover agents instead of hardcoding
+    let agents;
+    try {
+        agents = await agentSync.getDiscoveredAgentIds();
+        if (agents.length === 0) {
+            // Fallback to directory scan if config not available
+            const entries = await fs.readdir(OPENCLAW_AGENTS_DIR, { withFileTypes: true });
+            agents = entries
+                .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+                .map(e => e.name);
+        }
+    } catch (error) {
+        console.error('[Bridge] Error discovering agents:', error.message);
+        agents = [];
+    }
     
     for (const agentName of agents) {
         try {
@@ -538,13 +583,32 @@ async function checkStaleSessions() {
 // FILE WATCHER (for instant updates)
 // ============================================
 
-function setupFileWatcher() {
-    const watchPaths = [
-        path.join(OPENCLAW_AGENTS_DIR, 'main', 'sessions'),
-        path.join(OPENCLAW_AGENTS_DIR, 'tank', 'sessions'),
-        path.join(OPENCLAW_AGENTS_DIR, 'shuri', 'sessions'),
-        path.join(OPENCLAW_AGENTS_DIR, 'keymaker', 'sessions')
-    ];
+async function setupFileWatcher() {
+    // Dynamically build watch paths from discovered agents
+    let watchPaths = [];
+    
+    try {
+        const agents = await agentSync.getDiscoveredAgentIds();
+        if (agents.length > 0) {
+            watchPaths = agents.map(agent => 
+                path.join(OPENCLAW_AGENTS_DIR, agent, 'sessions')
+            );
+        } else {
+            // Fallback: scan directory
+            const entries = await fs.readdir(OPENCLAW_AGENTS_DIR, { withFileTypes: true });
+            watchPaths = entries
+                .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+                .map(e => path.join(OPENCLAW_AGENTS_DIR, e.name, 'sessions'));
+        }
+    } catch (error) {
+        console.warn('[Bridge] Could not discover agents for file watcher:', error.message);
+        // Empty watch paths will gracefully handle missing OpenClaw
+    }
+    
+    if (watchPaths.length === 0) {
+        console.log('[Bridge] No agent session paths to watch');
+        return;
+    }
     
     const watcher = chokidar.watch(watchPaths, {
         ignored: /\.lock$/,
@@ -583,6 +647,14 @@ function setupFileWatcher() {
 // ============================================
 
 async function main() {
+    // Discover agents for display
+    let discoveredAgents = [];
+    try {
+        discoveredAgents = await agentSync.getDiscoveredAgentIds();
+    } catch (e) {
+        // Will show empty list
+    }
+    
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║        JARVIS MISSION CONTROL - AGENT BRIDGE                  ║
@@ -590,10 +662,22 @@ async function main() {
 ║                                                               ║
 ║   Monitoring: ${OPENCLAW_AGENTS_DIR}
 ║   MC Server:  ${MC_SERVER_URL}
-║   Poll Int:   ${POLL_INTERVAL}ms                                          ║
+║   Poll Int:   ${POLL_INTERVAL}ms
+║   Sync Int:   ${AGENT_SYNC_INTERVAL}ms
+║   Agents:     ${discoveredAgents.length > 0 ? discoveredAgents.join(', ') : '(discovering...)'}
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
     `);
+    
+    // Start agent auto-sync (creates/updates Mission Control agent files)
+    console.log('[Bridge] Starting agent auto-sync from OpenClaw...');
+    const syncResults = await agentSync.syncAllAgents();
+    if (syncResults.created.length > 0) {
+        console.log(`[Bridge] Auto-created ${syncResults.created.length} agent(s): ${syncResults.created.join(', ')}`);
+    }
+    
+    // Start periodic agent sync
+    agentSync.startPeriodicSync(AGENT_SYNC_INTERVAL);
     
     // Rehydrate from existing task files (prevents duplicates on restart)
     await rehydrateFromDisk();
@@ -602,7 +686,7 @@ async function main() {
     await scanAllAgents();
     
     // Setup file watcher for instant updates
-    setupFileWatcher();
+    await setupFileWatcher();
     
     // Polling loop for reliability
     setInterval(async () => {
