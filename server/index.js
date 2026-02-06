@@ -240,7 +240,6 @@ async function handleFileChange(action, filePath) {
 // ============================================
 
 // Serve dashboard static files
-app.use(express.static(DASHBOARD_DIR));
 
 // --- TASKS ---
 
@@ -288,6 +287,61 @@ app.post('/api/tasks', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// --- FILE DOWNLOADS ---
+
+app.get('/api/files/:path(*)', async (req, res) => {
+    try {
+        const filePath = req.params.path;
+        const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+        
+        // Security: Ensure path is within MISSION_CONTROL_DIR
+        const resolvedPath = path.resolve(fullPath);
+        const resolvedBase = path.resolve(MISSION_CONTROL_DIR);
+        
+        if (!resolvedPath.startsWith(resolvedBase)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+        
+        // Check if file exists
+        const stats = await fs.stat(fullPath);
+        if (!stats.isFile()) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+        
+        // Set content type based on extension
+        const ext = path.extname(filePath).toLowerCase();
+        const contentTypes = {
+            '.md': 'text/markdown',
+            '.json': 'application/json',
+            '.txt': 'text/plain',
+            '.pdf': 'application/pdf',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg'
+        };
+        
+        const contentType = contentTypes[ext] || 'application/octet-stream';
+        res.setHeader('Content-Type', contentType);
+        
+        // Check if download is requested
+        const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+        res.setHeader('Content-Disposition', `${disposition}; filename="${path.basename(filePath)}"`);
+        
+        // Stream the file
+        const fileStream = fsSync.createReadStream(fullPath);
+        fileStream.pipe(res);
+        
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            res.status(404).json({ error: 'File not found' });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
+    }
+});
+
+
 
 app.put('/api/tasks/:id', async (req, res) => {
     try {
@@ -1334,12 +1388,15 @@ app.get('/api/metrics', async (req, res) => {
     }
 });
 
-// Fallback to dashboard for SPA routing
+// ============================================
+// Serve dashboard static files (MUST be before catch-all route)
+app.use(express.static(DASHBOARD_DIR));
+
+// Fallback to dashboard for SPA routing (MUST be last)
 app.get('*', (req, res) => {
     res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
 });
 
-// ============================================
 // START SERVER
 // ============================================
 

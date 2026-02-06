@@ -203,15 +203,32 @@ const MissionControlAPI = {
     // --- Files ---
 
     async getFiles(directory = 'reports') {
-        return this.request(`/files?dir=${encodeURIComponent(directory)}`);
+        return this.request(`/api/files?dir=${encodeURIComponent(directory)}`);
     },
 
     async getFile(directory, filename) {
-        return this.request(`/files/${encodeURIComponent(directory)}/${encodeURIComponent(filename)}`);
+        // Fetch raw file content (not JSON)
+        const url = `${this.baseUrl}/api/files/${encodeURIComponent(directory)}/${encodeURIComponent(filename)}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch file: ${response.status}`);
+        }
+        
+        const content = await response.text();
+        const contentType = response.headers.get('content-type') || 'text/plain';
+        
+        return {
+            name: filename,
+            content: content,
+            size: content.length,
+            type: contentType,
+            modified: response.headers.get('last-modified')
+        };
     },
 
     async getFileDirectories() {
-        return this.request('/files/directories');
+        return this.request('/api/files/directories');
     },
 
     // --- Task Attachments ---

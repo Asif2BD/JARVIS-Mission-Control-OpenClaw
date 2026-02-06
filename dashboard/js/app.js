@@ -277,7 +277,14 @@ function createTaskCard(task) {
     card.className = `task-card priority-${task.priority}`;
     card.dataset.taskId = task.id;
     card.dataset.assignee = task.assignee || '';
-    card.onclick = () => openTaskModal(task);
+    
+    // Use addEventListener instead of onclick property for better reliability
+    card.addEventListener('click', (e) => {
+        // Only open modal if not dragging
+        if (!card.classList.contains('dragging')) {
+            openTaskModal(task);
+        }
+    });
 
     // Get assignee name
     const assignee = task.assignee ?
@@ -2048,6 +2055,19 @@ function downloadFile() {
 }
 
 /**
+ * Download attachment directly
+ */
+function downloadAttachment(path, filename) {
+    const a = document.createElement('a');
+    a.href = `/api/files/${path}?download=true`;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+/**
  * Simple Markdown renderer
  */
 function renderMarkdown(text) {
@@ -2190,21 +2210,28 @@ function renderTaskAttachments(task) {
     container.innerHTML = task.attachments.map(att => {
         const pathParts = att.path.split('/');
         const filename = pathParts[pathParts.length - 1];
-        const dir = pathParts.length > 1 ? pathParts[0] : 'reports';
+        const dir = pathParts.slice(0, -1).join('/') || 'reports';
         const ext = filename.split('.').pop().toLowerCase();
         
         return `
-            <div class="attachment-item" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" title="${escapeHtml(att.description || att.path)}">
-                <div class="attachment-icon">
+            <div class="attachment-item">
+                <div class="attachment-icon" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" style="cursor: pointer;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
                 </div>
-                <div class="attachment-info">
+                <div class="attachment-info" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" style="cursor: pointer; flex: 1;">
                     <div class="attachment-name">${escapeHtml(filename)}</div>
                     ${att.description ? `<div class="attachment-desc">${escapeHtml(att.description)}</div>` : ''}
                 </div>
+                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); downloadAttachment('${escapeHtml(att.path)}', '${escapeHtml(filename)}');" style="margin-left: auto;" title="Download">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </button>
             </div>
         `;
     }).join('');
