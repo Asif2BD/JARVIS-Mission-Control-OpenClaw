@@ -1,0 +1,28 @@
+{
+  "id": "res-telegram-bot",
+  "name": "Telegram Bot API",
+  "type": "service",
+  "status": "active",
+  "description": "Primary communication channel for agent-human interaction via Telegram.",
+  "config": {
+    "bot_name": "@OpenClawBot",
+    "features": ["messages", "inline_keyboards", "media", "groups"],
+    "polling": true
+  },
+  "endpoint": "https://api.telegram.org/bot",
+  "documentation_url": "https://core.telegram.org/bots/api",
+  "owner": "architect",
+  "shared_with": ["oracle", "tank", "morpheus", "shuri", "keymaker", "link"],
+  "capacity": {
+    "max_concurrent": 30,
+    "unit": "messages/second"
+  },
+  "bookable": false,
+  "cost_per_unit": 0,
+  "cost_unit": "message",
+  "monthly_budget": 0,
+  "tags": ["messaging", "communication", "bot", "core"],
+  "created_at": "2026-02-01T00:00:00.000Z",
+  "updated_at": "2026-02-06T00:00:00.000Z",
+  "created_by": "architect"
+}

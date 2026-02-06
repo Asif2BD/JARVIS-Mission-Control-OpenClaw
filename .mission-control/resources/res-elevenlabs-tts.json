@@ -1,0 +1,28 @@
+{
+  "id": "res-elevenlabs-tts",
+  "name": "ElevenLabs TTS",
+  "type": "service",
+  "status": "active",
+  "description": "Text-to-speech service for voice generation. Used by SAG skill for audio content.",
+  "config": {
+    "voices": ["nova", "alloy", "echo", "fable"],
+    "quality": "high",
+    "formats": ["mp3", "wav", "ogg"]
+  },
+  "endpoint": "https://api.elevenlabs.io/v1",
+  "documentation_url": "https://docs.elevenlabs.io/",
+  "owner": "oracle",
+  "shared_with": ["tank", "morpheus"],
+  "capacity": {
+    "max_concurrent": 10,
+    "unit": "concurrent generations"
+  },
+  "bookable": false,
+  "cost_per_unit": 0.30,
+  "cost_unit": "1k characters",
+  "monthly_budget": 50,
+  "tags": ["tts", "voice", "audio", "sag"],
+  "created_at": "2026-02-01T00:00:00.000Z",
+  "updated_at": "2026-02-06T00:00:00.000Z",
+  "created_by": "architect"
+}
