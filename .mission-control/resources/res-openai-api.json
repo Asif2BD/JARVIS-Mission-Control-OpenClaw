@@ -10,8 +10,8 @@
   },
   "endpoint": "https://api.openai.com/v1",
   "documentation_url": "https://platform.openai.com/docs",
-  "owner": "the-architect",
-  "shared_with": ["the-oracle", "tank", "keymaker"],
+  "owner": "alex-feb",
+  "shared_with": ["jordan-feb", "sam-feb", "casey-feb"],
   "capacity": null,
   "bookable": false,
   "cost_per_unit": 0.01,
@@ -20,5 +20,5 @@
   "tags": ["llm", "ai", "production"],
   "created_at": "2026-01-15T10:00:00.000Z",
   "updated_at": "2026-02-05T22:00:00.000Z",
-  "created_by": "the-architect"
+  "created_by": "alex-feb"
 }

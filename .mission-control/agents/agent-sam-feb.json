@@ -1,32 +1,33 @@
 {
-  "id": "agent-keymaker",
-  "name": "The Keymaker",
+  "id": "agent-sam-feb",
+  "name": "Sam",
   "type": "ai",
-  "role": "analyst",
+  "role": "lead",
   "designation": "AI Agent",
   "model": "claude-opus-4",
-  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=keymaker",
+  "avatar": "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=sam-feb",
   "status": "idle",
   "parent_agent": null,
   "sub_agents": [],
   "capabilities": [
-    "analysis",
+    "execution",
+    "coordination",
     "research",
-    "data-processing"
+    "filesystem"
   ],
   "personality": {
-    "about": "The Keymaker - a analyst agent specializing in analysis, research, data-processing.",
+    "about": "Sam - a lead agent specializing in execution, coordination, research, filesystem.",
     "tone": "professional",
     "traits": [
       "analytical",
       "collaborative",
       "thorough"
     ],
-    "greeting": "The Keymaker online and ready."
+    "greeting": "Sam online and ready."
   },
   "channels": [],
   "registered_at": "2026-02-05T21:14:00Z",
-  "last_active": "2026-02-05T21:31:39.319Z",
+  "last_active": "2026-02-06T04:30:49.530Z",
   "current_tasks": [],
   "completed_tasks": 0,
   "metadata": {

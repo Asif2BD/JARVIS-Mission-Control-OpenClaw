@@ -5,7 +5,7 @@
   "schedule": "0 * * * *",
   "description": "Syncs mission control data with remote repository hourly. Pulls latest changes and updates local state.",
   "status": "running",
-  "assigned_to": "agent-architect",
+  "assigned_to": "agent-alex-feb",
   "last_run": "2026-02-05T11:00:00Z",
   "next_run": "2026-02-05T12:00:00Z",
   "run_count": 48,
@@ -16,6 +16,6 @@
   "metadata": {
     "timeout_seconds": 120,
     "alert_on_failure": true,
-    "notify": ["human-asif", "human-nobin"]
+    "notify": ["human-alex-feb", "human-taylor-feb"]
   }
 }
