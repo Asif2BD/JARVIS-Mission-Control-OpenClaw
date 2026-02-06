@@ -221,6 +221,11 @@ class ReviewManager {
             throw new Error(`Cannot approve review in ${review.stage} stage`);
         }
         
+        // Prevent self-approval - submitters cannot approve their own reviews
+        if (review.submitter === approver || review.submitter_agent === approver) {
+            throw new Error('Cannot approve your own submission');
+        }
+        
         // Check if already approved by this user
         if (review.approvals.some(a => a.approver === approver)) {
             throw new Error(`Already approved by ${approver}`);
