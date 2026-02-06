@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Agent Auto-Sync** - Mission Control now automatically discovers and syncs agents from OpenClaw
+  - New `server/agent-sync.js` module handles agent discovery
+  - Reads `openclaw.json` to find configured agents
+  - Creates Mission Control agent files automatically on startup
+  - Periodic sync (configurable, default 30s) keeps agents in sync
+  - Works without hardcoded paths - auto-detects OpenClaw installation
+- **Dynamic Agent Discovery** - Agent bridge no longer has hardcoded agent names
+  - Discovers agents from OpenClaw config or by scanning agents directory
+  - File watcher paths built dynamically from discovered agents
+- **New Environment Variables** for customization:
+  - `OPENCLAW_CONFIG_PATH` - Override OpenClaw config location
+  - `AGENT_SYNC_INTERVAL` - Control sync frequency (default: 30000ms)
+
+### Changed
+- Agent bridge now uses dynamic agent discovery instead of hardcoded list
+- File watcher setup is now async and builds paths dynamically
+
 ## [0.8.0] - 2026-02-05
 
 ### Added
