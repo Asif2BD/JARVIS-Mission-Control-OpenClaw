@@ -1,0 +1,28 @@
+{
+  "id": "res-github-api",
+  "name": "GitHub API",
+  "type": "api",
+  "status": "active",
+  "description": "GitHub API for repository management, pull requests, and code operations.",
+  "config": {
+    "scopes": ["repo", "read:org", "workflow"],
+    "rate_limit": "5000 req/hour",
+    "org": "Asif2BD"
+  },
+  "endpoint": "https://api.github.com",
+  "documentation_url": "https://docs.github.com/en/rest",
+  "owner": "architect",
+  "shared_with": ["oracle", "tank", "morpheus"],
+  "capacity": {
+    "max_concurrent": 5000,
+    "unit": "requests/hour"
+  },
+  "bookable": false,
+  "cost_per_unit": 0,
+  "cost_unit": "request",
+  "monthly_budget": 0,
+  "tags": ["git", "code", "vcs", "devops"],
+  "created_at": "2026-02-01T00:00:00.000Z",
+  "updated_at": "2026-02-06T00:00:00.000Z",
+  "created_by": "architect"
+}

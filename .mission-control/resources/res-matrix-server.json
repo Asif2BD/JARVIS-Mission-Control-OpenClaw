@@ -1,0 +1,30 @@
+{
+  "id": "res-matrix-server",
+  "name": "Matrix Zion Server",
+  "type": "compute",
+  "status": "active",
+  "description": "Primary server hosting OpenClaw agents and services. Ubuntu Linux with 16GB RAM.",
+  "config": {
+    "hostname": "matrix-zion",
+    "os": "Ubuntu Linux 6.8.0-90-generic",
+    "cpu": "x64",
+    "ram": "16GB",
+    "node_version": "v22.22.0"
+  },
+  "endpoint": "localhost",
+  "documentation_url": null,
+  "owner": "architect",
+  "shared_with": ["oracle", "tank", "morpheus", "shuri", "keymaker", "link"],
+  "capacity": {
+    "max_concurrent": 6,
+    "unit": "agents"
+  },
+  "bookable": true,
+  "cost_per_unit": 0.05,
+  "cost_unit": "hour",
+  "monthly_budget": 100,
+  "tags": ["server", "compute", "infrastructure", "core"],
+  "created_at": "2026-02-01T00:00:00.000Z",
+  "updated_at": "2026-02-06T00:00:00.000Z",
+  "created_by": "architect"
+}
