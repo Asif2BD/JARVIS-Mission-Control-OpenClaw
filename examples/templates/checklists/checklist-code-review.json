@@ -1,0 +1,46 @@
+{
+  "id": "checklist-code-review",
+  "name": "Code Review Checklist",
+  "description": "Standard checklist for code review submissions",
+  "type": "code",
+  "items": [
+    {
+      "id": "cr-1",
+      "text": "Code compiles without errors",
+      "required": true,
+      "automated": true
+    },
+    {
+      "id": "cr-2",
+      "text": "All tests pass",
+      "required": true,
+      "automated": true
+    },
+    {
+      "id": "cr-3",
+      "text": "No security vulnerabilities introduced",
+      "required": true,
+      "automated": false
+    },
+    {
+      "id": "cr-4",
+      "text": "Code follows style guidelines",
+      "required": true,
+      "automated": true
+    },
+    {
+      "id": "cr-5",
+      "text": "Documentation updated",
+      "required": false,
+      "automated": false
+    },
+    {
+      "id": "cr-6",
+      "text": "Performance impact assessed",
+      "required": false,
+      "automated": false
+    }
+  ],
+  "created_at": "2026-01-15T10:00:00.000Z",
+  "created_by": "alex-feb"
+}

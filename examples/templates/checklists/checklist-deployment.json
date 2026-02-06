@@ -1,0 +1,40 @@
+{
+  "id": "checklist-deployment",
+  "name": "Deployment Checklist",
+  "description": "Pre-deployment verification checklist",
+  "type": "deployment",
+  "items": [
+    {
+      "id": "dep-1",
+      "text": "All tests pass in staging",
+      "required": true,
+      "automated": true
+    },
+    {
+      "id": "dep-2",
+      "text": "Database migrations reviewed",
+      "required": true,
+      "automated": false
+    },
+    {
+      "id": "dep-3",
+      "text": "Rollback plan documented",
+      "required": true,
+      "automated": false
+    },
+    {
+      "id": "dep-4",
+      "text": "Monitoring alerts configured",
+      "required": true,
+      "automated": false
+    },
+    {
+      "id": "dep-5",
+      "text": "Stakeholders notified",
+      "required": false,
+      "automated": false
+    }
+  ],
+  "created_at": "2026-01-15T10:00:00.000Z",
+  "created_by": "alex-feb"
+}

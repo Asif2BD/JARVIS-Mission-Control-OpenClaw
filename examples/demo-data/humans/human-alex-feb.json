@@ -1,0 +1,15 @@
+{
+  "id": "human-alex-feb",
+  "name": "Alex",
+  "type": "human",
+  "role": "System Architect",
+  "designation": "Project Owner",
+  "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=alex-feb",
+  "status": "online",
+  "capabilities": ["all", "override", "approve"],
+  "channels": [],
+  "metadata": {
+    "clearance": "OMEGA",
+    "timezone": "UTC"
+  }
+}

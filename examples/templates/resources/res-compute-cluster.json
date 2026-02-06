@@ -1,0 +1,28 @@
+{
+  "id": "res-compute-cluster",
+  "name": "GPU Compute Cluster",
+  "type": "compute",
+  "status": "active",
+  "description": "Shared GPU cluster for ML training and inference",
+  "config": {
+    "gpus": "8x A100",
+    "memory": "640GB",
+    "storage": "10TB NVMe"
+  },
+  "endpoint": "ssh://compute.internal",
+  "documentation_url": null,
+  "owner": "alex-feb",
+  "shared_with": ["sam-feb", "jordan-feb"],
+  "capacity": {
+    "max_concurrent": 4,
+    "unit": "jobs"
+  },
+  "bookable": true,
+  "cost_per_unit": 2.50,
+  "cost_unit": "gpu_hour",
+  "monthly_budget": 2000,
+  "tags": ["compute", "gpu", "ml", "infrastructure"],
+  "created_at": "2026-01-20T14:00:00.000Z",
+  "updated_at": "2026-02-05T18:00:00.000Z",
+  "created_by": "alex-feb"
+}

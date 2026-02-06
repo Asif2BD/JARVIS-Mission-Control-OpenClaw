@@ -1,0 +1,24 @@
+{
+  "id": "res-anthropic-api",
+  "name": "Anthropic Claude API",
+  "type": "api",
+  "status": "active",
+  "description": "Anthropic Claude 3.5 Sonnet API access",
+  "config": {
+    "model": "claude-3-5-sonnet-20241022",
+    "max_tokens": 8192
+  },
+  "endpoint": "https://api.anthropic.com/v1",
+  "documentation_url": "https://docs.anthropic.com",
+  "owner": "alex-feb",
+  "shared_with": ["jordan-feb", "sam-feb", "casey-feb", "all"],
+  "capacity": null,
+  "bookable": false,
+  "cost_per_unit": 0.003,
+  "cost_unit": "1k_tokens",
+  "monthly_budget": 300,
+  "tags": ["llm", "ai", "production"],
+  "created_at": "2026-01-15T10:00:00.000Z",
+  "updated_at": "2026-02-05T22:00:00.000Z",
+  "created_by": "alex-feb"
+}
