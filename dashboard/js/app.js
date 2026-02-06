@@ -2901,3 +2901,167 @@ function formatRelativeTime(dateString) {
     if (minutes > 0) return `${minutes}m ago`;
     return 'just now';
 }
+
+// ============================================
+// MOBILE NAVIGATION & RESPONSIVE FUNCTIONS
+// ============================================
+
+/**
+ * Toggle the mobile left sidebar (agents list)
+ */
+function toggleMobileSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const hamburger = document.getElementById('hamburger-menu');
+    const rightSidebar = document.querySelector('.sidebar-right');
+    
+    // Close right sidebar if open
+    if (rightSidebar && rightSidebar.classList.contains('mobile-open')) {
+        rightSidebar.classList.remove('mobile-open');
+    }
+    
+    if (sidebar) {
+        const isOpen = sidebar.classList.toggle('mobile-open');
+        if (hamburger) hamburger.classList.toggle('active', isOpen);
+        if (overlay) overlay.classList.toggle('active', isOpen);
+        
+        // Prevent body scroll when sidebar is open
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+}
+
+/**
+ * Toggle the mobile right sidebar (reports, resources, settings)
+ */
+function toggleMobileRightSidebar() {
+    const rightSidebar = document.querySelector('.sidebar-right');
+    const overlay = document.getElementById('sidebar-overlay');
+    const sidebar = document.querySelector('.sidebar');
+    const hamburger = document.getElementById('hamburger-menu');
+    
+    // Close left sidebar if open
+    if (sidebar && sidebar.classList.contains('mobile-open')) {
+        sidebar.classList.remove('mobile-open');
+        if (hamburger) hamburger.classList.remove('active');
+    }
+    
+    if (rightSidebar) {
+        const isOpen = rightSidebar.classList.toggle('mobile-open');
+        if (overlay) overlay.classList.toggle('active', isOpen);
+        
+        // Prevent body scroll when sidebar is open
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+}
+
+/**
+ * Close all mobile sidebars
+ */
+function closeMobileSidebars() {
+    const sidebar = document.querySelector('.sidebar');
+    const rightSidebar = document.querySelector('.sidebar-right');
+    const overlay = document.getElementById('sidebar-overlay');
+    const hamburger = document.getElementById('hamburger-menu');
+    
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (rightSidebar) rightSidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+    if (hamburger) hamburger.classList.remove('active');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+}
+
+/**
+ * Handle mobile bottom nav view switching
+ */
+function showMobileView(view) {
+    // Update active state on nav items
+    const navItems = document.querySelectorAll('.mobile-nav-item');
+    navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.view === view);
+    });
+    
+    // Close any open sidebars
+    closeMobileSidebars();
+    
+    // Scroll kanban to beginning when board is selected
+    if (view === 'board') {
+        const kanbanBoard = document.getElementById('kanban-board');
+        if (kanbanBoard) {
+            kanbanBoard.scrollTo({ left: 0, behavior: 'smooth' });
+        }
+    }
+}
+
+/**
+ * Handle window resize to clean up mobile states
+ */
+function handleResize() {
+    const width = window.innerWidth;
+    
+    // Clean up mobile states when resizing to desktop
+    if (width > 768) {
+        closeMobileSidebars();
+    }
+}
+
+// Listen for resize events
+window.addEventListener('resize', handleResize);
+
+// Handle escape key to close sidebars
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeMobileSidebars();
+    }
+});
+
+// Handle swipe gestures for sidebar (basic implementation)
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+}, { passive: true });
+
+function handleSwipeGesture() {
+    const swipeThreshold = 100;
+    const swipeDistance = touchEndX - touchStartX;
+    
+    // Swipe right to open left sidebar (only from edge)
+    if (swipeDistance > swipeThreshold && touchStartX < 30) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && !sidebar.classList.contains('mobile-open')) {
+            toggleMobileSidebar();
+        }
+    }
+    
+    // Swipe left to close left sidebar
+    if (swipeDistance < -swipeThreshold) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('mobile-open')) {
+            closeMobileSidebars();
+        }
+    }
+    
+    // Swipe left from right edge to open right sidebar
+    if (swipeDistance < -swipeThreshold && touchStartX > window.innerWidth - 30) {
+        const rightSidebar = document.querySelector('.sidebar-right');
+        if (rightSidebar && !rightSidebar.classList.contains('mobile-open')) {
+            toggleMobileRightSidebar();
+        }
+    }
+    
+    // Swipe right to close right sidebar
+    if (swipeDistance > swipeThreshold) {
+        const rightSidebar = document.querySelector('.sidebar-right');
+        if (rightSidebar && rightSidebar.classList.contains('mobile-open')) {
+            closeMobileSidebars();
+        }
+    }
+}
