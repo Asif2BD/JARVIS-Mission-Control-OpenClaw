@@ -1,21 +1,21 @@
 {
   "id": "workflow-multi-level",
   "name": "Multi-Level Review Workflow",
-  "description": "Tank → Oracle → Architect approval chain",
+  "description": "sam-feb → jordan-feb → alex-feb approval chain",
   "levels": [
     {
       "level": 1,
       "name": "Technical Review",
-      "approvers": ["the-oracle", "keymaker"],
+      "approvers": ["jordan-feb", "casey-feb"],
       "required_approvals": 1
     },
     {
       "level": 2,
       "name": "Final Approval",
-      "approvers": ["the-architect"],
+      "approvers": ["alex-feb"],
       "required_approvals": 1
     }
   ],
   "created_at": "2026-01-15T10:00:00.000Z",
-  "created_by": "the-architect"
+  "created_by": "alex-feb"
 }

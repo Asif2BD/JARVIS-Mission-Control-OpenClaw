@@ -1,6 +1,6 @@
 {
-  "id": "quota-tank-api-calls",
-  "agent_id": "tank",
+  "id": "quota-sam-feb-api-calls",
+  "agent_id": "sam-feb",
   "type": "api_calls",
   "limit": 5000,
   "period": "daily",
