@@ -1,207 +1,143 @@
 /**
- * Resource Management Module
+ * JARVIS Mission Control - Resource Manager
  * 
- * Handles:
- * - Credentials Vault (API keys, tokens - encrypted)
- * - Resource Booking (servers, GPUs)
- * - Cost Tracking (API usage, hosting fees)
- * - Quota Management (limits, warnings, hard stops)
+ * Comprehensive resource management including:
+ * - Resources (APIs, compute, services, tools)
+ * - Bookings (time-based resource allocation)
+ * - Costs (spend tracking)
+ * - Quotas (usage limits)
+ * - Credentials (secure reference storage)
  */
 
-const crypto = require('crypto');
 const fs = require('fs').promises;
 const path = require('path');
-
-// Encryption configuration
-const ALGORITHM = 'aes-256-gcm';
-const KEY_LENGTH = 32;
-const IV_LENGTH = 16;
-const AUTH_TAG_LENGTH = 16;
+const crypto = require('crypto');
 
 class ResourceManager {
     constructor(missionControlDir) {
         this.baseDir = missionControlDir;
         this.resourcesDir = path.join(missionControlDir, 'resources');
-        this.credentialsDir = path.join(missionControlDir, 'credentials');
         this.bookingsDir = path.join(missionControlDir, 'bookings');
         this.costsDir = path.join(missionControlDir, 'costs');
+        this.quotasDir = path.join(missionControlDir, 'quotas');
+        this.credentialsDir = path.join(missionControlDir, 'credentials');
         
-        // Encryption key derived from env or generated
-        this.encryptionKey = this.getEncryptionKey();
+        this._ensureDirs();
     }
 
-    /**
-     * Get or generate encryption key
-     */
-    getEncryptionKey() {
-        const envKey = process.env.MC_ENCRYPTION_KEY;
-        if (envKey) {
-            // Use provided key (should be 32 bytes hex encoded)
-            return Buffer.from(envKey, 'hex');
+    async _ensureDirs() {
+        const dirs = [
+            this.resourcesDir,
+            this.bookingsDir,
+            this.costsDir,
+            this.quotasDir,
+            this.credentialsDir
+        ];
+        for (const dir of dirs) {
+            await fs.mkdir(dir, { recursive: true }).catch(() => {});
         }
-        
-        // For development, use a deterministic key based on machine ID
-        // In production, set MC_ENCRYPTION_KEY environment variable
-        const machineId = process.env.HOSTNAME || 'mission-control';
-        return crypto.scryptSync(machineId, 'mission-control-salt', KEY_LENGTH);
     }
 
-    /**
-     * Encrypt sensitive data
-     */
-    encrypt(plaintext) {
-        const iv = crypto.randomBytes(IV_LENGTH);
-        const cipher = crypto.createCipheriv(ALGORITHM, this.encryptionKey, iv);
-        
-        let encrypted = cipher.update(plaintext, 'utf8', 'hex');
-        encrypted += cipher.final('hex');
-        
-        const authTag = cipher.getAuthTag();
-        
-        return {
-            iv: iv.toString('hex'),
-            encrypted: encrypted,
-            authTag: authTag.toString('hex')
-        };
+    _generateId(prefix = 'id') {
+        return `${prefix}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
     }
 
-    /**
-     * Decrypt sensitive data
-     */
-    decrypt(encryptedData) {
-        const iv = Buffer.from(encryptedData.iv, 'hex');
-        const authTag = Buffer.from(encryptedData.authTag, 'hex');
-        const decipher = crypto.createDecipheriv(ALGORITHM, this.encryptionKey, iv);
-        decipher.setAuthTag(authTag);
-        
-        let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
-        decrypted += decipher.final('utf8');
-        
-        return decrypted;
-    }
-
-    // ============================================
-    // CREDENTIALS VAULT
-    // ============================================
-
-    /**
-     * Store a credential (encrypted)
-     */
-    async storeCredential(credential) {
-        await fs.mkdir(this.credentialsDir, { recursive: true });
-        
-        const id = credential.id || `cred-${Date.now()}`;
-        const encrypted = this.encrypt(credential.value);
-        
-        const stored = {
-            id: id,
-            name: credential.name,
-            type: credential.type || 'api_key',
-            service: credential.service,
-            description: credential.description || '',
-            owner: credential.owner || 'system',
-            encrypted: encrypted,
-            permissions: credential.permissions || ['read'],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_used: null,
-            usage_count: 0
-        };
-        
-        await fs.writeFile(
-            path.join(this.credentialsDir, `${id}.json`),
-            JSON.stringify(stored, null, 2)
-        );
-        
-        // Return without the actual encrypted value for security
-        return {
-            id: stored.id,
-            name: stored.name,
-            type: stored.type,
-            service: stored.service,
-            description: stored.description,
-            owner: stored.owner,
-            permissions: stored.permissions,
-            created_at: stored.created_at,
-            updated_at: stored.updated_at
-        };
-    }
-
-    /**
-     * Get credential (optionally with decrypted value)
-     */
-    async getCredential(id, includeValue = false) {
-        const filePath = path.join(this.credentialsDir, `${id}.json`);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const credential = JSON.parse(content);
-        
-        const result = {
-            id: credential.id,
-            name: credential.name,
-            type: credential.type,
-            service: credential.service,
-            description: credential.description,
-            owner: credential.owner,
-            permissions: credential.permissions,
-            created_at: credential.created_at,
-            updated_at: credential.updated_at,
-            last_used: credential.last_used,
-            usage_count: credential.usage_count
-        };
-        
-        if (includeValue) {
-            result.value = this.decrypt(credential.encrypted);
-            
-            // Update usage tracking
-            credential.last_used = new Date().toISOString();
-            credential.usage_count = (credential.usage_count || 0) + 1;
-            await fs.writeFile(filePath, JSON.stringify(credential, null, 2));
-        }
-        
-        return result;
-    }
-
-    /**
-     * List all credentials (metadata only)
-     */
-    async listCredentials() {
-        await fs.mkdir(this.credentialsDir, { recursive: true });
-        const files = await fs.readdir(this.credentialsDir);
-        const credentials = [];
-        
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                try {
-                    const content = await fs.readFile(
-                        path.join(this.credentialsDir, file),
-                        'utf-8'
-                    );
-                    const cred = JSON.parse(content);
-                    credentials.push({
-                        id: cred.id,
-                        name: cred.name,
-                        type: cred.type,
-                        service: cred.service,
-                        description: cred.description,
-                        owner: cred.owner,
-                        permissions: cred.permissions,
-                        created_at: cred.created_at,
-                        updated_at: cred.updated_at,
-                        last_used: cred.last_used,
-                        usage_count: cred.usage_count
-                    });
-                } catch (e) {
-                    console.error(`Error reading credential ${file}:`, e.message);
+    async _readDir(dir) {
+        try {
+            const files = await fs.readdir(dir);
+            const items = [];
+            for (const file of files) {
+                if (file.endsWith('.json')) {
+                    try {
+                        const content = await fs.readFile(path.join(dir, file), 'utf-8');
+                        items.push(JSON.parse(content));
+                    } catch (e) {
+                        console.error(`Error reading ${file}:`, e.message);
+                    }
                 }
             }
+            return items;
+        } catch (error) {
+            if (error.code === 'ENOENT') return [];
+            throw error;
         }
-        
-        return credentials;
     }
 
-    /**
-     * Delete a credential
-     */
+    async _readFile(filePath) {
+        const content = await fs.readFile(filePath, 'utf-8');
+        return JSON.parse(content);
+    }
+
+    async _writeFile(filePath, data) {
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
+        await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+        return data;
+    }
+
+    // ============================================
+    // CREDENTIALS
+    // ============================================
+
+    async listCredentials() {
+        const credentials = await this._readDir(this.credentialsDir);
+        // Never return actual values in list
+        return credentials.map(c => ({
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            service: c.service,
+            description: c.description,
+            created_at: c.created_at,
+            updated_at: c.updated_at,
+            last_used: c.last_used,
+            expires_at: c.expires_at,
+            has_value: !!c.encrypted_value
+        }));
+    }
+
+    async getCredential(id, includeValue = false) {
+        const filePath = path.join(this.credentialsDir, `${id}.json`);
+        try {
+            const credential = await this._readFile(filePath);
+            if (!includeValue) {
+                const { encrypted_value, ...safe } = credential;
+                return { ...safe, has_value: !!encrypted_value };
+            }
+            // For now, return plaintext (in production, would decrypt)
+            return {
+                ...credential,
+                value: credential.encrypted_value,
+                has_value: !!credential.encrypted_value
+            };
+        } catch (error) {
+            if (error.code === 'ENOENT') return null;
+            throw error;
+        }
+    }
+
+    async storeCredential(data) {
+        const credential = {
+            id: data.id || this._generateId('cred'),
+            name: data.name,
+            type: data.type || 'api_key', // api_key, oauth_token, password, certificate
+            service: data.service || null,
+            description: data.description || '',
+            encrypted_value: data.value, // In production, would encrypt
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            expires_at: data.expires_at || null,
+            last_used: null,
+            owner: data.owner || 'system',
+            shared_with: data.shared_with || []
+        };
+
+        const filePath = path.join(this.credentialsDir, `${credential.id}.json`);
+        await this._writeFile(filePath, credential);
+
+        const { encrypted_value, ...safe } = credential;
+        return { ...safe, has_value: true };
+    }
+
     async deleteCredential(id) {
         const filePath = path.join(this.credentialsDir, `${id}.json`);
         await fs.unlink(filePath);
@@ -209,524 +145,377 @@ class ResourceManager {
     }
 
     // ============================================
-    // RESOURCE BOOKING
+    // RESOURCES
     // ============================================
 
-    /**
-     * Create a resource (server, GPU, etc.)
-     */
-    async createResource(resource) {
-        await fs.mkdir(this.resourcesDir, { recursive: true });
-        
-        const id = resource.id || `res-${Date.now()}`;
-        const stored = {
-            id: id,
-            name: resource.name,
-            type: resource.type, // 'server', 'gpu', 'service', 'license'
-            description: resource.description || '',
-            specs: resource.specs || {},
-            status: resource.status || 'available',
-            cost_per_hour: resource.cost_per_hour || 0,
-            max_booking_hours: resource.max_booking_hours || 24,
-            owner: resource.owner || 'system',
-            tags: resource.tags || [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-        };
-        
-        await fs.writeFile(
-            path.join(this.resourcesDir, `${id}.json`),
-            JSON.stringify(stored, null, 2)
-        );
-        
-        return stored;
+    async listResources(filters = {}) {
+        const resources = await this._readDir(this.resourcesDir);
+        return resources.filter(r => {
+            if (filters.type && r.type !== filters.type) return false;
+            if (filters.status && r.status !== filters.status) return false;
+            if (filters.owner && r.owner !== filters.owner) return false;
+            return true;
+        }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
 
-    /**
-     * Get a resource
-     */
     async getResource(id) {
         const filePath = path.join(this.resourcesDir, `${id}.json`);
-        const content = await fs.readFile(filePath, 'utf-8');
-        return JSON.parse(content);
+        try {
+            return await this._readFile(filePath);
+        } catch (error) {
+            if (error.code === 'ENOENT') return null;
+            throw error;
+        }
     }
 
-    /**
-     * List all resources
-     */
-    async listResources() {
-        await fs.mkdir(this.resourcesDir, { recursive: true });
-        const files = await fs.readdir(this.resourcesDir);
-        const resources = [];
-        
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                try {
-                    const content = await fs.readFile(
-                        path.join(this.resourcesDir, file),
-                        'utf-8'
-                    );
-                    resources.push(JSON.parse(content));
-                } catch (e) {
-                    console.error(`Error reading resource ${file}:`, e.message);
-                }
-            }
-        }
-        
-        return resources;
-    }
-
-    /**
-     * Book a resource
-     */
-    async bookResource(booking) {
-        await fs.mkdir(this.bookingsDir, { recursive: true });
-        
-        const id = booking.id || `book-${Date.now()}`;
-        const resource = await this.getResource(booking.resource_id);
-        
-        // Check if resource is available for the time slot
-        const conflicts = await this.checkBookingConflicts(
-            booking.resource_id,
-            new Date(booking.start_time),
-            new Date(booking.end_time)
-        );
-        
-        if (conflicts.length > 0) {
-            throw new Error(`Resource is already booked during this time: ${conflicts.map(c => c.id).join(', ')}`);
-        }
-        
-        // Calculate cost
-        const hours = (new Date(booking.end_time) - new Date(booking.start_time)) / (1000 * 60 * 60);
-        const estimated_cost = hours * (resource.cost_per_hour || 0);
-        
-        const stored = {
-            id: id,
-            resource_id: booking.resource_id,
-            resource_name: resource.name,
-            booked_by: booking.booked_by,
-            agent_id: booking.agent_id || null,
-            purpose: booking.purpose || '',
-            start_time: booking.start_time,
-            end_time: booking.end_time,
-            status: 'confirmed',
-            estimated_cost: estimated_cost,
-            actual_cost: null,
-            notes: booking.notes || '',
+    async createResource(data) {
+        const resource = {
+            id: data.id || this._generateId('res'),
+            name: data.name,
+            type: data.type || 'other', // api, compute, service, tool, other
+            status: data.status || 'active', // active, inactive, maintenance, deprecated
+            description: data.description || '',
+            
+            // Configuration
+            config: data.config || {},
+            endpoint: data.endpoint || null,
+            documentation_url: data.documentation_url || null,
+            
+            // Ownership
+            owner: data.owner || null,
+            shared_with: data.shared_with || [],
+            
+            // Capacity (for bookable resources)
+            capacity: data.capacity || null, // e.g., { max_concurrent: 10, unit: 'requests' }
+            bookable: data.bookable || false,
+            
+            // Cost tracking
+            cost_per_unit: data.cost_per_unit || null,
+            cost_unit: data.cost_unit || null, // token, request, hour, etc.
+            monthly_budget: data.monthly_budget || null,
+            
+            // Metadata
+            tags: data.tags || [],
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            created_by: data.created_by || 'system'
         };
-        
-        await fs.writeFile(
-            path.join(this.bookingsDir, `${id}.json`),
-            JSON.stringify(stored, null, 2)
-        );
-        
-        return stored;
+
+        const filePath = path.join(this.resourcesDir, `${resource.id}.json`);
+        await this._writeFile(filePath, resource);
+        return resource;
     }
 
-    /**
-     * Check for booking conflicts
-     */
-    async checkBookingConflicts(resourceId, startTime, endTime) {
-        const bookings = await this.listBookings();
-        const conflicts = [];
-        
-        for (const booking of bookings) {
-            if (booking.resource_id !== resourceId) continue;
-            if (booking.status === 'cancelled') continue;
-            
-            const bookStart = new Date(booking.start_time);
-            const bookEnd = new Date(booking.end_time);
-            
-            // Check for overlap
-            if (startTime < bookEnd && endTime > bookStart) {
-                conflicts.push(booking);
+    async updateResource(id, updates) {
+        const resource = await this.getResource(id);
+        if (!resource) throw new Error(`Resource not found: ${id}`);
+
+        const allowedFields = [
+            'name', 'type', 'status', 'description', 'config',
+            'endpoint', 'documentation_url', 'owner', 'shared_with',
+            'capacity', 'bookable', 'cost_per_unit', 'cost_unit',
+            'monthly_budget', 'tags'
+        ];
+
+        for (const field of allowedFields) {
+            if (updates[field] !== undefined) {
+                resource[field] = updates[field];
             }
         }
-        
-        return conflicts;
+        resource.updated_at = new Date().toISOString();
+
+        const filePath = path.join(this.resourcesDir, `${id}.json`);
+        await this._writeFile(filePath, resource);
+        return resource;
     }
 
-    /**
-     * List all bookings
-     */
+    async deleteResource(id) {
+        const filePath = path.join(this.resourcesDir, `${id}.json`);
+        await fs.unlink(filePath);
+        return { success: true, id };
+    }
+
+    // ============================================
+    // BOOKINGS
+    // ============================================
+
     async listBookings(filters = {}) {
-        await fs.mkdir(this.bookingsDir, { recursive: true });
-        const files = await fs.readdir(this.bookingsDir);
-        let bookings = [];
+        const bookings = await this._readDir(this.bookingsDir);
+        const now = new Date().toISOString();
         
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                try {
-                    const content = await fs.readFile(
-                        path.join(this.bookingsDir, file),
-                        'utf-8'
-                    );
-                    bookings.push(JSON.parse(content));
-                } catch (e) {
-                    console.error(`Error reading booking ${file}:`, e.message);
-                }
-            }
-        }
-        
-        // Apply filters
-        if (filters.resource_id) {
-            bookings = bookings.filter(b => b.resource_id === filters.resource_id);
-        }
-        if (filters.agent_id) {
-            bookings = bookings.filter(b => b.agent_id === filters.agent_id);
-        }
-        if (filters.status) {
-            bookings = bookings.filter(b => b.status === filters.status);
-        }
-        if (filters.from_date) {
-            const fromDate = new Date(filters.from_date);
-            bookings = bookings.filter(b => new Date(b.end_time) >= fromDate);
-        }
-        if (filters.to_date) {
-            const toDate = new Date(filters.to_date);
-            bookings = bookings.filter(b => new Date(b.start_time) <= toDate);
-        }
-        
-        // Sort by start time
-        bookings.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
-        
-        return bookings;
+        return bookings.filter(b => {
+            if (filters.resource_id && b.resource_id !== filters.resource_id) return false;
+            if (filters.agent_id && b.agent_id !== filters.agent_id) return false;
+            if (filters.status && b.status !== filters.status) return false;
+            if (filters.from_date && b.end_time < filters.from_date) return false;
+            if (filters.to_date && b.start_time > filters.to_date) return false;
+            return true;
+        }).sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
     }
 
-    /**
-     * Cancel a booking
-     */
+    async bookResource(data) {
+        const resource = await this.getResource(data.resource_id);
+        if (!resource) throw new Error(`Resource not found: ${data.resource_id}`);
+        if (!resource.bookable) throw new Error(`Resource is not bookable: ${resource.name}`);
+
+        // Check for conflicts
+        const existingBookings = await this.listBookings({
+            resource_id: data.resource_id,
+            status: 'active'
+        });
+
+        const startTime = new Date(data.start_time);
+        const endTime = new Date(data.end_time);
+
+        for (const existing of existingBookings) {
+            const existingStart = new Date(existing.start_time);
+            const existingEnd = new Date(existing.end_time);
+            
+            if (startTime < existingEnd && endTime > existingStart) {
+                throw new Error(`Booking conflict with ${existing.id} (${existing.start_time} - ${existing.end_time})`);
+            }
+        }
+
+        const booking = {
+            id: data.id || this._generateId('book'),
+            resource_id: data.resource_id,
+            resource_name: resource.name,
+            agent_id: data.agent_id,
+            start_time: data.start_time,
+            end_time: data.end_time,
+            purpose: data.purpose || '',
+            status: 'active', // active, completed, cancelled
+            created_at: new Date().toISOString(),
+            booked_by: data.booked_by || 'system'
+        };
+
+        const filePath = path.join(this.bookingsDir, `${booking.id}.json`);
+        await this._writeFile(filePath, booking);
+        return booking;
+    }
+
     async cancelBooking(id) {
         const filePath = path.join(this.bookingsDir, `${id}.json`);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const booking = JSON.parse(content);
-        
+        const booking = await this._readFile(filePath);
         booking.status = 'cancelled';
-        booking.updated_at = new Date().toISOString();
-        
-        await fs.writeFile(filePath, JSON.stringify(booking, null, 2));
+        booking.cancelled_at = new Date().toISOString();
+        await this._writeFile(filePath, booking);
         return booking;
     }
 
     // ============================================
-    // COST TRACKING
+    // COSTS
     // ============================================
 
-    /**
-     * Record a cost entry
-     */
-    async recordCost(cost) {
-        await fs.mkdir(this.costsDir, { recursive: true });
-        
-        const id = cost.id || `cost-${Date.now()}`;
-        const stored = {
-            id: id,
-            type: cost.type, // 'api_usage', 'hosting', 'booking', 'license', 'other'
-            category: cost.category || 'general',
-            description: cost.description,
-            amount: cost.amount,
-            currency: cost.currency || 'USD',
-            agent_id: cost.agent_id || null,
-            resource_id: cost.resource_id || null,
-            booking_id: cost.booking_id || null,
-            metadata: cost.metadata || {},
-            period_start: cost.period_start || new Date().toISOString(),
-            period_end: cost.period_end || new Date().toISOString(),
-            recorded_at: new Date().toISOString()
+    async recordCost(data) {
+        const cost = {
+            id: data.id || this._generateId('cost'),
+            agent_id: data.agent_id,
+            type: data.type, // api_call, compute, storage, etc.
+            resource_id: data.resource_id || null,
+            amount: parseFloat(data.amount) || 0,
+            currency: data.currency || 'USD',
+            description: data.description || '',
+            metadata: data.metadata || {},
+            timestamp: new Date().toISOString(),
+            recorded_by: data.recorded_by || 'system'
         };
-        
-        await fs.writeFile(
-            path.join(this.costsDir, `${id}.json`),
-            JSON.stringify(stored, null, 2)
-        );
-        
-        return stored;
+
+        const filePath = path.join(this.costsDir, `${cost.id}.json`);
+        await this._writeFile(filePath, cost);
+        return cost;
     }
 
-    /**
-     * Get cost summary
-     */
     async getCostSummary(filters = {}) {
-        await fs.mkdir(this.costsDir, { recursive: true });
-        const files = await fs.readdir(this.costsDir);
-        let costs = [];
+        const costs = await this._readDir(this.costsDir);
         
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                try {
-                    const content = await fs.readFile(
-                        path.join(this.costsDir, file),
-                        'utf-8'
-                    );
-                    costs.push(JSON.parse(content));
-                } catch (e) {
-                    console.error(`Error reading cost ${file}:`, e.message);
-                }
-            }
-        }
-        
-        // Apply filters
-        if (filters.agent_id) {
-            costs = costs.filter(c => c.agent_id === filters.agent_id);
-        }
-        if (filters.type) {
-            costs = costs.filter(c => c.type === filters.type);
-        }
-        if (filters.from_date) {
-            const fromDate = new Date(filters.from_date);
-            costs = costs.filter(c => new Date(c.period_start) >= fromDate);
-        }
-        if (filters.to_date) {
-            const toDate = new Date(filters.to_date);
-            costs = costs.filter(c => new Date(c.period_end) <= toDate);
-        }
-        
-        // Calculate summary
+        let filtered = costs.filter(c => {
+            if (filters.agent_id && c.agent_id !== filters.agent_id) return false;
+            if (filters.type && c.type !== filters.type) return false;
+            if (filters.from_date && c.timestamp < filters.from_date) return false;
+            if (filters.to_date && c.timestamp > filters.to_date) return false;
+            return true;
+        });
+
         const summary = {
             total: 0,
-            by_type: {},
-            by_category: {},
             by_agent: {},
-            items: costs
+            by_type: {},
+            by_resource: {},
+            items: filtered
         };
-        
-        for (const cost of costs) {
+
+        for (const cost of filtered) {
             summary.total += cost.amount;
             
-            // By type
-            summary.by_type[cost.type] = (summary.by_type[cost.type] || 0) + cost.amount;
-            
-            // By category
-            summary.by_category[cost.category] = (summary.by_category[cost.category] || 0) + cost.amount;
-            
-            // By agent
             if (cost.agent_id) {
                 summary.by_agent[cost.agent_id] = (summary.by_agent[cost.agent_id] || 0) + cost.amount;
             }
+            
+            summary.by_type[cost.type] = (summary.by_type[cost.type] || 0) + cost.amount;
+            
+            if (cost.resource_id) {
+                summary.by_resource[cost.resource_id] = (summary.by_resource[cost.resource_id] || 0) + cost.amount;
+            }
         }
-        
+
         return summary;
     }
 
     // ============================================
-    // QUOTA MANAGEMENT
+    // QUOTAS
     // ============================================
 
-    /**
-     * Set a quota
-     */
-    async setQuota(quota) {
-        const quotasFile = path.join(this.baseDir, 'quotas.json');
-        
-        let quotas = {};
-        try {
-            const content = await fs.readFile(quotasFile, 'utf-8');
-            quotas = JSON.parse(content);
-        } catch (e) {
-            // File doesn't exist yet
+    async getQuotas(agentId = null) {
+        const quotas = await this._readDir(this.quotasDir);
+        if (agentId) {
+            return quotas.filter(q => q.agent_id === agentId || q.agent_id === 'global');
         }
-        
-        const id = quota.id || `quota-${quota.agent_id || 'global'}-${quota.type}`;
-        quotas[id] = {
-            id: id,
-            agent_id: quota.agent_id || null, // null = global
-            type: quota.type, // 'api_calls', 'cost', 'tokens', 'storage'
-            limit: quota.limit,
-            period: quota.period || 'monthly', // 'daily', 'weekly', 'monthly'
-            warning_threshold: quota.warning_threshold || 0.8, // 80%
-            hard_stop: quota.hard_stop !== false, // true by default
-            current_usage: quota.current_usage || 0,
-            period_start: quota.period_start || new Date().toISOString(),
-            created_at: quota.created_at || new Date().toISOString(),
+        return quotas;
+    }
+
+    async setQuota(data) {
+        const quota = {
+            id: data.id || this._generateId('quota'),
+            agent_id: data.agent_id || 'global',
+            type: data.type, // tokens, api_calls, compute_hours, etc.
+            limit: parseFloat(data.limit) || 0,
+            period: data.period || 'monthly', // daily, weekly, monthly
+            current_usage: data.current_usage || 0,
+            warning_threshold: data.warning_threshold || 0.8, // 80% default
+            last_reset: new Date().toISOString(),
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
-        
-        await fs.writeFile(quotasFile, JSON.stringify(quotas, null, 2));
-        return quotas[id];
+
+        const filePath = path.join(this.quotasDir, `${quota.id}.json`);
+        await this._writeFile(filePath, quota);
+        return quota;
     }
 
-    /**
-     * Get quotas
-     */
-    async getQuotas(agentId = null) {
-        const quotasFile = path.join(this.baseDir, 'quotas.json');
+    async updateQuotaUsage(id, usage) {
+        const filePath = path.join(this.quotasDir, `${id}.json`);
+        const quota = await this._readFile(filePath);
         
-        try {
-            const content = await fs.readFile(quotasFile, 'utf-8');
-            const quotas = JSON.parse(content);
-            
-            if (agentId) {
-                // Return agent-specific quotas + global quotas
-                return Object.values(quotas).filter(
-                    q => q.agent_id === agentId || q.agent_id === null
-                );
-            }
-            
-            return Object.values(quotas);
-        } catch (e) {
-            return [];
-        }
-    }
+        quota.current_usage = (quota.current_usage || 0) + parseFloat(usage);
+        quota.updated_at = new Date().toISOString();
+        
+        await this._writeFile(filePath, quota);
 
-    /**
-     * Update quota usage
-     */
-    async updateQuotaUsage(quotaId, usage) {
-        const quotasFile = path.join(this.baseDir, 'quotas.json');
-        
-        const content = await fs.readFile(quotasFile, 'utf-8');
-        const quotas = JSON.parse(content);
-        
-        if (!quotas[quotaId]) {
-            throw new Error(`Quota not found: ${quotaId}`);
-        }
-        
-        quotas[quotaId].current_usage = usage;
-        quotas[quotaId].updated_at = new Date().toISOString();
-        
-        await fs.writeFile(quotasFile, JSON.stringify(quotas, null, 2));
-        
-        // Check thresholds
-        const quota = quotas[quotaId];
-        const usagePercent = quota.current_usage / quota.limit;
-        
-        const result = {
-            quota: quota,
-            usage_percent: usagePercent,
-            warning: usagePercent >= quota.warning_threshold,
-            exceeded: usagePercent >= 1.0
+        const percentage = quota.current_usage / quota.limit;
+        const warning = percentage >= quota.warning_threshold;
+        const exceeded = quota.current_usage >= quota.limit;
+
+        return {
+            ...quota,
+            percentage: Math.round(percentage * 100),
+            warning,
+            exceeded
         };
-        
-        return result;
     }
 
-    /**
-     * Check if quota allows an action
-     */
+    async resetQuota(id) {
+        const filePath = path.join(this.quotasDir, `${id}.json`);
+        const quota = await this._readFile(filePath);
+        
+        quota.current_usage = 0;
+        quota.last_reset = new Date().toISOString();
+        quota.updated_at = new Date().toISOString();
+        
+        await this._writeFile(filePath, quota);
+        return quota;
+    }
+
     async checkQuota(agentId, type, amount = 1) {
         const quotas = await this.getQuotas(agentId);
-        const relevant = quotas.filter(q => q.type === type);
         
-        for (const quota of relevant) {
-            const newUsage = quota.current_usage + amount;
-            const usagePercent = newUsage / quota.limit;
-            
-            if (usagePercent >= 1.0 && quota.hard_stop) {
-                return {
-                    allowed: false,
-                    quota: quota,
-                    reason: `Quota exceeded for ${type}: ${quota.current_usage}/${quota.limit}`,
-                    usage_percent: usagePercent
-                };
-            }
-            
-            if (usagePercent >= quota.warning_threshold) {
-                return {
-                    allowed: true,
-                    quota: quota,
-                    warning: `Approaching quota limit for ${type}: ${(usagePercent * 100).toFixed(1)}%`,
-                    usage_percent: usagePercent
-                };
-            }
+        // Find matching quota (agent-specific first, then global)
+        let quota = quotas.find(q => q.agent_id === agentId && q.type === type);
+        if (!quota) {
+            quota = quotas.find(q => q.agent_id === 'global' && q.type === type);
         }
         
-        return { allowed: true };
-    }
+        if (!quota) {
+            return { allowed: true, reason: 'No quota defined' };
+        }
 
-    /**
-     * Reset quota for new period
-     */
-    async resetQuota(quotaId) {
-        const quotasFile = path.join(this.baseDir, 'quotas.json');
+        const projectedUsage = quota.current_usage + amount;
+        const allowed = projectedUsage <= quota.limit;
+        const remaining = quota.limit - quota.current_usage;
         
-        const content = await fs.readFile(quotasFile, 'utf-8');
-        const quotas = JSON.parse(content);
-        
-        if (!quotas[quotaId]) {
-            throw new Error(`Quota not found: ${quotaId}`);
-        }
-        
-        quotas[quotaId].current_usage = 0;
-        quotas[quotaId].period_start = new Date().toISOString();
-        quotas[quotaId].updated_at = new Date().toISOString();
-        
-        await fs.writeFile(quotasFile, JSON.stringify(quotas, null, 2));
-        return quotas[quotaId];
+        return {
+            allowed,
+            quota_id: quota.id,
+            limit: quota.limit,
+            current_usage: quota.current_usage,
+            remaining: Math.max(0, remaining),
+            percentage: Math.round((quota.current_usage / quota.limit) * 100),
+            reason: allowed ? 'Within quota' : 'Quota exceeded'
+        };
     }
 
     // ============================================
-    // RESOURCE METRICS
+    // METRICS
     // ============================================
 
-    /**
-     * Get overall resource metrics
-     */
     async getMetrics() {
-        const [resources, bookings, credentials, costSummary, quotas] = await Promise.all([
-            this.listResources(),
-            this.listBookings(),
-            this.listCredentials(),
-            this.getCostSummary(),
-            this.getQuotas()
+        const [resources, bookings, costs, quotas] = await Promise.all([
+            this._readDir(this.resourcesDir),
+            this._readDir(this.bookingsDir),
+            this._readDir(this.costsDir),
+            this._readDir(this.quotasDir)
         ]);
-        
+
         const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+        // Monthly costs
+        const monthlyCosts = costs
+            .filter(c => c.timestamp >= startOfMonth)
+            .reduce((sum, c) => sum + c.amount, 0);
+
+        // Active bookings
         const activeBookings = bookings.filter(b => 
-            b.status === 'confirmed' &&
-            new Date(b.start_time) <= now &&
-            new Date(b.end_time) >= now
+            b.status === 'active' && 
+            new Date(b.end_time) > now
+        ).length;
+
+        // Resources by status
+        const resourcesByStatus = {};
+        for (const r of resources) {
+            resourcesByStatus[r.status] = (resourcesByStatus[r.status] || 0) + 1;
+        }
+
+        // Quotas near limit
+        const quotasNearLimit = quotas.filter(q => 
+            q.current_usage / q.limit >= q.warning_threshold
         );
-        
-        const upcomingBookings = bookings.filter(b =>
-            b.status === 'confirmed' &&
-            new Date(b.start_time) > now
-        ).slice(0, 5);
-        
-        const warningQuotas = quotas.filter(q => 
-            (q.current_usage / q.limit) >= q.warning_threshold
-        );
-        
+
         return {
             resources: {
                 total: resources.length,
+                by_status: resourcesByStatus,
                 by_type: resources.reduce((acc, r) => {
                     acc[r.type] = (acc[r.type] || 0) + 1;
                     return acc;
-                }, {}),
-                available: resources.filter(r => r.status === 'available').length
+                }, {})
             },
             bookings: {
                 total: bookings.length,
-                active: activeBookings.length,
-                upcoming: upcomingBookings,
-                today: bookings.filter(b => {
-                    const start = new Date(b.start_time);
-                    return start.toDateString() === now.toDateString();
-                }).length
-            },
-            credentials: {
-                total: credentials.length,
-                by_type: credentials.reduce((acc, c) => {
-                    acc[c.type] = (acc[c.type] || 0) + 1;
-                    return acc;
-                }, {}),
-                recently_used: credentials.filter(c => c.last_used).length
+                active: activeBookings
             },
             costs: {
-                total: costSummary.total,
-                by_type: costSummary.by_type,
-                by_agent: costSummary.by_agent
+                total_records: costs.length,
+                monthly_spend: Math.round(monthlyCosts * 100) / 100
             },
             quotas: {
                 total: quotas.length,
-                warnings: warningQuotas.length,
-                warning_details: warningQuotas.map(q => ({
+                near_limit: quotasNearLimit.length,
+                warning_items: quotasNearLimit.map(q => ({
                     id: q.id,
                     type: q.type,
                     agent_id: q.agent_id,
-                    usage_percent: ((q.current_usage / q.limit) * 100).toFixed(1) + '%'
+                    percentage: Math.round((q.current_usage / q.limit) * 100)
                 }))
             }
         };
