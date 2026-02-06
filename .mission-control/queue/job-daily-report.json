@@ -1,0 +1,20 @@
+{
+  "id": "job-daily-report",
+  "name": "Daily Summary Report",
+  "type": "cron",
+  "schedule": "0 23 * * *",
+  "status": "scheduled",
+  "agent": "oracle",
+  "description": "Generate daily summary of tasks, agents, and system activity",
+  "config": {
+    "output": "reports/daily",
+    "include": ["tasks", "agents", "costs", "activity"],
+    "notify": ["architect"]
+  },
+  "run_count": 5,
+  "success_count": 5,
+  "last_run": "2026-02-05T23:00:00.000Z",
+  "next_run": "2026-02-06T23:00:00.000Z",
+  "created_at": "2026-02-01T00:00:00.000Z",
+  "created_by": "architect"
+}
