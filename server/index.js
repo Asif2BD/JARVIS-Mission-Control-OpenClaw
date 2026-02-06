@@ -1385,14 +1385,14 @@ app.get('/api/metrics', async (req, res) => {
     }
 });
 
-// Fallback to dashboard for SPA routing
+// ============================================
+// Serve dashboard static files (MUST be before catch-all route)
+app.use(express.static(DASHBOARD_DIR));
+
+// Fallback to dashboard for SPA routing (MUST be last)
 app.get('*', (req, res) => {
     res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
 });
-
-// ============================================
-// Serve dashboard static files (must be last to not override API routes)
-app.use(express.static(DASHBOARD_DIR));
 
 // START SERVER
 // ============================================
