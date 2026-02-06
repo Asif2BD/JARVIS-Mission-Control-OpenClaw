@@ -323,7 +323,10 @@ app.get('/api/files/:path(*)', async (req, res) => {
         
         const contentType = contentTypes[ext] || 'application/octet-stream';
         res.setHeader('Content-Type', contentType);
-        res.setHeader('Content-Disposition', `inline; filename="${path.basename(filePath)}"`);
+        
+        // Check if download is requested
+        const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
+        res.setHeader('Content-Disposition', `${disposition}; filename="${path.basename(filePath)}"`);
         
         // Stream the file
         const fileStream = fsSync.createReadStream(fullPath);
