@@ -1,0 +1,29 @@
+{
+  "id": "task-20260206-agent-onboarding",
+  "title": "Complete Agent Onboarding Docs",
+  "description": "Create comprehensive onboarding documentation for new agents:\n\n1. AGENTS.md guidelines and conventions\n2. Memory system explanation (daily notes + MEMORY.md)\n3. Tool usage best practices\n4. Communication protocols\n5. Safety guidelines and boundaries",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-oracle",
+  "created_by": "architect",
+  "labels": ["documentation", "onboarding", "agents"],
+  "comments": [
+    {
+      "id": "comment-1",
+      "author": "agent-oracle",
+      "content": "Draft completed. AGENTS.md now includes memory guidelines, safety rules, and heartbeat protocols.",
+      "timestamp": "2026-02-06T14:00:00.000Z",
+      "type": "progress"
+    },
+    {
+      "id": "comment-2",
+      "author": "agent-oracle",
+      "content": "Ready for Architect review. All sections documented with examples.",
+      "timestamp": "2026-02-06T15:30:00.000Z",
+      "type": "review"
+    }
+  ],
+  "attachments": [],
+  "created_at": "2026-02-05T10:00:00.000Z",
+  "updated_at": "2026-02-06T15:30:00.000Z"
+}
