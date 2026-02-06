@@ -221,11 +221,17 @@ openclaw:
   enabled: true
   gateway_url: "ws://127.0.0.1:18789"
 
+  # Auto-task creation for agent sessions
+  # DISABLED: Creates too much noise. Create tasks manually before spawning agents.
+  # To link a session to a task, include "Task ID: task-xyz" in the spawn prompt.
+  auto_create_tasks: false
+
   # Lifecycle hooks
   hooks:
     on_agent_start:
-      - action: create_task
-        template: "agent_session"
+      # DISABLED: was creating junk tasks for every spawn
+      # - action: create_task
+      #   template: "agent_session"
     on_agent_complete:
       - action: update_task
         status: REVIEW

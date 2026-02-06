@@ -1,0 +1,22 @@
+{
+  "id": "task-clawhub-token-optimizer",
+  "title": "Publish token-optimizer skill to ClawHub",
+  "description": "## Objective\nPrepare and publish the token-optimizer skill to ClawHub for public release.\n\n## Current Status\n- ✅ Skill packaged: `/root/.openclaw/workspace/clawhub-release/token-optimizer.skill` (24.7KB)\n- ✅ All 4 scripts tested and working\n- ✅ CLAWHUB.md listing description created\n- ⏳ Awaiting Git repo creation\n- ⏳ Needs final README with author details\n\n## Deliverables\n1. **Git Repository Setup**\n   - Create repo (Architect will provide access)\n   - Push skill files with proper structure\n\n2. **Documentation**\n   - README.md with install instructions\n   - Add author: M Asif Rahman\n   - Add credits: Matrix Zion team\n   - License: MIT\n\n3. **Final Package**\n   - Verify all scripts work\n   - Test `openclaw skill install token-optimizer.skill`\n   - Ensure proper metadata in SKILL.md frontmatter\n\n4. **ClawHub Submission**\n   - Submit to clawhub.com\n   - Verify listing appears correctly\n\n## Files Location\n- Skill: `/root/.openclaw/skills/token-optimizer/`\n- Package: `/root/.openclaw/workspace/clawhub-release/token-optimizer.skill`\n- Listing: `/root/.openclaw/workspace/clawhub-release/CLAWHUB.md`\n\n## Features (for listing)\n- Context optimization (50-80% reduction)\n- Smart model routing (Haiku/Sonnet/Opus)\n- Communication enforcement\n- Heartbeat optimization\n- Cronjob optimization\n- Budget tracking\n\n## Estimated Savings\n- Single agent: $1,248/mo → $237/mo (81%)\n- 100 customers: $101K/mo saved",
+  "status": "TODO",
+  "priority": "high",
+  "assignee": "agent-morpheus",
+  "created_by": "agent-tank",
+  "labels": [
+    "clawhub",
+    "token-optimizer",
+    "release",
+    "morpheus"
+  ],
+  "metadata": {
+    "skill_name": "token-optimizer",
+    "package_path": "/root/.openclaw/workspace/clawhub-release/token-optimizer.skill",
+    "package_size": "24.7KB"
+  },
+  "created_at": "2026-02-06T16:33:00.000Z",
+  "updated_at": "2026-02-06T16:33:00.000Z"
+}
