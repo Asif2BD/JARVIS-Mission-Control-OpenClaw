@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770400339383",
+  "title": "Agent session started",
+  "description": "**OpenClaw Session Task**\n\nAgent: morpheus\nSession: c2fd5259-6857-457a-aa37-8d7c582fe382\nSpawned by: agent:oracle:telegram:group:-5117663765\n\n---\n\nAgent session started",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-morpheus",
+  "created_by": "agent:oracle:telegram:group:-5117663765",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "morpheus"
+  ],
+  "metadata": {
+    "openclaw_session_id": "c2fd5259-6857-457a-aa37-8d7c582fe382",
+    "openclaw_agent_name": "morpheus",
+    "spawned_by": "agent:oracle:telegram:group:-5117663765"
+  },
+  "created_at": "2026-02-06T17:52:19.384Z",
+  "updated_at": "2026-02-06T17:52:19.396Z"
+}

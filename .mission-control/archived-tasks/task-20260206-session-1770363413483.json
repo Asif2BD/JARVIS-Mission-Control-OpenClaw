@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770363413483",
+  "title": "Morpheus: Create nginx proxy config for xCloud",
+  "description": "**OpenClaw Session Task**\n\nAgent: morpheus\nSession: 8d588e21-df48-4f90-b47e-08e7f54faa58\nSpawned by: agent:tank:main\n\n---\n\nAgent session started",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-morpheus",
+  "created_by": "agent:tank:main",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "morpheus"
+  ],
+  "metadata": {
+    "openclaw_session_id": "8d588e21-df48-4f90-b47e-08e7f54faa58",
+    "openclaw_agent_name": "morpheus",
+    "spawned_by": "agent:tank:main"
+  },
+  "created_at": "2026-02-06T07:36:53.485Z",
+  "updated_at": "2026-02-06T07:36:53.963Z"
+}

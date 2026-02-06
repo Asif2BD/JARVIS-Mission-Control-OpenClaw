@@ -27,6 +27,7 @@ const MISSION_CONTROL_DIR = process.env.MISSION_CONTROL_DIR || path.join(__dirna
 const MC_SERVER_URL = process.env.MC_SERVER_URL || 'http://localhost:3000';
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL) || 2000; // 2 seconds
 const AGENT_SYNC_INTERVAL = parseInt(process.env.AGENT_SYNC_INTERVAL) || 30000; // 30 seconds
+const AUTO_CREATE_TASKS = process.env.AUTO_CREATE_TASKS !== 'false'; // Disable with AUTO_CREATE_TASKS=false
 
 // Auto-detect OpenClaw agents directory
 function detectAgentsDir() {
@@ -315,12 +316,12 @@ async function processNewSession(agentName, sessionKey, sessionMeta) {
     // Extract task info
     const taskInfo = extractTaskInfo(initialPrompt, label);
     
-    // If spawned by Oracle/main agent, auto-create a task
+    // If spawned by Oracle/main agent, check for existing task or link to one
     if (isSubagent || spawnedBy) {
         // FIRST: Check if we already have a task for this session on disk
         const existingTask = await findExistingTaskForSession(sessionId);
         if (existingTask) {
-            console.log(`[Bridge] Found existing task ${existingTask.id} for session ${sessionId} - skipping creation`);
+            console.log(`[Bridge] Found existing task ${existingTask.id} for session ${sessionId} - linking`);
             taskId = existingTask.id;
             trackedSessions.set(sessionId, {
                 agent: agentName,
@@ -343,8 +344,8 @@ async function processNewSession(agentName, sessionKey, sessionMeta) {
                 updated_by: 'agent-bridge'
             });
             await logActivity('agent-bridge', 'LINKED', `Session ${sessionId} to existing task ${taskId}`);
-        } else {
-            // Create new task
+        } else if (AUTO_CREATE_TASKS) {
+            // Auto-create task ONLY if enabled (disabled by default to reduce noise)
             const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
             taskId = `task-${date}-session-${Date.now()}`;
             
@@ -365,6 +366,10 @@ async function processNewSession(agentName, sessionKey, sessionMeta) {
             });
             
             await logActivity('agent-bridge', 'AUTO_TASK', `Created ${taskId} for ${agentName} session`);
+        } else {
+            // Auto-create disabled - just log the session without creating a task
+            console.log(`[Bridge] Session ${sessionId} started but AUTO_CREATE_TASKS=false - no task created`);
+            await logActivity('agent-bridge', 'SESSION', `Agent ${agentName} started session ${sessionId} (no task auto-created)`);
         }
     }
     

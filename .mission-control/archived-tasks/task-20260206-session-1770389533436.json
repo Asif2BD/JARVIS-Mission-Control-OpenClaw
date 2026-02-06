@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770389533436",
+  "title": "Agent session started",
+  "description": "**OpenClaw Session Task**\n\nAgent: link\nSession: 6bfdb5b2-b494-4c03-a002-b751bf3308c2\nSpawned by: agent:oracle:telegram:group:-5117663765\n\n---\n\nAgent session started",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-link",
+  "created_by": "agent:oracle:telegram:group:-5117663765",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "link"
+  ],
+  "metadata": {
+    "openclaw_session_id": "6bfdb5b2-b494-4c03-a002-b751bf3308c2",
+    "openclaw_agent_name": "link",
+    "spawned_by": "agent:oracle:telegram:group:-5117663765"
+  },
+  "created_at": "2026-02-06T14:52:13.439Z",
+  "updated_at": "2026-02-06T14:52:13.461Z"
+}

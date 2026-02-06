@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770410839648",
+  "title": "[Fri 2026-02-06 20:41 UTC] **Token Optimizer — Remove Local Ollama Setup (Security Fix)**\n\nClawHub s...",
+  "description": "**OpenClaw Session Task**\n\nAgent: morpheus\nSession: 224e3290-a4e8-475c-951e-89c354ab16c9\nSpawned by: agent:oracle:telegram:group:-5117663765\n\n---\n\n[Fri 2026-02-06 20:41 UTC] **Token Optimizer — Remove Local Ollama Setup (Security Fix)**\n\nClawHub security scan flagged our skill as SUSPICIOUS due to risky installation commands.\n\n**Repo:** https://github.com/Asif2BD/OpenClaw-Token-Optimizer\n**Security Report:** https://clawhub.ai/Asif2BD/openclaw-token-optimizer\n\n---\n\n## Security Issue\n\n**Finding:** `curl -fsSL https://ollama.ai/install.sh | sh` is flagged as HIGH-RISK\n- Piping remote scripts to shell bypasses security\n- Could lead to arbitrary code execution if source compromised\n- Found in: SKILL.md, README.md, docs/LOCAL-FALLBACK.md\n\n**ClawHub verdict:** SUSPICIOUS\n**VirusTotal:** https://www.virustotal.com/gui/file/18084a0931f32c8d4f8c719cc6ccebfb573bc852ca17174e9277e798039edcae/detection\n\n---\n\n## Your Task\n\n1. **Pull latest from main**\n2. **Create branch:** `morpheus/v1.2.2-security-fix`\n3. **Remove ALL local Ollama setup instructions:**\n   - Remove `docs/LOCAL-FALLBACK.md` entirely\n   - Remove Ollama installation instructions from README.md\n   - Remove Ollama setup from SKILL.md\n   - Remove any `curl | sh` commands\n4. **Focus skill on cloud API optimization ONLY:**\n   - Keep multi-provider support (Anthropic, OpenAI, Google)\n   - Keep model routing, context optimization, heartbeat optimization\n   - Remove all references to local models/Ollama fallback\n5. **Update CHANGELOG.md** — v1.2.2 security fix\n6. **Commit as Morpheus** (morpheus@matrixzion.ai)\n7. **Push to branch**\n8. **Create PR**\n\n---\n\n## Rationale\n\nThe Token Optimizer should focus on **cloud API cost reduction**, not local model setup. Local models are a separate concern and shouldn't be mixed with this skill.\n\n**Before:** Skill included risky installation commands\n**After:** Clean, cloud-focused optimization skill (ClawHub safe)\n\nReport back with PR link.",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-morpheus",
+  "created_by": "agent:oracle:telegram:group:-5117663765",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "morpheus"
+  ],
+  "metadata": {
+    "openclaw_session_id": "224e3290-a4e8-475c-951e-89c354ab16c9",
+    "openclaw_agent_name": "morpheus",
+    "spawned_by": "agent:oracle:telegram:group:-5117663765"
+  },
+  "created_at": "2026-02-06T20:47:19.650Z",
+  "updated_at": "2026-02-06T20:51:39.735Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770359916933",
+  "title": "Morpheus: Review Tank's Mission Control work",
+  "description": "**OpenClaw Session Task**\n\nAgent: morpheus\nSession: a942cff4-2fb2-4d82-8ec1-71fe05897441\nSpawned by: agent:tank:main\n\n---\n\n[Fri 2026-02-06 05:57 UTC] Review Tank's Mission Control work. This is your first review assignment.\n\n**Location:** `/root/.openclaw/workspace/agents/tank/mission-control`\n**Branch:** `oracle` (contains Tank's latest work)\n\n**What to review:**\n1. Resource Management system (`server/resource-manager.js`)\n2. Quality Control system (`server/review-manager.js`)  \n3. Dashboard updates (`dashboard/`)\n\n**Your review process:**\n1. Read your SOUL.md and ROLE.md first in your workspace\n2. Actually RUN the code - `cd /root/.openclaw/workspace/agents/tank/mission-control/server && node index.js`\n3. Test the APIs with curl\n4. Check for security issues\n5. Look for edge cases\n\n**Commits to review:**\n- b254fe6: Genericize sample data\n- a14236c: Quality Control integration\n- 9c8cebd: Resource Management complete\n\n**Output:** Review report with issues found and recommendation (approve/request changes).",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-morpheus",
+  "created_by": "agent:tank:main",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "morpheus"
+  ],
+  "metadata": {
+    "openclaw_session_id": "a942cff4-2fb2-4d82-8ec1-71fe05897441",
+    "openclaw_agent_name": "morpheus",
+    "spawned_by": "agent:tank:main"
+  },
+  "created_at": "2026-02-06T06:38:36.934Z",
+  "updated_at": "2026-02-06T16:50:32.324Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "task-20260206-session-1770411811398",
+  "title": "Agent session started",
+  "description": "**OpenClaw Session Task**\n\nAgent: shuri\nSession: 9e7b4d02-49b3-45ad-a43d-719f8cc51792\nSpawned by: agent:oracle:telegram:group:-5117663765\n\n---\n\nAgent session started",
+  "status": "REVIEW",
+  "priority": "medium",
+  "assignee": "agent-shuri",
+  "created_by": "agent:oracle:telegram:group:-5117663765",
+  "labels": [
+    "openclaw",
+    "auto-generated",
+    "shuri"
+  ],
+  "metadata": {
+    "openclaw_session_id": "9e7b4d02-49b3-45ad-a43d-719f8cc51792",
+    "openclaw_agent_name": "shuri",
+    "spawned_by": "agent:oracle:telegram:group:-5117663765"
+  },
+  "created_at": "2026-02-06T21:03:31.400Z",
+  "updated_at": "2026-02-06T21:03:31.959Z"
+}
