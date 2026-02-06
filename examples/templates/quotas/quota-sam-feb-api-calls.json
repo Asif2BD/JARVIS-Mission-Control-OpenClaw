@@ -1,0 +1,12 @@
+{
+  "id": "quota-sam-feb-api-calls",
+  "agent_id": "sam-feb",
+  "type": "api_calls",
+  "limit": 5000,
+  "period": "daily",
+  "current_usage": 1250,
+  "warning_threshold": 0.8,
+  "last_reset": "2026-02-06T00:00:00.000Z",
+  "created_at": "2026-02-01T10:00:00.000Z",
+  "updated_at": "2026-02-06T04:00:00.000Z"
+}

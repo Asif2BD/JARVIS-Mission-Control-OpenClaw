@@ -16,6 +16,8 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
 const http = require('http');
+const ResourceManager = require('./resource-manager');
+const ReviewManager = require('./review-manager');
 
 // Configuration
 const PORT = process.env.PORT || 3000;
@@ -699,6 +701,444 @@ app.get('/api/agents/:id/timeline', async (req, res) => {
 
         // Limit to 50 entries
         res.json(timeline.slice(0, 50));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// RESOURCE MANAGEMENT
+// ============================================
+
+// Initialize Resource Manager
+const resourceManager = new ResourceManager(MISSION_CONTROL_DIR);
+
+// Initialize Review Manager
+const reviewManager = new ReviewManager(MISSION_CONTROL_DIR);
+
+// --- CREDENTIALS VAULT ---
+
+app.get('/api/credentials', async (req, res) => {
+    try {
+        const credentials = await resourceManager.listCredentials();
+        res.json(credentials);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/credentials/:id', async (req, res) => {
+    try {
+        // Only include value if explicitly requested and authorized
+        const includeValue = req.query.includeValue === 'true';
+        const credential = await resourceManager.getCredential(req.params.id, includeValue);
+        res.json(credential);
+    } catch (error) {
+        res.status(404).json({ error: 'Credential not found' });
+    }
+});
+
+app.post('/api/credentials', async (req, res) => {
+    try {
+        const credential = await resourceManager.storeCredential(req.body);
+        await logActivity(req.body.owner || 'system', 'CREATED', `Credential: ${credential.name} (${credential.id})`);
+        broadcast('credential.created', credential);
+        res.status(201).json(credential);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/credentials/:id', async (req, res) => {
+    try {
+        await resourceManager.deleteCredential(req.params.id);
+        await logActivity('system', 'DELETED', `Credential: ${req.params.id}`);
+        broadcast('credential.deleted', { id: req.params.id });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- RESOURCES ---
+
+app.get('/api/resources', async (req, res) => {
+    try {
+        const resources = await resourceManager.listResources();
+        res.json(resources);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/resources/:id', async (req, res) => {
+    try {
+        const resource = await resourceManager.getResource(req.params.id);
+        res.json(resource);
+    } catch (error) {
+        res.status(404).json({ error: 'Resource not found' });
+    }
+});
+
+app.post('/api/resources', async (req, res) => {
+    try {
+        const resource = await resourceManager.createResource(req.body);
+        await logActivity(req.body.owner || 'system', 'CREATED', `Resource: ${resource.name} (${resource.id})`);
+        broadcast('resource.created', resource);
+        res.status(201).json(resource);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- BOOKINGS ---
+
+app.get('/api/bookings', async (req, res) => {
+    try {
+        const filters = {
+            resource_id: req.query.resource_id,
+            agent_id: req.query.agent_id,
+            status: req.query.status,
+            from_date: req.query.from_date,
+            to_date: req.query.to_date
+        };
+        const bookings = await resourceManager.listBookings(filters);
+        res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const booking = await resourceManager.bookResource(req.body);
+        await logActivity(req.body.booked_by || 'system', 'BOOKED', `Resource: ${booking.resource_name} from ${booking.start_time} to ${booking.end_time}`);
+        broadcast('booking.created', booking);
+        res.status(201).json(booking);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.delete('/api/bookings/:id', async (req, res) => {
+    try {
+        const booking = await resourceManager.cancelBooking(req.params.id);
+        await logActivity('system', 'CANCELLED', `Booking: ${booking.id}`);
+        broadcast('booking.cancelled', booking);
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- COSTS ---
+
+app.get('/api/costs', async (req, res) => {
+    try {
+        const filters = {
+            agent_id: req.query.agent_id,
+            type: req.query.type,
+            from_date: req.query.from_date,
+            to_date: req.query.to_date
+        };
+        const summary = await resourceManager.getCostSummary(filters);
+        res.json(summary);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/costs', async (req, res) => {
+    try {
+        const cost = await resourceManager.recordCost(req.body);
+        await logActivity(req.body.agent_id || 'system', 'COST_RECORDED', `${cost.type}: $${cost.amount} - ${cost.description}`);
+        broadcast('cost.recorded', cost);
+        res.status(201).json(cost);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- QUOTAS ---
+
+app.get('/api/quotas', async (req, res) => {
+    try {
+        const agentId = req.query.agent_id || null;
+        const quotas = await resourceManager.getQuotas(agentId);
+        res.json(quotas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/quotas', async (req, res) => {
+    try {
+        const quota = await resourceManager.setQuota(req.body);
+        await logActivity('system', 'QUOTA_SET', `${quota.type} quota for ${quota.agent_id || 'global'}: ${quota.limit}`);
+        broadcast('quota.updated', quota);
+        res.status(201).json(quota);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/quotas/:id/usage', async (req, res) => {
+    try {
+        const { usage } = req.body;
+        const result = await resourceManager.updateQuotaUsage(req.params.id, usage);
+        
+        if (result.warning) {
+            broadcast('quota.warning', result);
+        }
+        if (result.exceeded) {
+            broadcast('quota.exceeded', result);
+        }
+        
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/quotas/:id/reset', async (req, res) => {
+    try {
+        const quota = await resourceManager.resetQuota(req.params.id);
+        await logActivity('system', 'QUOTA_RESET', `Reset quota: ${quota.id}`);
+        broadcast('quota.reset', quota);
+        res.json(quota);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/quotas/check', async (req, res) => {
+    try {
+        const { agent_id, type, amount } = req.query;
+        const result = await resourceManager.checkQuota(agent_id, type, parseFloat(amount) || 1);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- RESOURCE METRICS ---
+
+app.get('/api/resources/metrics', async (req, res) => {
+    try {
+        const metrics = await resourceManager.getMetrics();
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
+// QUALITY CONTROL & REVIEW SYSTEM
+// ============================================
+
+// --- REVIEWS ---
+
+app.get('/api/reviews', async (req, res) => {
+    try {
+        const filters = {
+            stage: req.query.stage,
+            type: req.query.type,
+            submitter: req.query.submitter,
+            assignee: req.query.assignee
+        };
+        const reviews = await reviewManager.listReviews(filters);
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/reviews/:id', async (req, res) => {
+    try {
+        const review = await reviewManager.getReview(req.params.id);
+        if (!review) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const review = await reviewManager.createReview(req.body);
+        await logActivity(req.body.submitter || 'system', 'REVIEW_CREATED', `${review.title} (${review.id})`);
+        broadcast('review.created', review);
+        res.status(201).json(review);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/submit', async (req, res) => {
+    try {
+        const { submitter } = req.body;
+        const review = await reviewManager.submitForReview(req.params.id, submitter);
+        await logActivity(review.submitter || 'system', 'REVIEW_SUBMITTED', `${review.title} (${review.id})`);
+        broadcast('review.submitted', review);
+        res.json(review);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/approve', async (req, res) => {
+    try {
+        const { approver, comment } = req.body;
+        const review = await reviewManager.approveReview(req.params.id, approver, comment);
+        await logActivity(approver || 'system', 'REVIEW_APPROVED', `${review.title} (${review.id})`);
+        broadcast('review.approved', review);
+        res.json(review);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/reject', async (req, res) => {
+    try {
+        const { rejector, reason } = req.body;
+        const review = await reviewManager.rejectReview(req.params.id, rejector, reason);
+        await logActivity(rejector || 'system', 'REVIEW_REJECTED', `${review.title}: ${reason}`);
+        broadcast('review.rejected', review);
+        res.json(review);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/request-changes', async (req, res) => {
+    try {
+        const { reviewer, feedback } = req.body;
+        const review = await reviewManager.requestChanges(req.params.id, reviewer, feedback);
+        await logActivity(reviewer || 'system', 'CHANGES_REQUESTED', `${review.title}: ${feedback}`);
+        broadcast('review.changes_requested', review);
+        res.json(review);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/deploy', async (req, res) => {
+    try {
+        const { deployer, notes } = req.body;
+        const review = await reviewManager.markDeployed(req.params.id, deployer, notes);
+        await logActivity(deployer || 'system', 'REVIEW_DEPLOYED', `${review.title} (${review.id})`);
+        broadcast('review.deployed', review);
+        res.json(review);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/comments', async (req, res) => {
+    try {
+        const { author, content, type } = req.body;
+        const review = await reviewManager.addComment(req.params.id, author, content, type);
+        broadcast('review.comment_added', { review_id: req.params.id, comment: req.body });
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- CHECKLISTS ---
+
+app.get('/api/checklists', async (req, res) => {
+    try {
+        const checklists = await reviewManager.listChecklists();
+        res.json(checklists);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/checklists/:id', async (req, res) => {
+    try {
+        const checklist = await reviewManager.getChecklist(req.params.id);
+        if (!checklist) {
+            return res.status(404).json({ error: 'Checklist not found' });
+        }
+        res.json(checklist);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/checklists', async (req, res) => {
+    try {
+        const checklist = await reviewManager.createChecklist(req.body);
+        await logActivity(req.body.created_by || 'system', 'CHECKLIST_CREATED', checklist.name);
+        broadcast('checklist.created', checklist);
+        res.status(201).json(checklist);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/reviews/:id/checklist/:itemId/toggle', async (req, res) => {
+    try {
+        const { checked, checked_by } = req.body;
+        const review = await reviewManager.updateChecklistItem(
+            req.params.id,
+            req.params.itemId,
+            checked !== false,
+            checked_by
+        );
+        broadcast('review.checklist_updated', review);
+        res.json(review);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- WORKFLOWS ---
+
+app.get('/api/workflows', async (req, res) => {
+    try {
+        const workflows = await reviewManager.listWorkflows();
+        res.json(workflows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/workflows', async (req, res) => {
+    try {
+        const workflow = await reviewManager.createWorkflow(req.body);
+        await logActivity(req.body.created_by || 'system', 'WORKFLOW_CREATED', workflow.name);
+        broadcast('workflow.created', workflow);
+        res.status(201).json(workflow);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- REVIEW METRICS ---
+
+app.get('/api/reviews/metrics', async (req, res) => {
+    try {
+        const filters = {
+            from_date: req.query.from_date,
+            to_date: req.query.to_date,
+            submitter: req.query.submitter
+        };
+        const metrics = await reviewManager.getMetrics(filters);
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/reviews/summary', async (req, res) => {
+    try {
+        const summary = await reviewManager.getSummary();
+        res.json(summary);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -1,0 +1,24 @@
+{
+  "id": "res-github-enterprise",
+  "name": "GitHub Enterprise",
+  "type": "service",
+  "status": "active",
+  "description": "GitHub organization for code repositories and CI/CD",
+  "config": {
+    "org": "mission-control-org",
+    "plan": "enterprise"
+  },
+  "endpoint": "https://github.com",
+  "documentation_url": "https://docs.github.com",
+  "owner": "alex-feb",
+  "shared_with": ["all"],
+  "capacity": null,
+  "bookable": false,
+  "cost_per_unit": null,
+  "cost_unit": null,
+  "monthly_budget": 200,
+  "tags": ["vcs", "ci-cd", "infrastructure"],
+  "created_at": "2026-01-10T08:00:00.000Z",
+  "updated_at": "2026-02-01T12:00:00.000Z",
+  "created_by": "alex-feb"
+}
