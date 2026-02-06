@@ -1141,6 +1141,168 @@ app.post('/api/workflows', async (req, res) => {
     }
 });
 
+// --- SCHEDULES / OPENCLAW CRON SYNC ---
+
+// Path to OpenClaw cron jobs
+const OPENCLAW_CRON_FILE = process.env.OPENCLAW_CRON_FILE || 
+    path.join(process.env.HOME || '/root', '.openclaw', 'cron', 'jobs.json');
+
+/**
+ * Read OpenClaw cron jobs
+ */
+async function readOpenClawCronJobs() {
+    try {
+        const content = await fs.readFile(OPENCLAW_CRON_FILE, 'utf-8');
+        const data = JSON.parse(content);
+        return data.jobs || [];
+    } catch (error) {
+        console.log('Could not read OpenClaw cron jobs:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Convert OpenClaw cron job format to Mission Control queue format
+ */
+function convertCronJobToQueueItem(cronJob) {
+    return {
+        id: `openclaw-cron-${cronJob.id || cronJob.name}`,
+        name: cronJob.name || 'Unnamed Job',
+        type: 'cron',
+        schedule: cronJob.schedule || cronJob.cron,
+        status: cronJob.enabled !== false ? 'scheduled' : 'disabled',
+        agent: cronJob.agent || 'system',
+        description: cronJob.description || `OpenClaw cron job`,
+        config: cronJob.config || {},
+        run_count: cronJob.runCount || 0,
+        success_count: cronJob.successCount || 0,
+        last_run: cronJob.lastRun || null,
+        next_run: cronJob.nextRun || null,
+        source: 'openclaw',
+        created_at: cronJob.createdAt || new Date().toISOString(),
+        created_by: cronJob.createdBy || 'system'
+    };
+}
+
+// Get all scheduled jobs (local queue + OpenClaw cron)
+app.get('/api/schedules', async (req, res) => {
+    try {
+        // Get local queue items
+        const localQueue = await readJsonDirectory('queue');
+        
+        // Get OpenClaw cron jobs
+        const cronJobs = await readOpenClawCronJobs();
+        const convertedJobs = cronJobs.map(convertCronJobToQueueItem);
+        
+        // Combine and dedupe (local takes precedence)
+        const localIds = new Set(localQueue.map(q => q.id));
+        const combined = [
+            ...localQueue,
+            ...convertedJobs.filter(j => !localIds.has(j.id))
+        ];
+        
+        // Sort by status (running first) then by next_run
+        combined.sort((a, b) => {
+            if (a.status === 'running' && b.status !== 'running') return -1;
+            if (b.status === 'running' && a.status !== 'running') return 1;
+            const aNext = a.next_run ? new Date(a.next_run) : new Date(0);
+            const bNext = b.next_run ? new Date(b.next_run) : new Date(0);
+            return aNext - bNext;
+        });
+        
+        res.json(combined);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Sync OpenClaw cron jobs to local queue
+app.post('/api/schedules/sync', async (req, res) => {
+    try {
+        const cronJobs = await readOpenClawCronJobs();
+        const synced = [];
+        
+        for (const job of cronJobs) {
+            const queueItem = convertCronJobToQueueItem(job);
+            const filePath = `queue/${queueItem.id}.json`;
+            await writeJsonFile(filePath, queueItem);
+            synced.push(queueItem);
+        }
+        
+        await logActivity('system', 'CRON_SYNC', `Synced ${synced.length} jobs from OpenClaw`);
+        broadcast('schedules.synced', { count: synced.length });
+        
+        res.json({ success: true, synced: synced.length, jobs: synced });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Create a new scheduled job
+app.post('/api/schedules', async (req, res) => {
+    try {
+        const job = {
+            id: req.body.id || `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+            name: req.body.name,
+            type: req.body.type || 'cron',
+            schedule: req.body.schedule,
+            status: req.body.status || 'scheduled',
+            agent: req.body.agent || 'system',
+            description: req.body.description || '',
+            config: req.body.config || {},
+            run_count: 0,
+            success_count: 0,
+            last_run: null,
+            next_run: req.body.next_run || null,
+            created_at: new Date().toISOString(),
+            created_by: req.body.created_by || 'system'
+        };
+        
+        await writeJsonFile(`queue/${job.id}.json`, job);
+        await logActivity(job.created_by, 'SCHEDULE_CREATED', `Job: ${job.name}`);
+        broadcast('schedule.created', job);
+        
+        res.status(201).json(job);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update a scheduled job
+app.put('/api/schedules/:id', async (req, res) => {
+    try {
+        const job = await readJsonFile(`queue/${req.params.id}.json`);
+        
+        const allowedFields = ['name', 'schedule', 'status', 'agent', 'description', 'config'];
+        for (const field of allowedFields) {
+            if (req.body[field] !== undefined) {
+                job[field] = req.body[field];
+            }
+        }
+        job.updated_at = new Date().toISOString();
+        
+        await writeJsonFile(`queue/${job.id}.json`, job);
+        await logActivity('system', 'SCHEDULE_UPDATED', `Job: ${job.name}`);
+        broadcast('schedule.updated', job);
+        
+        res.json(job);
+    } catch (error) {
+        res.status(404).json({ error: 'Schedule not found' });
+    }
+});
+
+// Delete a scheduled job
+app.delete('/api/schedules/:id', async (req, res) => {
+    try {
+        await deleteJsonFile(`queue/${req.params.id}.json`);
+        await logActivity('system', 'SCHEDULE_DELETED', `Job: ${req.params.id}`);
+        broadcast('schedule.deleted', { id: req.params.id });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // --- METRICS ---
 
 app.get('/api/metrics', async (req, res) => {
