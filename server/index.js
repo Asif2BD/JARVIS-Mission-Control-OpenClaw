@@ -729,9 +729,8 @@ app.get('/api/credentials', async (req, res) => {
 
 app.get('/api/credentials/:id', async (req, res) => {
     try {
-        // Only include value if explicitly requested and authorized
-        const includeValue = req.query.includeValue === 'true';
-        const credential = await resourceManager.getCredential(req.params.id, includeValue);
+        // Never expose credential values through API - security risk
+        const credential = await resourceManager.getCredential(req.params.id, false);
         res.json(credential);
     } catch (error) {
         res.status(404).json({ error: 'Credential not found' });
@@ -766,6 +765,16 @@ app.get('/api/resources', async (req, res) => {
     try {
         const resources = await resourceManager.listResources();
         res.json(resources);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// IMPORTANT: Specific routes must come BEFORE parameterized routes
+app.get('/api/resources/metrics', async (req, res) => {
+    try {
+        const metrics = await resourceManager.getMetrics();
+        res.json(metrics);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -921,17 +930,6 @@ app.get('/api/quotas/check', async (req, res) => {
     }
 });
 
-// --- RESOURCE METRICS ---
-
-app.get('/api/resources/metrics', async (req, res) => {
-    try {
-        const metrics = await resourceManager.getMetrics();
-        res.json(metrics);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // ============================================
 // QUALITY CONTROL & REVIEW SYSTEM
 // ============================================
@@ -948,6 +946,30 @@ app.get('/api/reviews', async (req, res) => {
         };
         const reviews = await reviewManager.listReviews(filters);
         res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// IMPORTANT: Specific routes must come BEFORE parameterized routes
+app.get('/api/reviews/metrics', async (req, res) => {
+    try {
+        const filters = {
+            from_date: req.query.from_date,
+            to_date: req.query.to_date,
+            submitter: req.query.submitter
+        };
+        const metrics = await reviewManager.getMetrics(filters);
+        res.json(metrics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/reviews/summary', async (req, res) => {
+    try {
+        const summary = await reviewManager.getSummary();
+        res.json(summary);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -1114,31 +1136,6 @@ app.post('/api/workflows', async (req, res) => {
         await logActivity(req.body.created_by || 'system', 'WORKFLOW_CREATED', workflow.name);
         broadcast('workflow.created', workflow);
         res.status(201).json(workflow);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// --- REVIEW METRICS ---
-
-app.get('/api/reviews/metrics', async (req, res) => {
-    try {
-        const filters = {
-            from_date: req.query.from_date,
-            to_date: req.query.to_date,
-            submitter: req.query.submitter
-        };
-        const metrics = await reviewManager.getMetrics(filters);
-        res.json(metrics);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/reviews/summary', async (req, res) => {
-    try {
-        const summary = await reviewManager.getSummary();
-        res.json(summary);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
