@@ -8,9 +8,9 @@
  * Usage:
  *   POST /api/telegram/task
  *   {
- *     "from": "M Asif Rahman",
- *     "message": "@TankMatrixZ_Bot fix the dashboard",
- *     "chat_id": "-5117663765",
+ *     "from": "User Name",
+ *     "message": "@MyAgentBot fix the dashboard",
+ *     "chat_id": "-123456789",
  *     "message_id": "123",
  *     "timestamp": "2026-02-07T06:41:00Z"
  *   }
@@ -22,14 +22,42 @@ const path = require('path');
 const MISSION_CONTROL_DIR = process.env.MISSION_CONTROL_DIR || 
     path.join(__dirname, '..', '.mission-control');
 
-// Agent bot username → agent id mapping
-const AGENT_MAP = {
-    '@OracleM_Bot': 'oracle',
-    '@TankMatrixZ_Bot': 'tank', 
-    '@MorpheusMatrixZ_Bot': 'morpheus',
-    '@ShuriMatrixZ_Bot': 'shuri',
-    '@KeymakerMatrixZ_Bot': 'keymaker'
-};
+/**
+ * Agent bot username → agent id mapping
+ * Configure via AGENT_MAP env var (JSON) or agents.json config file
+ * 
+ * Example env: AGENT_MAP='{"@MyBot":"agent1","@OtherBot":"agent2"}'
+ * Example file: .mission-control/config/agents.json
+ */
+function loadAgentMap() {
+    // Priority 1: Environment variable
+    if (process.env.AGENT_MAP) {
+        try {
+            return JSON.parse(process.env.AGENT_MAP);
+        } catch (e) {
+            console.warn('Invalid AGENT_MAP env var, using defaults');
+        }
+    }
+    
+    // Priority 2: Config file
+    const configPath = path.join(MISSION_CONTROL_DIR, 'config', 'agents.json');
+    try {
+        if (require('fs').existsSync(configPath)) {
+            const config = JSON.parse(require('fs').readFileSync(configPath, 'utf-8'));
+            if (config.botMapping) return config.botMapping;
+        }
+    } catch (e) {
+        // Config file doesn't exist or is invalid
+    }
+    
+    // Priority 3: Default examples (replace with your own)
+    return {
+        '@AgentOne_Bot': 'agent-one',
+        '@AgentTwo_Bot': 'agent-two'
+    };
+}
+
+const AGENT_MAP = loadAgentMap();
 
 /**
  * Parse mentions from message text

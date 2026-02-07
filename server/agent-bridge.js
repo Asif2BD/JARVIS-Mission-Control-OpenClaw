@@ -317,7 +317,7 @@ async function processNewSession(agentName, sessionKey, sessionMeta) {
     // Extract task info
     const taskInfo = extractTaskInfo(initialPrompt, label);
     
-    // If spawned by Oracle/main agent, check for existing task or link to one
+    // If spawned by main agent, check for existing task or link to one
     if (isSubagent || spawnedBy) {
         // FIRST: Check if we already have a task for this session on disk
         const existingTask = await findExistingTaskForSession(sessionId);

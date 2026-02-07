@@ -1,0 +1,13 @@
+{
+  "id": "agent-example",
+  "name": "Example Agent",
+  "role": "assistant",
+  "status": "active",
+  "description": "An example agent configuration",
+  "capabilities": [
+    "task-execution",
+    "code-review"
+  ],
+  "model": "claude-sonnet-4-5",
+  "createdAt": "2026-01-01T00:00:00Z"
+}

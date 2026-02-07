@@ -2,31 +2,39 @@
 
 These are **template files** for setting up a new Mission Control instance.
 
-## How to use
+## Setup
 
-When deploying Mission Control:
-
-1. Copy agent templates to `.mission-control/agents/`:
+1. Copy templates to `.mission-control/`:
    ```bash
-   cp examples/local-data-templates/*.json .mission-control/agents/
+   cp examples/local-data-templates/agent-*.json .mission-control/agents/
+   cp examples/local-data-templates/task-*.json .mission-control/tasks/
    ```
 
-2. Edit the JSON files with your actual agent configuration
+2. Edit the JSON files with your actual configuration
 
-3. The `.mission-control/` directory is gitignored for data files - your local data stays local.
+3. Copy config templates:
+   ```bash
+   mkdir -p .mission-control/config
+   cp examples/config/agents.json .mission-control/config/
+   ```
 
-## What's here
+4. Edit `.mission-control/config/agents.json` with your bot usernames
 
-- `oracle.json`, `tank.json`, etc. - Agent profile templates
-- `task-*.json` - Example task structures
+## Directory Structure
+
+```
+.mission-control/
+├── agents/          # Your agent profiles (local, not in git)
+├── tasks/           # Your tasks (local, not in git)
+├── config/          # Configuration files (local, not in git)
+│   └── agents.json  # Bot username → agent ID mapping
+├── logs/            # Activity logs (local, not in git)
+└── credentials/     # API keys, secrets (local, not in git)
+```
 
 ## Important
 
 **Never commit actual runtime data to git.**
 
-- API keys → use `.mission-control/credentials/` (gitignored)
-- Agent configs → `.mission-control/agents/` (gitignored)  
-- Tasks → `.mission-control/tasks/` (gitignored)
-- Logs → `.mission-control/logs/` (gitignored)
-
-Only templates and code belong in the repo.
+The `.mission-control/` directory is gitignored for data files.
+Only templates and code belong in the repository.
