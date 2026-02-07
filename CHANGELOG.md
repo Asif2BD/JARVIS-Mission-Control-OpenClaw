@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.2] - 2026-02-07
 
+### Added
+- **Multi-Theme System** - 7 selectable color themes via header dropdown
+  - **Matrix** (default) - Classic green/black hacker aesthetic
+  - **JARVIS** - Blue/cyan tech command center
+  - **Cyberpunk** - Pink/purple neon vibes
+  - **Amber Terminal** - Retro orange terminal
+  - **Midnight** - Deep purple/blue
+  - **Iron Man** - Red/gold
+  - **Ocean** - Teal/aqua
+- **Theme Selector UI** - Dropdown in header with color previews
+- **Theme Persistence** - Saves color theme and dark/light mode to localStorage
+- **New CSS file** - `dashboard/css/themes.css` for all theme definitions
+
 ### Fixed
 - **Demo Data Pollution** - Removed production agent files from `examples/demo-data/agents/`
   - Production agents (oracle, tank, morpheus, etc.) no longer ship in demo directory
@@ -14,11 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added warning to `examples/demo-data/README.md`
 
 ### Changed
-- **Matrix Theme** - Updated dashboard to classic Matrix green/black theme
-  - Primary accent color changed from blue to Matrix green (#00ff41)
-  - Background colors adjusted to true black with green tints
-  - Glows and effects updated for Matrix aesthetic
-  - Dark mode remains the default theme
+- **Dark Mode Default** - Dark mode remains the default theme
 - **Version Display** - Updated dashboard header to show v0.9.2
 
 ---
