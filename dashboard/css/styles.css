@@ -1,6 +1,6 @@
 /* ============================================
-   JARVIS MISSION CONTROL - COMMAND CENTER THEME
-   A dramatic, futuristic mission control interface
+   MISSION CONTROL - MATRIX ZION THEME
+   A dramatic Matrix-inspired command interface
    ============================================ */
 
 /* Fonts loaded via HTML <link> for better performance:
@@ -14,60 +14,60 @@
    ============================================ */
 
 :root {
-    /* Dark Command Center Theme (Default) */
-    --bg-primary: #030712;
-    --bg-secondary: #0a1628;
-    --bg-tertiary: #0f1d32;
-    --bg-card: #0c1829;
-    --bg-card-hover: #132238;
+    /* Matrix Dark Theme (Default) - Black & Green */
+    --bg-primary: #000000;
+    --bg-secondary: #0a0f0a;
+    --bg-tertiary: #0d120d;
+    --bg-card: #050a05;
+    --bg-card-hover: #0a150a;
 
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #00ff41;
+    --text-secondary: #00cc33;
+    --text-muted: #00802b;
 
-    --border-color: #1e3a5f;
-    --border-subtle: #0f2847;
-    --border-glow: #0ea5e9;
+    --border-color: #003d00;
+    --border-subtle: #002200;
+    --border-glow: #00ff41;
 
-    /* Neon/Glow Colors */
+    /* Neon/Glow Colors - Matrix Green Primary */
     --neon-blue: #00d4ff;
     --neon-cyan: #22d3ee;
-    --neon-green: #00ff88;
+    --neon-green: #00ff41;
     --neon-orange: #ff9500;
     --neon-red: #ff3366;
     --neon-purple: #a855f7;
     --neon-yellow: #fbbf24;
 
-    /* Status Colors - More vivid */
-    --status-inbox: #6b7280;
-    --status-assigned: #0ea5e9;
-    --status-in-progress: #fbbf24;
-    --status-review: #a855f7;
+    /* Status Colors - Matrix-styled */
+    --status-inbox: #004d00;
+    --status-assigned: #00cc33;
+    --status-in-progress: #00ff41;
+    --status-review: #88ff88;
     --status-done: #00ff88;
     --status-blocked: #ff3366;
 
     /* Priority Colors */
     --priority-critical: #ff3366;
     --priority-high: #ff9500;
-    --priority-medium: #fbbf24;
-    --priority-low: #00ff88;
+    --priority-medium: #00ff41;
+    --priority-low: #00cc33;
 
-    /* Accent */
-    --accent-primary: #0ea5e9;
-    --accent-hover: #38bdf8;
-    --accent-glow: rgba(14, 165, 233, 0.2);
+    /* Accent - Matrix Green */
+    --accent-primary: #00ff41;
+    --accent-hover: #00cc33;
+    --accent-glow: rgba(0, 255, 65, 0.2);
 
-    /* Gradients */
-    --gradient-header: linear-gradient(180deg, #0a1628 0%, #030712 100%);
-    --gradient-card: linear-gradient(145deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
-    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+    /* Gradients - Matrix style */
+    --gradient-header: linear-gradient(180deg, #0a0f0a 0%, #000000 100%);
+    --gradient-card: linear-gradient(145deg, rgba(0, 255, 65, 0.03) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
 
-    /* Shadows & Glows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.7);
-    --glow-blue: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
-    --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
+    /* Shadows & Glows - Matrix Green */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.8);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.9);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.95);
+    --glow-blue: 0 0 20px rgba(0, 255, 65, 0.3), 0 0 40px rgba(0, 255, 65, 0.1);
+    --glow-green: 0 0 20px rgba(0, 255, 65, 0.4);
     --glow-red: 0 0 20px rgba(255, 51, 102, 0.3);
 
     /* Spacing */
