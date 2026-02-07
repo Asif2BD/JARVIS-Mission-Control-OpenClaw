@@ -32,6 +32,9 @@ Mission Control capabilities are organized as **modular skills** in the `skills/
 | **Notifications** | `skills/notifications.md` | Webhooks, WebSocket, polling for events |
 | **Review** | `skills/review.md` | Review tasks, approve work, permission model |
 | **Integrations** | `skills/integrations.md` | Telegram, Slack, Discord, external channels |
+| **MissionDeck API** | `skills/missiondeck-api.md` | Version checks, updates, cloud distribution |
+| **Telegram Bridge** | `skills/telegram-bridge.md` | Telegram bot commands, notifications, tasks |
+| **Deployment** | `skills/deployment.md` | Make dashboard public (Cloudflare, ngrok, VPS) |
 
 ### Load by Role
 
