@@ -5,6 +5,33 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-02-07
+
+### Added
+- **Deployment Skill** - `skills/deployment.md` comprehensive guide for making dashboard public
+  - Cloudflare Tunnel setup (recommended for production)
+  - ngrok setup (quick sharing)
+  - GitHub Pages (read-only demo)
+  - VPS/Cloud deployment instructions
+  - Agent guide with questions to ask human operators
+- **MissionDeck API Skill** - `skills/missiondeck-api.md` for cloud distribution
+  - Version check endpoint
+  - Auto-update scripts
+  - API authentication
+- **Telegram Bridge Skill** - `skills/telegram-bridge.md` for bot integration
+  - Command reference
+  - Notification configuration
+  - Task creation from Telegram
+- **Update Scripts** - `scripts/check-updates.sh` and `scripts/update-mission-control.sh`
+  - Check for new versions via MissionDeck API
+  - Download and apply updates with backup
+
+### Changed
+- Updated skill indexes in README.md, CLAUDE.md, skills/README.md
+- Version bumped to 0.9.1
+
+---
+
 ## [0.9.0] - 2026-02-07
 
 ### Added

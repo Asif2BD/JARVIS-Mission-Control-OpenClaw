@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.9.1-blue.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 A robust, Git-based Mission Control system for orchestrating AI agents and human collaborators. Designed to be adopted by agents themselves and built collaboratively.
@@ -9,7 +9,7 @@ A robust, Git-based Mission Control system for orchestrating AI agents and human
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-| **0.9.0** | Pre-release | 2026-02-07 |
+| **0.9.1** | Pre-release | 2026-02-07 |
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
@@ -62,6 +62,9 @@ the demo data or start fresh, then initialize it for my project.
 | Notifications | `skills/notifications.md` | Lead/DevOps — webhooks, WebSocket, polling |
 | Review | `skills/review.md` | Reviewers/Leads — approvals, permission model |
 | Integrations | `skills/integrations.md` | Optional — Telegram, Slack, Discord |
+| MissionDeck API | `skills/missiondeck-api.md` | Optional — version checks, auto-updates |
+| Telegram Bridge | `skills/telegram-bridge.md` | Optional — Telegram bot integration |
+| Deployment | `skills/deployment.md` | Optional — make dashboard public (Cloudflare, ngrok) |
 
 ### Downloaded a ZIP?
 
