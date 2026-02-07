@@ -1,24 +1,24 @@
 {
   "id": "architect",
   "name": "The Architect",
-  "real_name": "M Asif Rahman",
+  "real_name": "Demo User",
   "type": "human",
   "emoji": "👔",
   "role": "Creator & Project Lead",
-  "designation": "The Creator of Matrix Zion",
-  "description": "The visionary who built Matrix Zion. All roads lead back to The Architect.",
+  "designation": "System Administrator",
+  "description": "The project lead who oversees the agent network.",
   "avatar": null,
   "status": "online",
-  "timezone": "Asia/Dhaka",
+  "timezone": "UTC",
   "skills": ["architecture", "leadership", "vision", "strategy"],
   "contact": {
-    "telegram": "@MAsifRahman",
-    "github": "Asif2BD"
+    "telegram": "@demo_user",
+    "github": "demo-user"
   },
-  "created_at": "2026-02-05T00:00:00.000Z",
-  "updated_at": "2026-02-06T06:40:00.000Z",
+  "created_at": "2026-01-01T00:00:00.000Z",
+  "updated_at": "2026-01-01T00:00:00.000Z",
   "metadata": {
-    "title": "The One Who Built The Matrix",
-    "authority": "supreme"
+    "title": "Project Lead",
+    "authority": "admin"
   }
 }
