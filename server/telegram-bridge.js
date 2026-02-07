@@ -59,12 +59,43 @@ function extractTitle(text) {
 }
 
 /**
+ * Check if task already exists (deduplication)
+ */
+async function taskExists(message) {
+    const tasksDir = path.join(MISSION_CONTROL_DIR, 'tasks');
+    try {
+        const files = await fs.readdir(tasksDir);
+        for (const file of files) {
+            if (!file.endsWith('.json')) continue;
+            const content = await fs.readFile(path.join(tasksDir, file), 'utf-8');
+            const task = JSON.parse(content);
+            // Check if same message within last 5 minutes
+            if (task.description === message && task.source === 'telegram') {
+                const taskTime = new Date(task.createdAt).getTime();
+                const now = Date.now();
+                if (now - taskTime < 5 * 60 * 1000) {
+                    return true; // Duplicate within 5 min
+                }
+            }
+        }
+    } catch (e) {
+        // Directory might not exist yet
+    }
+    return false;
+}
+
+/**
  * Create task from Telegram message
  */
 async function createTaskFromTelegram({ from, message, chat_id, message_id, timestamp }) {
     const mentions = parseMentions(message);
     if (mentions.length === 0) {
         return { success: false, error: 'No agent mentioned' };
+    }
+
+    // Deduplication check
+    if (await taskExists(message)) {
+        return { success: false, error: 'Duplicate task (already exists)' };
     }
 
     const assignee = mentions[0]; // Primary assignee is first mentioned
