@@ -9,7 +9,7 @@ How to make your Mission Control dashboard accessible — locally, publicly, or 
 | Option | Difficulty | Best For | URL Example |
 |--------|------------|----------|-------------|
 | **Local only** | Easy | Development, single machine | `http://localhost:3000` |
-| **Cloudflare Tunnel** | Medium | Production, free, secure | `https://zion.yourdomain.com` |
+| **Cloudflare Tunnel** | Medium | Production, free, secure | `https://mc.yourdomain.com` |
 | **ngrok** | Easy | Quick sharing, testing | `https://abc123.ngrok.io` |
 | **GitHub Pages** | Easy | Read-only demo, no server | `https://you.github.io/repo/` |
 | **VPS/Cloud** | Advanced | Full control, always-on | `https://missioncontrol.yourserver.com` |
@@ -78,7 +78,7 @@ tunnel: mission-control
 credentials-file: ~/.cloudflared/<TUNNEL_ID>.json
 
 ingress:
-  - hostname: zion.yourdomain.com
+  - hostname: mc.yourdomain.com
     service: http://localhost:3000
   - service: http_status:404
 ```
@@ -86,7 +86,7 @@ ingress:
 **5. Add DNS record**
 
 ```bash
-cloudflared tunnel route dns mission-control zion.yourdomain.com
+cloudflared tunnel route dns mission-control mc.yourdomain.com
 ```
 
 **6. Start the tunnel**
@@ -110,7 +110,7 @@ sudo systemctl enable cloudflared
 sudo systemctl start cloudflared
 ```
 
-**Result:** Dashboard accessible at `https://zion.yourdomain.com`
+**Result:** Dashboard accessible at `https://mc.yourdomain.com`
 
 ---
 

@@ -2,7 +2,7 @@
 
 You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
 
-> **Version**: 0.9.0 | **Last Updated**: 2026-02-07
+> **Version**: 0.9.1 | **Last Updated**: 2026-02-07
 
 ## Quick Context (READ FIRST)
 
