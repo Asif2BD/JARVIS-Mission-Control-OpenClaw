@@ -6,6 +6,7 @@
 // State
 let selectedTask = null;
 let currentTheme = 'dark';
+let currentColorTheme = 'matrix';
 let currentProfileAgent = null;
 let currentProfileTab = 'attention';
 let currentThreadId = null;
@@ -170,8 +171,9 @@ function showToast(type, title, message) {
  * Initialize theme from localStorage or system preference
  */
 function initTheme() {
-    // Check localStorage first
+    // Check localStorage for saved preferences
     const savedTheme = localStorage.getItem('mc-theme');
+    const savedColorTheme = localStorage.getItem('mc-color-theme');
 
     if (savedTheme) {
         currentTheme = savedTheme;
@@ -182,16 +184,48 @@ function initTheme() {
         }
     }
 
-    // Apply theme
-    applyTheme(currentTheme);
+    if (savedColorTheme) {
+        currentColorTheme = savedColorTheme;
+    }
 
-    // Setup theme toggle listeners
+    // Apply themes
+    applyTheme(currentTheme);
+    applyColorTheme(currentColorTheme);
+
+    // Setup dark/light mode toggle listeners
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const theme = btn.dataset.theme;
             setTheme(theme);
         });
     });
+
+    // Setup color theme selector
+    const themeSelectorBtn = document.getElementById('theme-selector-btn');
+    const themeDropdown = document.getElementById('theme-dropdown');
+
+    if (themeSelectorBtn && themeDropdown) {
+        themeSelectorBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeDropdown.classList.toggle('open');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.theme-selector')) {
+                themeDropdown.classList.remove('open');
+            }
+        });
+
+        // Color theme options
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const colorTheme = btn.dataset.colorTheme;
+                setColorTheme(colorTheme);
+                themeDropdown.classList.remove('open');
+            });
+        });
+    }
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -202,7 +236,7 @@ function initTheme() {
 }
 
 /**
- * Set and apply theme
+ * Set and apply dark/light theme
  */
 function setTheme(theme) {
     currentTheme = theme;
@@ -211,7 +245,7 @@ function setTheme(theme) {
 }
 
 /**
- * Apply theme to document
+ * Apply dark/light theme to document
  */
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -220,6 +254,42 @@ function applyTheme(theme) {
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.theme === theme);
     });
+}
+
+/**
+ * Set and apply color theme
+ */
+function setColorTheme(colorTheme) {
+    currentColorTheme = colorTheme;
+    localStorage.setItem('mc-color-theme', colorTheme);
+    applyColorTheme(colorTheme);
+}
+
+/**
+ * Apply color theme to document
+ */
+function applyColorTheme(colorTheme) {
+    document.documentElement.setAttribute('data-color-theme', colorTheme);
+
+    // Update theme option buttons
+    document.querySelectorAll('.theme-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.colorTheme === colorTheme);
+    });
+
+    // Update theme selector button text
+    const themeNames = {
+        'matrix': 'Matrix',
+        'jarvis': 'JARVIS',
+        'cyberpunk': 'Cyberpunk',
+        'amber': 'Amber Terminal',
+        'midnight': 'Midnight',
+        'ironman': 'Iron Man',
+        'ocean': 'Ocean'
+    };
+    const currentNameEl = document.querySelector('.theme-current-name');
+    if (currentNameEl) {
+        currentNameEl.textContent = themeNames[colorTheme] || colorTheme;
+    }
 }
 
 /**

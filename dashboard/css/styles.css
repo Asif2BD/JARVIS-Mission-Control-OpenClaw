@@ -14,7 +14,7 @@
    ============================================ */
 
 :root {
-    /* Matrix Dark Theme (Default) - Black & Green */
+    /* Base Dark Theme (overridden by color themes) */
     --bg-primary: #000000;
     --bg-secondary: #0a0f0a;
     --bg-tertiary: #0d120d;
@@ -23,13 +23,13 @@
 
     --text-primary: #00ff41;
     --text-secondary: #00cc33;
-    --text-muted: #00802b;
+    --text-muted: #008025;
 
     --border-color: #003d00;
     --border-subtle: #002200;
     --border-glow: #00ff41;
 
-    /* Neon/Glow Colors - Matrix Green Primary */
+    /* Neon/Glow Colors */
     --neon-blue: #00d4ff;
     --neon-cyan: #22d3ee;
     --neon-green: #00ff41;
@@ -38,36 +38,39 @@
     --neon-purple: #a855f7;
     --neon-yellow: #fbbf24;
 
-    /* Status Colors - Matrix-styled */
-    --status-inbox: #004d00;
+    /* Status Colors */
+    --status-inbox: #6b7280;
     --status-assigned: #00cc33;
     --status-in-progress: #00ff41;
-    --status-review: #88ff88;
+    --status-review: #66ff66;
     --status-done: #00ff88;
     --status-blocked: #ff3366;
 
     /* Priority Colors */
     --priority-critical: #ff3366;
     --priority-high: #ff9500;
-    --priority-medium: #00ff41;
-    --priority-low: #00cc33;
+    --priority-medium: #fbbf24;
+    --priority-low: #00ff88;
 
-    /* Accent - Matrix Green */
+    /* Accent */
     --accent-primary: #00ff41;
     --accent-hover: #00cc33;
-    --accent-glow: rgba(0, 255, 65, 0.2);
+    --accent-glow: rgba(0, 255, 65, 0.25);
 
-    /* Gradients - Matrix style */
+    /* Gradients */
     --gradient-header: linear-gradient(180deg, #0a0f0a 0%, #000000 100%);
     --gradient-card: linear-gradient(145deg, rgba(0, 255, 65, 0.03) 0%, transparent 100%);
     --gradient-glow: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
+    
+    /* Glow (used by themes) */
+    --glow-primary: 0 0 20px rgba(0, 255, 65, 0.3), 0 0 40px rgba(0, 255, 65, 0.1);
 
-    /* Shadows & Glows - Matrix Green */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.8);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.9);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.95);
-    --glow-blue: 0 0 20px rgba(0, 255, 65, 0.3), 0 0 40px rgba(0, 255, 65, 0.1);
-    --glow-green: 0 0 20px rgba(0, 255, 65, 0.4);
+    /* Shadows & Glows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.8);
+    --glow-blue: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+    --glow-green: 0 0 20px rgba(0, 255, 136, 0.3);
     --glow-red: 0 0 20px rgba(255, 51, 102, 0.3);
 
     /* Spacing */

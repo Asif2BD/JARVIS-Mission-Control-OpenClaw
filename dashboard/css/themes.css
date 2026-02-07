@@ -1,0 +1,438 @@
+/* ============================================
+   MISSION CONTROL - THEME COLLECTION
+   Multiple color themes for different preferences
+   ============================================ */
+
+/* ============================================
+   THEME 1: MATRIX (Default) - Classic green/black
+   ============================================ */
+[data-color-theme="matrix"] {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0f0a;
+    --bg-tertiary: #0d120d;
+    --bg-card: #050a05;
+    --bg-card-hover: #0a150a;
+
+    --text-primary: #00ff41;
+    --text-secondary: #00cc33;
+    --text-muted: #008025;
+
+    --border-color: #003d00;
+    --border-subtle: #002200;
+    --border-glow: #00ff41;
+
+    --accent-primary: #00ff41;
+    --accent-hover: #00cc33;
+    --accent-glow: rgba(0, 255, 65, 0.25);
+
+    --status-assigned: #00cc33;
+    --status-in-progress: #00ff41;
+    --status-review: #66ff66;
+    --status-done: #00ff88;
+
+    --gradient-header: linear-gradient(180deg, #0a0f0a 0%, #000000 100%);
+    --gradient-card: linear-gradient(145deg, rgba(0, 255, 65, 0.03) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(0, 255, 65, 0.3), 0 0 40px rgba(0, 255, 65, 0.1);
+
+    --theme-font-heading: 'Share Tech Mono', monospace;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   THEME 2: JARVIS - Blue/Cyan tech
+   ============================================ */
+[data-color-theme="jarvis"] {
+    --bg-primary: #030712;
+    --bg-secondary: #0a1628;
+    --bg-tertiary: #0f1d32;
+    --bg-card: #0c1829;
+    --bg-card-hover: #132238;
+
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --border-color: #1e3a5f;
+    --border-subtle: #0f2847;
+    --border-glow: #0ea5e9;
+
+    --accent-primary: #0ea5e9;
+    --accent-hover: #38bdf8;
+    --accent-glow: rgba(14, 165, 233, 0.25);
+
+    --status-assigned: #0ea5e9;
+    --status-in-progress: #fbbf24;
+    --status-review: #a855f7;
+    --status-done: #00ff88;
+
+    --gradient-header: linear-gradient(180deg, #0a1628 0%, #030712 100%);
+    --gradient-card: linear-gradient(145deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(0, 212, 255, 0.1);
+
+    --theme-font-heading: 'Orbitron', sans-serif;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   THEME 3: CYBERPUNK - Pink/Purple neon
+   ============================================ */
+[data-color-theme="cyberpunk"] {
+    --bg-primary: #0d0221;
+    --bg-secondary: #1a0533;
+    --bg-tertiary: #240745;
+    --bg-card: #150428;
+    --bg-card-hover: #1f0638;
+
+    --text-primary: #ff00ff;
+    --text-secondary: #cc66ff;
+    --text-muted: #9933cc;
+
+    --border-color: #6600cc;
+    --border-subtle: #330066;
+    --border-glow: #ff00ff;
+
+    --accent-primary: #ff00ff;
+    --accent-hover: #ff66ff;
+    --accent-glow: rgba(255, 0, 255, 0.25);
+
+    --status-assigned: #00ffff;
+    --status-in-progress: #ff00ff;
+    --status-review: #ff6600;
+    --status-done: #00ff00;
+
+    --gradient-header: linear-gradient(180deg, #1a0533 0%, #0d0221 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255, 0, 255, 0.05) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(255, 0, 255, 0.15) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(255, 0, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.2);
+
+    --theme-font-heading: 'Orbitron', sans-serif;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   THEME 4: AMBER TERMINAL - Retro amber
+   ============================================ */
+[data-color-theme="amber"] {
+    --bg-primary: #0a0800;
+    --bg-secondary: #121008;
+    --bg-tertiary: #1a1610;
+    --bg-card: #0f0d08;
+    --bg-card-hover: #1a1610;
+
+    --text-primary: #ffb000;
+    --text-secondary: #cc8800;
+    --text-muted: #996600;
+
+    --border-color: #4d3300;
+    --border-subtle: #332200;
+    --border-glow: #ffb000;
+
+    --accent-primary: #ffb000;
+    --accent-hover: #ffcc00;
+    --accent-glow: rgba(255, 176, 0, 0.25);
+
+    --status-assigned: #ffcc00;
+    --status-in-progress: #ffb000;
+    --status-review: #ff8800;
+    --status-done: #88ff00;
+
+    --gradient-header: linear-gradient(180deg, #121008 0%, #0a0800 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255, 176, 0, 0.03) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(255, 176, 0, 0.1) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(255, 176, 0, 0.3), 0 0 40px rgba(255, 176, 0, 0.1);
+
+    --theme-font-heading: 'Share Tech Mono', monospace;
+    --theme-font-body: 'Share Tech Mono', monospace;
+}
+
+/* ============================================
+   THEME 5: MIDNIGHT - Deep purple/blue
+   ============================================ */
+[data-color-theme="midnight"] {
+    --bg-primary: #0f0a1a;
+    --bg-secondary: #1a1025;
+    --bg-tertiary: #251830;
+    --bg-card: #15101f;
+    --bg-card-hover: #201528;
+
+    --text-primary: #e0d4ff;
+    --text-secondary: #b8a4e0;
+    --text-muted: #8066b3;
+
+    --border-color: #4a3366;
+    --border-subtle: #2d1f40;
+    --border-glow: #9966ff;
+
+    --accent-primary: #9966ff;
+    --accent-hover: #b388ff;
+    --accent-glow: rgba(153, 102, 255, 0.25);
+
+    --status-assigned: #66b3ff;
+    --status-in-progress: #9966ff;
+    --status-review: #ff66b3;
+    --status-done: #66ffb3;
+
+    --gradient-header: linear-gradient(180deg, #1a1025 0%, #0f0a1a 100%);
+    --gradient-card: linear-gradient(145deg, rgba(153, 102, 255, 0.05) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(153, 102, 255, 0.15) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(153, 102, 255, 0.3), 0 0 40px rgba(153, 102, 255, 0.1);
+
+    --theme-font-heading: 'Orbitron', sans-serif;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   THEME 6: IRON MAN - Red/Gold
+   ============================================ */
+[data-color-theme="ironman"] {
+    --bg-primary: #0a0505;
+    --bg-secondary: #1a0a0a;
+    --bg-tertiary: #251010;
+    --bg-card: #150808;
+    --bg-card-hover: #201010;
+
+    --text-primary: #ffd700;
+    --text-secondary: #cc9900;
+    --text-muted: #996600;
+
+    --border-color: #8b0000;
+    --border-subtle: #4d0000;
+    --border-glow: #ff4444;
+
+    --accent-primary: #ff4444;
+    --accent-hover: #ff6666;
+    --accent-glow: rgba(255, 68, 68, 0.25);
+
+    --status-assigned: #ffd700;
+    --status-in-progress: #ff4444;
+    --status-review: #ff8800;
+    --status-done: #44ff44;
+
+    --gradient-header: linear-gradient(180deg, #1a0a0a 0%, #0a0505 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255, 68, 68, 0.05) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(255, 68, 68, 0.3), 0 0 40px rgba(255, 215, 0, 0.2);
+
+    --theme-font-heading: 'Orbitron', sans-serif;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   THEME 7: OCEAN - Teal/Aqua
+   ============================================ */
+[data-color-theme="ocean"] {
+    --bg-primary: #021014;
+    --bg-secondary: #041820;
+    --bg-tertiary: #06202a;
+    --bg-card: #031418;
+    --bg-card-hover: #051c24;
+
+    --text-primary: #00e5cc;
+    --text-secondary: #00b3a0;
+    --text-muted: #008877;
+
+    --border-color: #004d44;
+    --border-subtle: #002d28;
+    --border-glow: #00ffdd;
+
+    --accent-primary: #00e5cc;
+    --accent-hover: #00ffdd;
+    --accent-glow: rgba(0, 229, 204, 0.25);
+
+    --status-assigned: #00b3ff;
+    --status-in-progress: #00e5cc;
+    --status-review: #00ffdd;
+    --status-done: #00ff88;
+
+    --gradient-header: linear-gradient(180deg, #041820 0%, #021014 100%);
+    --gradient-card: linear-gradient(145deg, rgba(0, 229, 204, 0.05) 0%, transparent 100%);
+    --gradient-glow: radial-gradient(ellipse at center, rgba(0, 229, 204, 0.15) 0%, transparent 70%);
+
+    --glow-primary: 0 0 20px rgba(0, 229, 204, 0.3), 0 0 40px rgba(0, 229, 204, 0.1);
+
+    --theme-font-heading: 'Orbitron', sans-serif;
+    --theme-font-body: 'Rajdhani', sans-serif;
+}
+
+/* ============================================
+   LIGHT MODE OVERRIDES
+   Applied on top of color themes when light mode is active
+   ============================================ */
+[data-theme="light"] {
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #eef2f7;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+
+    --border-color: #e2e8f0;
+    --border-subtle: #edf2f7;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+    --gradient-header: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
+    --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.8) 0%, transparent 100%);
+}
+
+/* Light mode keeps accent colors from the color theme but softens backgrounds */
+[data-theme="light"][data-color-theme="matrix"] {
+    --text-primary: #006622;
+    --text-secondary: #008833;
+    --border-glow: #00cc44;
+}
+
+[data-theme="light"][data-color-theme="cyberpunk"] {
+    --text-primary: #990099;
+    --text-secondary: #aa33aa;
+    --border-glow: #cc00cc;
+}
+
+[data-theme="light"][data-color-theme="amber"] {
+    --text-primary: #996600;
+    --text-secondary: #aa7700;
+    --border-glow: #cc8800;
+}
+
+/* ============================================
+   THEME SELECTOR STYLES
+   ============================================ */
+.theme-selector {
+    position: relative;
+}
+
+.theme-selector-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: var(--theme-font-body, 'Rajdhani', sans-serif);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.theme-selector-btn:hover {
+    border-color: var(--accent-primary);
+    box-shadow: var(--glow-primary);
+}
+
+.theme-selector-btn .theme-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-primary);
+}
+
+.theme-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    min-width: 200px;
+    z-index: 1000;
+    display: none;
+}
+
+.theme-dropdown.open {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.theme-option:hover {
+    background: var(--bg-card-hover);
+}
+
+.theme-option.active {
+    background: var(--accent-glow);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.theme-color-preview {
+    display: flex;
+    gap: 2px;
+}
+
+.theme-color-preview span {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.theme-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+/* Theme color previews */
+.preview-matrix span:nth-child(1) { background: #000000; }
+.preview-matrix span:nth-child(2) { background: #00ff41; }
+.preview-matrix span:nth-child(3) { background: #003d00; }
+
+.preview-jarvis span:nth-child(1) { background: #030712; }
+.preview-jarvis span:nth-child(2) { background: #0ea5e9; }
+.preview-jarvis span:nth-child(3) { background: #1e3a5f; }
+
+.preview-cyberpunk span:nth-child(1) { background: #0d0221; }
+.preview-cyberpunk span:nth-child(2) { background: #ff00ff; }
+.preview-cyberpunk span:nth-child(3) { background: #00ffff; }
+
+.preview-amber span:nth-child(1) { background: #0a0800; }
+.preview-amber span:nth-child(2) { background: #ffb000; }
+.preview-amber span:nth-child(3) { background: #4d3300; }
+
+.preview-midnight span:nth-child(1) { background: #0f0a1a; }
+.preview-midnight span:nth-child(2) { background: #9966ff; }
+.preview-midnight span:nth-child(3) { background: #4a3366; }
+
+.preview-ironman span:nth-child(1) { background: #0a0505; }
+.preview-ironman span:nth-child(2) { background: #ff4444; }
+.preview-ironman span:nth-child(3) { background: #ffd700; }
+
+.preview-ocean span:nth-child(1) { background: #021014; }
+.preview-ocean span:nth-child(2) { background: #00e5cc; }
+.preview-ocean span:nth-child(3) { background: #004d44; }
