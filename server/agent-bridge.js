@@ -21,6 +21,7 @@ const readline = require('readline');
 
 // Import agent sync module for auto-discovery
 const agentSync = require('./agent-sync');
+const telegramBridge = require('./telegram-bridge');
 
 // Configuration with auto-detection
 const MISSION_CONTROL_DIR = process.env.MISSION_CONTROL_DIR || path.join(__dirname, '..', '.mission-control');
@@ -412,6 +413,35 @@ async function processSessionActivity(sessionId) {
         // Process different event types
         if (data.type === 'message') {
             const msg = data.message;
+            
+            // AUTO-CREATE TASKS FROM @MENTIONS in user messages
+            if (msg.role === 'user' && msg.content) {
+                const userContent = Array.isArray(msg.content) 
+                    ? msg.content.find(c => c.type === 'text')?.text || ''
+                    : msg.content;
+                
+                // Check for @mentions of other agents (not self)
+                const mentions = telegramBridge.parseMentions(userContent);
+                if (mentions.length > 0 && !mentions.includes(session.agent)) {
+                    // This is a task assignment to another agent - create Mission Control task
+                    // Extract sender from message format: "Username (id): message"
+                    const senderMatch = userContent.match(/^([^(]+)\s*\([^)]+\):/);
+                    const sender = senderMatch ? senderMatch[1].trim() : 'Architect';
+                    
+                    try {
+                        await telegramBridge.createTaskFromTelegram({
+                            from: sender,
+                            message: userContent,
+                            chat_id: session.sessionKey?.includes('group') ? '-5117663765' : 'dm',
+                            message_id: `${Date.now()}`,
+                            timestamp: new Date().toISOString()
+                        });
+                        console.log(`[Bridge] Created task from @mention: ${telegramBridge.extractTitle(userContent)}`);
+                    } catch (err) {
+                        console.error('[Bridge] Failed to create task from @mention:', err.message);
+                    }
+                }
+            }
             
             if (msg.role === 'assistant' && msg.content) {
                 // Assistant response - extract meaningful updates
