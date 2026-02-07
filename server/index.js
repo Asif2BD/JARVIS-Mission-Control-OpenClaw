@@ -18,6 +18,7 @@ const path = require('path');
 const http = require('http');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
+const telegramBridge = require('./telegram-bridge');
 
 // Configuration
 const PORT = process.env.PORT || 3000;
@@ -769,6 +770,9 @@ const resourceManager = new ResourceManager(MISSION_CONTROL_DIR);
 
 // Initialize Review Manager
 const reviewManager = new ReviewManager(MISSION_CONTROL_DIR);
+
+// Register Telegram bridge routes
+telegramBridge.registerRoutes(app);
 
 // --- CREDENTIALS VAULT ---
 
