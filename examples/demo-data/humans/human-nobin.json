@@ -14,14 +14,14 @@
   "channels": [
     {
       "type": "telegram",
-      "id": "@nobin_dev",
-      "chat_id": "987654321",
+      "id": "@demo_nobin",
+      "chat_id": "demo_nobin",
       "notifications": ["task.assigned", "task.review_requested", "task.commented"]
     }
   ],
   "metadata": {
     "description": "Lead developer overseeing all technical implementations.",
     "clearance": "OMEGA",
-    "timezone": "Asia/Dhaka"
+    "timezone": "UTC"
   }
 }

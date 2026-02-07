@@ -5,25 +5,59 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.0] - 2026-02-07
 
 ### Added
-- **Agent Auto-Sync** - Mission Control now automatically discovers and syncs agents from OpenClaw
-  - New `server/agent-sync.js` module handles agent discovery
+- **Modular Skills System** - `skills/` folder with 8 role-based skill modules
+  - Setup, Task Management, Messaging, Dashboard, Orchestration, Notifications, Review, Integrations
+  - Agents load only skills relevant to their role (lead, specialist, reviewer, observer)
+- **Agent Session Bridge** - `server/agent-bridge.js` monitors OpenClaw sessions
+  - Auto-creates Mission Control tasks from agent session activity
+  - Deduplication prevents duplicate tasks within 5 minute window
+  - Unified startup via `server/start-all.js` (`npm run all`)
+- **Agent Auto-Sync** - `server/agent-sync.js` discovers and syncs agents from OpenClaw
   - Reads `openclaw.json` to find configured agents
   - Creates Mission Control agent files automatically on startup
   - Periodic sync (configurable, default 30s) keeps agents in sync
-  - Works without hardcoded paths - auto-detects OpenClaw installation
-- **Dynamic Agent Discovery** - Agent bridge no longer has hardcoded agent names
-  - Discovers agents from OpenClaw config or by scanning agents directory
-  - File watcher paths built dynamically from discovered agents
-- **New Environment Variables** for customization:
+- **Telegram Integration** - Auto-create tasks from @mentions in Telegram group messages
+  - New `server/telegram-bridge.js` for parsing mentions and creating tasks
+  - Configurable agent bot mapping via env var or config file
+- **Resource Management** - `server/resource-manager.js` for shared resources
+  - Credentials vault, resource registry, bookings, cost tracking, quota management
+  - Full REST API: `/api/resources`, `/api/credentials`, `/api/bookings`, `/api/costs`, `/api/quotas`
+- **Review System** - `server/review-manager.js` for multi-stage reviews
+  - Review workflows (Draft → Review → Approved → Deployed)
+  - Checklists for code review and deployment
+  - REST API: `/api/reviews`, `/api/checklists`, `/api/workflows`
+- **CLI Task Management** - New scripts for task operations
+  - `scripts/mc-task.sh` - Create and update tasks from command line
+  - `scripts/mc-telegram-task.sh` - Create tasks from Telegram messages
+  - `scripts/create-task.js` - Node.js task creation tool
+  - `scripts/create-github-issue.sh` - GitHub issue creation
+- **Mobile Responsive Design** - `dashboard/css/mobile.css` for mobile devices
+- **File Browser** - `/api/files` endpoint for browsing task deliverables
+- **Git/Local Data Separation** - Clear separation between code and runtime data
+  - `.mission-control/.gitignore` keeps runtime data out of git
+  - Templates in `examples/local-data-templates/`
+  - Demo data in `examples/demo-data/`
+  - Feature templates in `examples/templates/` (checklists, resources, quotas, workflows, queue)
+- **New Environment Variables**:
   - `OPENCLAW_CONFIG_PATH` - Override OpenClaw config location
   - `AGENT_SYNC_INTERVAL` - Control sync frequency (default: 30000ms)
+- **PATCH `/api/tasks/:id`** endpoint for partial task updates
 
 ### Changed
 - Agent bridge now uses dynamic agent discovery instead of hardcoded list
-- File watcher setup is now async and builds paths dynamically
+- Agent bot mapping now configurable (no hardcoded bot names)
+- Demo data cleaned for public release (no private info)
+- CLAUDE.md updated with skills index and complete API reference
+- Documentation reorganized with Telegram integration, resource management guides
+- Version bumped to 0.9.0 across all files
+
+### Fixed
+- Auto-task creation spam from agent bridge sessions
+- Static file serving for dashboard assets
+- Data loss from overly aggressive cleanup of `.mission-control/` directory
 
 ## [0.8.0] - 2026-02-05
 
@@ -154,6 +188,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.9.0 | 2026-02-07 | Skills system, agent bridge, Telegram, resources, reviews, mobile |
 | 0.8.0 | 2026-02-05 | Agent profiles, personalities, messaging, chat, GitHub Actions |
 | 0.7.0 | 2026-02-05 | URL routing, versioning, UI improvements |
 | 0.6.0 | 2026-02-05 | Local server, WebSocket, Webhooks |

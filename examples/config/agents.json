@@ -1,0 +1,9 @@
+{
+  "description": "Agent bot mapping configuration",
+  "botMapping": {
+    "@YourFirstBot": "agent-one",
+    "@YourSecondBot": "agent-two",
+    "@YourThirdBot": "agent-three"
+  },
+  "notes": "Replace with your actual Telegram bot usernames and agent IDs"
+}
