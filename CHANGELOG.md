@@ -5,6 +5,32 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-02-07
+
+### Added
+- **Telegram Integration** - Auto-create tasks from @mentions in Telegram group messages
+  - New `server/telegram-bridge.js` for parsing mentions and creating tasks
+  - Agent bridge extended to detect @mentions in session transcripts
+  - Deduplication prevents duplicate tasks within 5 minute window
+  - Configurable agent bot mapping via env var or config file
+- **CLI Task Management** - New scripts for task operations
+  - `scripts/mc-task.sh` - Create and update tasks from command line
+  - `scripts/mc-telegram-task.sh` - Create tasks from Telegram messages
+- **Git/Local Data Separation** - Clear separation between code and runtime data
+  - Templates in `examples/local-data-templates/`
+  - Runtime data in `.mission-control/` (gitignored)
+  - Config example in `examples/config/agents.json`
+
+### Changed
+- Agent bot mapping now configurable (no hardcoded bot names)
+- Demo data cleaned for public release (no private info)
+- Documentation updated with setup instructions
+
+### Fixed
+- Restored data accidentally deleted in previous cleanup
+
+---
+
 ## [Unreleased]
 
 ### Added
@@ -154,6 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| 0.9.0 | 2026-02-07 | Telegram integration, CLI tools, git/local separation |
 | 0.8.0 | 2026-02-05 | Agent profiles, personalities, messaging, chat, GitHub Actions |
 | 0.7.0 | 2026-02-05 | URL routing, versioning, UI improvements |
 | 0.6.0 | 2026-02-05 | Local server, WebSocket, Webhooks |
