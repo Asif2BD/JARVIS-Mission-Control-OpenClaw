@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-color-theme="matrix">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,7 @@
     <!-- Matrix-style fonts: Orbitron, Rajdhani, Share Tech Mono -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/themes.css">
     <link rel="stylesheet" href="./css/mobile.css">
 </head>
 <body>
@@ -31,26 +32,50 @@
             <span class="version">v0.9.2</span>
         </div>
         <div class="header-right">
-            <!-- Theme Toggle -->
-            <div class="theme-toggle" role="group" aria-label="Theme switcher">
-                <button class="theme-toggle-btn active" data-theme="dark" aria-label="Dark mode" title="Dark mode">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            <!-- Theme Selector -->
+            <div class="theme-selector" id="theme-selector">
+                <button class="theme-selector-btn" id="theme-selector-btn" aria-label="Select theme">
+                    <span class="theme-icon"></span>
+                    <span class="theme-current-name">Matrix</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                 </button>
-                <button class="theme-toggle-btn" data-theme="light" aria-label="Light mode" title="Light mode">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
+                <div class="theme-dropdown" id="theme-dropdown">
+                    <button class="theme-option active" data-color-theme="matrix">
+                        <div class="theme-color-preview preview-matrix"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Matrix</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="jarvis">
+                        <div class="theme-color-preview preview-jarvis"><span></span><span></span><span></span></div>
+                        <span class="theme-name">JARVIS</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="cyberpunk">
+                        <div class="theme-color-preview preview-cyberpunk"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Cyberpunk</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="amber">
+                        <div class="theme-color-preview preview-amber"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Amber Terminal</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="midnight">
+                        <div class="theme-color-preview preview-midnight"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Midnight</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="ironman">
+                        <div class="theme-color-preview preview-ironman"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Iron Man</span>
+                    </button>
+                    <button class="theme-option" data-color-theme="ocean">
+                        <div class="theme-color-preview preview-ocean"><span></span><span></span><span></span></div>
+                        <span class="theme-name">Ocean</span>
+                    </button>
+                    <hr style="border-color: var(--border-color); margin: 0.5rem 0;">
+                    <div class="theme-mode-toggle" style="display: flex; gap: 0.5rem; padding: 0.5rem;">
+                        <button class="theme-toggle-btn active" data-theme="dark" title="Dark mode" style="flex:1; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer;">🌙 Dark</button>
+                        <button class="theme-toggle-btn" data-theme="light" title="Light mode" style="flex:1; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer;">☀️ Light</button>
+                    </div>
+                </div>
             </div>
 
             <div class="metrics">
