@@ -1,0 +1,125 @@
+#!/usr/bin/env node
+/**
+ * Telegram → Mission Control Bridge
+ * 
+ * Receives task assignments from Telegram (via OpenClaw webhook or direct call)
+ * and creates Mission Control tasks.
+ * 
+ * Usage:
+ *   POST /api/telegram/task
+ *   {
+ *     "from": "M Asif Rahman",
+ *     "message": "@TankMatrixZ_Bot fix the dashboard",
+ *     "chat_id": "TELEGRAM_CHAT_ID",
+ *     "message_id": "123",
+ *     "timestamp": "2026-02-07T06:41:00Z"
+ *   }
+ */
+
+const fs = require('fs').promises;
+const path = require('path');
+
+const MISSION_CONTROL_DIR = process.env.MISSION_CONTROL_DIR || 
+    path.join(__dirname, '..', '.mission-control');
+
+// Agent bot username → agent id mapping
+const AGENT_MAP = {
+    '@OracleM_Bot': 'oracle',
+    '@TankMatrixZ_Bot': 'tank', 
+    '@MorpheusMatrixZ_Bot': 'morpheus',
+    '@ShuriMatrixZ_Bot': 'shuri',
+    '@KeymakerMatrixZ_Bot': 'keymaker'
+};
+
+/**
+ * Parse mentions from message text
+ */
+function parseMentions(text) {
+    const mentions = [];
+    for (const [botUsername, agentId] of Object.entries(AGENT_MAP)) {
+        if (text.includes(botUsername)) {
+            mentions.push(agentId);
+        }
+    }
+    return mentions;
+}
+
+/**
+ * Extract task title from message
+ * Removes @mentions and cleans up
+ */
+function extractTitle(text) {
+    let title = text;
+    for (const botUsername of Object.keys(AGENT_MAP)) {
+        title = title.replace(new RegExp(botUsername, 'gi'), '').trim();
+    }
+    // Capitalize first letter, limit length
+    title = title.charAt(0).toUpperCase() + title.slice(1);
+    return title.slice(0, 100) || 'Task from Telegram';
+}
+
+/**
+ * Create task from Telegram message
+ */
+async function createTaskFromTelegram({ from, message, chat_id, message_id, timestamp }) {
+    const mentions = parseMentions(message);
+    if (mentions.length === 0) {
+        return { success: false, error: 'No agent mentioned' };
+    }
+
+    const assignee = mentions[0]; // Primary assignee is first mentioned
+    const title = extractTitle(message);
+    const taskId = `task-tg-${Date.now()}`;
+
+    const task = {
+        id: taskId,
+        title: title,
+        description: message,
+        status: 'pending',
+        priority: 'normal',
+        assignee: assignee,
+        mentions: mentions,
+        source: 'telegram',
+        sourceData: {
+            chat_id,
+            message_id,
+            from
+        },
+        createdAt: timestamp || new Date().toISOString(),
+        createdBy: from || 'architect',
+        progress: 0
+    };
+
+    const taskPath = path.join(MISSION_CONTROL_DIR, 'tasks', `${taskId}.json`);
+    await fs.writeFile(taskPath, JSON.stringify(task, null, 2));
+
+    // Log activity
+    const logPath = path.join(MISSION_CONTROL_DIR, 'logs', 'activity.log');
+    const logEntry = `[${new Date().toISOString()}] TASK_CREATED: ${taskId} - "${title}" assigned to ${assignee} (from: ${from})\n`;
+    await fs.appendFile(logPath, logEntry).catch(() => {});
+
+    return { success: true, taskId, task };
+}
+
+/**
+ * Express route handler for POST /api/telegram/task
+ */
+function registerRoutes(app) {
+    app.post('/api/telegram/task', async (req, res) => {
+        try {
+            const result = await createTaskFromTelegram(req.body);
+            if (result.success) {
+                res.json({ ok: true, taskId: result.taskId });
+            } else {
+                res.status(400).json({ ok: false, error: result.error });
+            }
+        } catch (err) {
+            console.error('Telegram bridge error:', err);
+            res.status(500).json({ ok: false, error: err.message });
+        }
+    });
+
+    console.log('📱 Telegram bridge registered: POST /api/telegram/task');
+}
+
+module.exports = { createTaskFromTelegram, parseMentions, extractTitle, registerRoutes };
