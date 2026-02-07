@@ -2,7 +2,7 @@
 
 You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
 
-> **Version**: 0.9.0 | **Last Updated**: 2026-02-07
+> **Version**: 0.9.1 | **Last Updated**: 2026-02-07
 
 ## Quick Context (READ FIRST)
 
@@ -32,6 +32,9 @@ Mission Control capabilities are organized as **modular skills** in the `skills/
 | **Notifications** | `skills/notifications.md` | Webhooks, WebSocket, polling for events |
 | **Review** | `skills/review.md` | Review tasks, approve work, permission model |
 | **Integrations** | `skills/integrations.md` | Telegram, Slack, Discord, external channels |
+| **MissionDeck API** | `skills/missiondeck-api.md` | Version checks, updates, cloud distribution |
+| **Telegram Bridge** | `skills/telegram-bridge.md` | Telegram bot commands, notifications, tasks |
+| **Deployment** | `skills/deployment.md` | Make dashboard public (Cloudflare, ngrok, VPS) |
 
 ### Load by Role
 
