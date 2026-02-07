@@ -62,6 +62,8 @@ the demo data or start fresh, then initialize it for my project.
 | Notifications | `skills/notifications.md` | Lead/DevOps — webhooks, WebSocket, polling |
 | Review | `skills/review.md` | Reviewers/Leads — approvals, permission model |
 | Integrations | `skills/integrations.md` | Optional — Telegram, Slack, Discord |
+| MissionDeck API | `skills/missiondeck-api.md` | Optional — version checks, auto-updates |
+| Telegram Bridge | `skills/telegram-bridge.md` | Optional — Telegram bot, commands, notifications |
 
 ### Downloaded a ZIP?
 
