@@ -1,0 +1,13 @@
+{
+  "id": "task-example-001",
+  "title": "Example Task",
+  "description": "This is an example task to demonstrate the structure",
+  "status": "pending",
+  "priority": "normal",
+  "assignee": "agent-example",
+  "mentions": ["agent-example"],
+  "createdAt": "2026-01-01T00:00:00Z",
+  "createdBy": "user",
+  "progress": 0,
+  "tags": ["example", "demo"]
+}

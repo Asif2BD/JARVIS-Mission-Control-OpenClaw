@@ -13,61 +13,75 @@ Automatically creates Mission Control tasks when agents are @mentioned in Telegr
 └──────────────┘     └─────────────────┘     └──────────────────┘
 ```
 
-**Approach: Option C - Agent Bridge Extension**
+The `agent-bridge.js` monitors OpenClaw sessions. When it sees user messages with @mentions, it creates Mission Control tasks.
 
-We extend the existing `agent-bridge.js` which already monitors OpenClaw sessions.
-When it sees user messages with @mentions, it creates Mission Control tasks.
+## Configuration
 
-### Why This Approach?
+### Agent Bot Mapping
 
-| Approach | Verdict |
-|----------|---------|
-| OpenClaw Plugin | ❌ Too invasive - requires core changes |
-| Direct Telegram Webhook | ❌ More moving parts - separate service |
-| **Agent Bridge Extension** | ✅ Uses existing infrastructure |
+Map your Telegram bot usernames to agent IDs. Three options:
+
+**Option 1: Environment Variable**
+```bash
+export AGENT_MAP='{"@MyAgentBot":"agent-one","@OtherBot":"agent-two"}'
+```
+
+**Option 2: Config File**
+```bash
+# .mission-control/config/agents.json
+{
+  "botMapping": {
+    "@MyAgentBot": "agent-one",
+    "@OtherBot": "agent-two"
+  }
+}
+```
+
+**Option 3: Default (edit source)**
+Edit `server/telegram-bridge.js` directly.
 
 ## Components
 
-### 1. `server/telegram-bridge.js`
+### `server/telegram-bridge.js`
 
 Core functions for parsing mentions and creating tasks.
 
 ```javascript
 // Parse @mentions from message text
-parseMentions("@TankMatrixZ_Bot fix the bug")
-// Returns: ['tank']
+parseMentions("@MyAgentBot fix the bug")
+// Returns: ['agent-one']
 
 // Extract task title
-extractTitle("@TankMatrixZ_Bot fix the dashboard bug")
+extractTitle("@MyAgentBot fix the dashboard bug")
 // Returns: "Fix the dashboard bug"
 
 // Create task
 createTaskFromTelegram({
-    from: "M Asif Rahman",
-    message: "@TankMatrixZ_Bot fix the dashboard",
-    chat_id: "TELEGRAM_CHAT_ID",
+    from: "User Name",
+    message: "@MyAgentBot fix the dashboard",
+    chat_id: "-123456789",
     message_id: "123"
 })
-// Creates: .mission-control/tasks/task-tg-1770445678.json
+// Creates: .mission-control/tasks/task-tg-1234567890.json
 ```
 
-### 2. `server/agent-bridge.js` (Modified)
+### `server/agent-bridge.js`
 
 Monitors OpenClaw sessions. When processing user messages:
 - Detects @mentions
 - Filters self-mentions (agent won't create task for itself)
 - Calls `telegram-bridge.createTaskFromTelegram()`
 
-### 3. API Endpoint
+### API Endpoint
 
 ```
 POST /api/telegram/task
 Content-Type: application/json
 
 {
-    "from": "M Asif Rahman",
-    "message": "@TankMatrixZ_Bot fix the dashboard",
-    "chat_id": "TELEGRAM_CHAT_ID",
+    "from": "User Name",
+    "message": "@MyAgentBot fix the dashboard",
+    "chat_id": "-123456789",
     "message_id": "123",
     "timestamp": "2026-02-07T06:41:00Z"
 }
@@ -75,19 +89,9 @@ Content-Type: application/json
 Response:
 {
     "ok": true,
-    "taskId": "task-tg-1770445678"
+    "taskId": "task-tg-1234567890"
 }
 ```
-
-## Agent Mapping
-
-| Bot Username | Agent ID |
-|--------------|----------|
-| @OracleM_Bot | oracle |
-| @TankMatrixZ_Bot | tank |
-| @MorpheusMatrixZ_Bot | morpheus |
-| @ShuriMatrixZ_Bot | shuri |
-| @KeymakerMatrixZ_Bot | keymaker |
 
 ## Deduplication
 
@@ -102,21 +106,21 @@ Prevents duplicate tasks when multiple agents see the same group message.
 
 ```json
 {
-    "id": "task-tg-1770445678",
+    "id": "task-tg-1234567890",
     "title": "Fix the dashboard bug",
-    "description": "@TankMatrixZ_Bot fix the dashboard bug",
+    "description": "@MyAgentBot fix the dashboard bug",
     "status": "pending",
     "priority": "normal",
-    "assignee": "tank",
-    "mentions": ["tank"],
+    "assignee": "agent-one",
+    "mentions": ["agent-one"],
     "source": "telegram",
     "sourceData": {
-        "chat_id": "TELEGRAM_CHAT_ID",
+        "chat_id": "-123456789",
         "message_id": "123",
-        "from": "M Asif Rahman"
+        "from": "User Name"
     },
     "createdAt": "2026-02-07T06:41:00Z",
-    "createdBy": "M Asif Rahman",
+    "createdBy": "User Name",
     "progress": 0
 }
 ```
@@ -125,27 +129,29 @@ Prevents duplicate tasks when multiple agents see the same group message.
 
 ```bash
 # Create task manually
-./scripts/mc-telegram-task.sh "Architect" "@TankMatrixZ_Bot fix X"
+./scripts/mc-telegram-task.sh "User" "@MyAgentBot fix something"
 
 # With custom chat/message IDs
-./scripts/mc-telegram-task.sh "User" "@MorpheusMatrixZ_Bot review PR" "TELEGRAM_CHAT_ID" "456"
+./scripts/mc-telegram-task.sh "User" "@AgentBot review PR" "-123456789" "456"
 ```
 
 ## Testing
 
-1. Start Mission Control server:
+1. Configure your bot mapping (see Configuration above)
+
+2. Start Mission Control server:
    ```bash
    node server/index.js
    ```
 
-2. Start agent bridge:
+3. Start agent bridge:
    ```bash
    node server/agent-bridge.js
    ```
 
-3. Send message in Telegram group with @mention
+4. Send message in Telegram group with @mention
 
-4. Check tasks:
+5. Check tasks:
    ```bash
    ls .mission-control/tasks/task-tg-*.json
    ```
@@ -161,7 +167,3 @@ Prevents duplicate tasks when multiple agents see the same group message.
 - Direct Telegram webhook (if needed for real-time without OpenClaw)
 - Task status updates back to Telegram
 - Inline buttons for task actions
-
----
-
-*Implemented by Morpheus | 2026-02-07*
