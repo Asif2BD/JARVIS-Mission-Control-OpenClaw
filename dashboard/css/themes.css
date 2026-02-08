@@ -436,3 +436,96 @@
 .preview-ocean span:nth-child(1) { background: #021014; }
 .preview-ocean span:nth-child(2) { background: #00e5cc; }
 .preview-ocean span:nth-child(3) { background: #004d44; }
+
+/* ============================================
+   SIDEBAR THEME GRID
+   ============================================ */
+.theme-setting {
+    flex-direction: column;
+    align-items: flex-start !important;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.theme-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.theme-card:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-card-hover);
+}
+
+.theme-card.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.theme-preview {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+}
+
+.theme-preview span {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+}
+
+.theme-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-family: var(--theme-font-body, 'Rajdhani', sans-serif);
+}
+
+.theme-card.active .theme-label {
+    color: var(--accent-primary);
+}
+
+/* Mode Toggle */
+.mode-toggle {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all var(--transition-fast);
+}
+
+.mode-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.mode-btn.active {
+    background: var(--accent-glow);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
