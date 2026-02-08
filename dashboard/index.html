@@ -32,52 +32,6 @@
             <span class="version">v0.9.2</span>
         </div>
         <div class="header-right">
-            <!-- Theme Selector -->
-            <div class="theme-selector" id="theme-selector">
-                <button class="theme-selector-btn" id="theme-selector-btn" aria-label="Select theme">
-                    <span class="theme-icon"></span>
-                    <span class="theme-current-name">Matrix</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                </button>
-                <div class="theme-dropdown" id="theme-dropdown">
-                    <button class="theme-option active" data-color-theme="matrix">
-                        <div class="theme-color-preview preview-matrix"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Matrix</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="jarvis">
-                        <div class="theme-color-preview preview-jarvis"><span></span><span></span><span></span></div>
-                        <span class="theme-name">JARVIS</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="cyberpunk">
-                        <div class="theme-color-preview preview-cyberpunk"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Cyberpunk</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="amber">
-                        <div class="theme-color-preview preview-amber"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Amber Terminal</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="midnight">
-                        <div class="theme-color-preview preview-midnight"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Midnight</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="ironman">
-                        <div class="theme-color-preview preview-ironman"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Iron Man</span>
-                    </button>
-                    <button class="theme-option" data-color-theme="ocean">
-                        <div class="theme-color-preview preview-ocean"><span></span><span></span><span></span></div>
-                        <span class="theme-name">Ocean</span>
-                    </button>
-                    <hr style="border-color: var(--border-color); margin: 0.5rem 0;">
-                    <div class="theme-mode-toggle" style="display: flex; gap: 0.5rem; padding: 0.5rem;">
-                        <button class="theme-toggle-btn active" data-theme="dark" title="Dark mode" style="flex:1; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer;">🌙 Dark</button>
-                        <button class="theme-toggle-btn" data-theme="light" title="Light mode" style="flex:1; padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); cursor: pointer;">☀️ Light</button>
-                    </div>
-                </div>
-            </div>
-
             <div class="metrics">
                 <div class="metric">
                     <span class="metric-value" id="total-tasks">0</span>
@@ -332,6 +286,50 @@
                         <label for="dashboard-name">Dashboard Name</label>
                         <input type="text" id="dashboard-name" value="JARVIS Mission Control" placeholder="Enter dashboard name...">
                         <button class="btn-small" onclick="saveDashboardName()">Save</button>
+                    </div>
+
+                    <!-- Theme Selection -->
+                    <div class="setting-item theme-setting">
+                        <label>Theme</label>
+                        <div class="theme-grid" id="theme-grid">
+                            <button class="theme-card active" data-color-theme="matrix" title="Matrix">
+                                <div class="theme-preview preview-matrix"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Matrix</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="jarvis" title="JARVIS">
+                                <div class="theme-preview preview-jarvis"><span></span><span></span><span></span></div>
+                                <span class="theme-label">JARVIS</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="cyberpunk" title="Cyberpunk">
+                                <div class="theme-preview preview-cyberpunk"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Cyberpunk</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="amber" title="Amber Terminal">
+                                <div class="theme-preview preview-amber"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Amber</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="midnight" title="Midnight">
+                                <div class="theme-preview preview-midnight"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Midnight</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="ironman" title="Iron Man">
+                                <div class="theme-preview preview-ironman"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Iron Man</span>
+                            </button>
+                            <button class="theme-card" data-color-theme="ocean" title="Ocean">
+                                <div class="theme-preview preview-ocean"><span></span><span></span><span></span></div>
+                                <span class="theme-label">Ocean</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dark/Light Mode -->
+                    <div class="setting-item">
+                        <label>Mode</label>
+                        <div class="mode-toggle">
+                            <button class="mode-btn active" data-theme="dark" title="Dark mode">🌙 Dark</button>
+                            <button class="mode-btn" data-theme="light" title="Light mode">☀️ Light</button>
+                        </div>
                     </div>
                 </div>
             </div>

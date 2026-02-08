@@ -192,40 +192,21 @@ function initTheme() {
     applyTheme(currentTheme);
     applyColorTheme(currentColorTheme);
 
-    // Setup dark/light mode toggle listeners
-    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+    // Setup dark/light mode toggle listeners (both old and new selectors)
+    document.querySelectorAll('.theme-toggle-btn, .mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const theme = btn.dataset.theme;
             setTheme(theme);
         });
     });
 
-    // Setup color theme selector
-    const themeSelectorBtn = document.getElementById('theme-selector-btn');
-    const themeDropdown = document.getElementById('theme-dropdown');
-
-    if (themeSelectorBtn && themeDropdown) {
-        themeSelectorBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            themeDropdown.classList.toggle('open');
+    // Setup color theme grid in sidebar
+    document.querySelectorAll('.theme-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const colorTheme = btn.dataset.colorTheme;
+            setColorTheme(colorTheme);
         });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.theme-selector')) {
-                themeDropdown.classList.remove('open');
-            }
-        });
-
-        // Color theme options
-        document.querySelectorAll('.theme-option').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const colorTheme = btn.dataset.colorTheme;
-                setColorTheme(colorTheme);
-                themeDropdown.classList.remove('open');
-            });
-        });
-    }
+    });
 
     // Listen for system theme changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -250,8 +231,8 @@ function setTheme(theme) {
 function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
 
-    // Update toggle buttons
-    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+    // Update all toggle buttons (both old and new selectors)
+    document.querySelectorAll('.theme-toggle-btn, .mode-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.theme === theme);
     });
 }
@@ -271,25 +252,10 @@ function setColorTheme(colorTheme) {
 function applyColorTheme(colorTheme) {
     document.documentElement.setAttribute('data-color-theme', colorTheme);
 
-    // Update theme option buttons
-    document.querySelectorAll('.theme-option').forEach(btn => {
+    // Update theme cards in sidebar
+    document.querySelectorAll('.theme-card').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.colorTheme === colorTheme);
     });
-
-    // Update theme selector button text
-    const themeNames = {
-        'matrix': 'Matrix',
-        'jarvis': 'JARVIS',
-        'cyberpunk': 'Cyberpunk',
-        'amber': 'Amber Terminal',
-        'midnight': 'Midnight',
-        'ironman': 'Iron Man',
-        'ocean': 'Ocean'
-    };
-    const currentNameEl = document.querySelector('.theme-current-name');
-    if (currentNameEl) {
-        currentNameEl.textContent = themeNames[colorTheme] || colorTheme;
-    }
 }
 
 /**
