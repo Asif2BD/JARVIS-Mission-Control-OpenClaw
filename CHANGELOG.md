@@ -5,6 +5,36 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-02-09
+
+### Added
+- **MissionDeck Connection Script** - `scripts/connect-missiondeck.sh`
+  - Easy API key setup with validation
+  - Automatic config.yaml update
+  - Clear error messages and guidance
+- **Step 0 in Setup** - MissionDeck connection now first step in FIRST ARRIVAL PROTOCOL
+  - CLAUDE.md updated with Step 0
+  - skills/setup.md updated with Step 0
+  - README.md updated with API key requirement
+
+### Changed
+- **MissionDeck API Skill** - Now marked as **Required** (was Optional)
+  - Updated documentation to emphasize free API key
+  - Added quick connect instructions
+- **README Quick Start** - Now includes API key as step 0
+- **Tell Your Agent** - Instructions updated to mention API key first
+
+### Why This Change
+Mission Control is fully open source and free. The API key (also free) enables:
+- Update notifications when new versions are available
+- Access to agent templates (free + premium)
+- Future marketplace access
+- Community support and usage tracking
+
+Get your free key at [missiondeck.ai/auth](https://missiondeck.ai/auth)
+
+---
+
 ## [0.9.2] - 2026-02-07
 
 ### Added
