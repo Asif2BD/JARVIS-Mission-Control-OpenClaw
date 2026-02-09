@@ -1,18 +1,34 @@
 # MissionDeck API Integration
 
-This skill teaches agents how to interact with the MissionDeck distribution API for updates, version checks, and downloads.
+> **⚠️ REQUIRED:** This is a required step for Mission Control setup.
+
+This skill teaches agents how to connect Mission Control to MissionDeck for updates, templates, and support.
 
 ## Overview
 
-MissionDeck (missiondeck.ai) is the cloud distribution platform for Mission Control. It provides:
-- Automatic update notifications
-- Versioned releases
-- API-based downloads
-- Usage analytics
+MissionDeck (missiondeck.ai) is the companion platform for Mission Control. It provides:
+- ✅ **Free API key** — Sign up with email, no payment required
+- ✅ **Update notifications** — Know when new versions are available
+- ✅ **Agent templates** — Pre-built agent configurations
+- ✅ **Future marketplace** — Buy/sell agent templates (coming soon)
 
-## Prerequisites
+## Quick Connect
 
-Your team needs a MissionDeck API key. Get one at https://missiondeck.ai
+The easiest way to connect:
+
+```bash
+./scripts/connect-missiondeck.sh
+```
+
+This will prompt you for your API key and configure everything automatically.
+
+## Get Your Free API Key
+
+1. Go to **[missiondeck.ai/auth](https://missiondeck.ai/auth)**
+2. Sign up with your email
+3. Copy your API key from the dashboard
+
+## Manual Configuration
 
 Store the API key in your environment or config:
 ```bash

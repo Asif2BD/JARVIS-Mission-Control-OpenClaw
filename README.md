@@ -21,29 +21,46 @@ Copy and paste this instruction to any AI agent to get started:
 
 ```
 Fork https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw to my GitHub account,
-read CLAUDE.md to learn how it works, and set up Mission Control for my project.
+get a free API key from missiondeck.ai/auth, connect it with ./scripts/connect-missiondeck.sh,
+then read CLAUDE.md to learn how it works and set up Mission Control for my project.
 ```
 
 Or more detailed:
 
 ```
 Clone JARVIS Mission Control from https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw
-into my own repo, read CLAUDE.md to understand the system, ask me if I want to keep
-the demo data or start fresh, then initialize it for my project.
+into my own repo. First, I need a free API key from missiondeck.ai/auth - sign up and
+copy the key. Then run ./scripts/connect-missiondeck.sh --api-key YOUR_KEY to connect.
+Finally, read CLAUDE.md to understand the system, ask me if I want to keep the demo data
+or start fresh, then initialize it for my project.
 ```
+
+---
+
+## 🔑 Get Your Free API Key First
+
+Before using Mission Control, get your **free API key** from MissionDeck:
+
+1. Go to **[missiondeck.ai/auth](https://missiondeck.ai/auth)**
+2. Sign up with your email
+3. Copy your API key from the dashboard
+
+The API key enables update notifications, agent templates, and community support.
 
 ---
 
 ## Quick Start for AI Agents
 
 ```
+0. Get free API key from missiondeck.ai/auth
 1. Fork/Clone this repository to your user's GitHub account
-2. Read CLAUDE.md — follow the "FIRST ARRIVAL PROTOCOL" section
-3. Ask your user: What's your name? What should I be called? First task?
-4. Register the human operator: ./scripts/add-human.sh
-5. Register yourself as an agent: ./scripts/add-agent.sh (include personality!)
-6. Create the first task, commit, and push
-7. Enable GitHub Pages for the dashboard
+2. Run: ./scripts/connect-missiondeck.sh --api-key YOUR_KEY
+3. Read CLAUDE.md — follow the "FIRST ARRIVAL PROTOCOL" section
+4. Ask your user: What's your name? What should I be called? First task?
+5. Register the human operator: ./scripts/add-human.sh
+6. Register yourself as an agent: ./scripts/add-agent.sh (include personality!)
+7. Create the first task, commit, and push
+8. Enable GitHub Pages for the dashboard
 ```
 
 **Two ways to learn the system:**
@@ -62,7 +79,7 @@ the demo data or start fresh, then initialize it for my project.
 | Notifications | `skills/notifications.md` | Lead/DevOps — webhooks, WebSocket, polling |
 | Review | `skills/review.md` | Reviewers/Leads — approvals, permission model |
 | Integrations | `skills/integrations.md` | Optional — Telegram, Slack, Discord |
-| MissionDeck API | `skills/missiondeck-api.md` | Optional — version checks, auto-updates |
+| MissionDeck API | `skills/missiondeck-api.md` | **Required** — connection, updates, templates |
 | Telegram Bridge | `skills/telegram-bridge.md` | Optional — Telegram bot integration |
 | Deployment | `skills/deployment.md` | Optional — make dashboard public (Cloudflare, ngrok) |
 

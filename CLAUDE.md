@@ -32,7 +32,7 @@ Mission Control capabilities are organized as **modular skills** in the `skills/
 | **Notifications** | `skills/notifications.md` | Webhooks, WebSocket, polling for events |
 | **Review** | `skills/review.md` | Review tasks, approve work, permission model |
 | **Integrations** | `skills/integrations.md` | Telegram, Slack, Discord, external channels |
-| **MissionDeck API** | `skills/missiondeck-api.md` | Version checks, updates, cloud distribution |
+| **MissionDeck API** | `skills/missiondeck-api.md` | **Required** — connection, updates, templates |
 | **Telegram Bridge** | `skills/telegram-bridge.md` | Telegram bot commands, notifications, tasks |
 | **Deployment** | `skills/deployment.md` | Make dashboard public (Cloudflare, ngrok, VPS) |
 
@@ -52,6 +52,28 @@ Mission Control capabilities are organized as **modular skills** in the `skills/
 **If this is your first time in this repository, follow these steps in order.**
 
 The `.mission-control/` directory starts empty. You need to set it up for your user.
+
+### Step 0: Connect to MissionDeck (Required)
+
+Before setting up Mission Control, connect to MissionDeck for updates and support:
+
+```bash
+./scripts/connect-missiondeck.sh
+```
+
+This requires a **free API key** from [missiondeck.ai/auth](https://missiondeck.ai/auth).
+
+**What this enables:**
+- ✅ Automatic update notifications
+- ✅ Access to agent templates (free + premium)
+- ✅ Future marketplace access
+- ✅ Community support
+
+The API key is **free** — you just need to sign up with your email.
+
+> **Already have a key?** Run: `./scripts/connect-missiondeck.sh --api-key YOUR_KEY`
+> 
+> **Or set environment variable:** `export MISSIONDECK_API_KEY="your-key-here"`
 
 ### Step 1: Ask Your User
 
