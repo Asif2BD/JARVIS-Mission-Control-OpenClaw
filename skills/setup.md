@@ -25,6 +25,18 @@ cd JARVIS-Mission-Control-OpenClaw
 
 The `.mission-control/` directory starts empty. Follow these steps:
 
+### Step 0: Connect to MissionDeck (Required)
+
+Before setting up Mission Control, connect to MissionDeck:
+
+```bash
+./scripts/connect-missiondeck.sh
+```
+
+Get your **free API key** at [missiondeck.ai/auth](https://missiondeck.ai/auth).
+
+This enables update notifications, agent templates, and community support.
+
 ### Step 1: Ask Your User
 
 Before configuring anything, ask:
