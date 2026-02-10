@@ -146,16 +146,19 @@ git push
 
 ### Step 7: (Optional) Load Demo Data
 
-If the user wants to see Mission Control in action first:
+If the user wants to see Mission Control in action first, use the initialization script:
 
 ```bash
-cp examples/demo-data/agents/*.json .mission-control/agents/
-cp examples/demo-data/humans/*.json .mission-control/humans/
-cp examples/demo-data/tasks/*.json .mission-control/tasks/
-cp examples/demo-data/messages/*.json .mission-control/messages/
+./scripts/init-mission-control.sh --demo
 ```
 
-The demo data uses Matrix-themed agents (Neo, Trinity, etc.) for demonstration.
+This loads Matrix-themed agents (Neo, Trinity, etc.) for demonstration. To switch back to production mode later:
+
+```bash
+./scripts/init-mission-control.sh --production --force
+```
+
+**Important:** Never manually copy demo data. Always use the init script to properly track initialization state.
 
 ---
 
@@ -1427,6 +1430,6 @@ If you just cloned/forked this template for a new user:
 - [ ] **Read the Permission Model** — know what requires human approval
 
 ### Phase 3: Optional
-- [ ] Load demo data to explore: `cp examples/demo-data/agents/*.json .mission-control/agents/`
+- [ ] Load demo data to explore: `./scripts/init-mission-control.sh --demo`
 - [ ] Enable GitHub Pages in repo settings for static dashboard access
 - [ ] Set up Telegram/Slack integration (see Communication & Integrations section)
