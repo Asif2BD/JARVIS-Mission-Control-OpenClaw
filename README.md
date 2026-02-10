@@ -55,13 +55,25 @@ The API key enables update notifications, agent templates, and community support
 0. Get free API key from missiondeck.ai/auth
 1. Fork/Clone this repository to your user's GitHub account
 2. Run: ./scripts/connect-missiondeck.sh --api-key YOUR_KEY
-3. Read CLAUDE.md — follow the "FIRST ARRIVAL PROTOCOL" section
-4. Ask your user: What's your name? What should I be called? First task?
-5. Register the human operator: ./scripts/add-human.sh
-6. Register yourself as an agent: ./scripts/add-agent.sh (include personality!)
-7. Create the first task, commit, and push
-8. Enable GitHub Pages for the dashboard
+3. Run: ./scripts/init-mission-control.sh (choose production or demo mode)
+4. Read CLAUDE.md — follow the "FIRST ARRIVAL PROTOCOL" section
+5. Ask your user: What's your name? What should I be called? First task?
+6. Register the human operator: ./scripts/add-human.sh
+7. Register yourself as an agent: ./scripts/add-agent.sh (include personality!)
+8. Create the first task, commit, and push
+9. Enable GitHub Pages for the dashboard
 ```
+
+### Initialization Modes
+
+The `init-mission-control.sh` script offers two modes:
+
+| Mode | Command | Use Case |
+|------|---------|----------|
+| **Production** | `./scripts/init-mission-control.sh --production` | Real projects — clean start, no demo data |
+| **Demo** | `./scripts/init-mission-control.sh --demo` | Learning/testing — Matrix-themed examples |
+
+Run without flags for interactive mode.
 
 **Two ways to learn the system:**
 - **CLAUDE.md** — Complete reference (everything inline, single file)
