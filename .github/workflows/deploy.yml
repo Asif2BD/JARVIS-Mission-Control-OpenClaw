@@ -5,11 +5,18 @@ on:
     branches: [ main ]
     paths:
       - 'dashboard/**'
-      - '.mission-control/**'
-      - 'examples/demo-data/**'
       - 'index.html'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+
+# IMPORTANT: This workflow deploys STATIC dashboard assets only!
+# User data (.mission-control/) is gitignored and NOT deployed via GitHub Actions.
+#
+# For production deployments with real data:
+#   1. Run locally: ./scripts/safe-deploy.sh
+#   2. Or use the dashboard's API mode to fetch data from your server
+#
+# Demo data is ONLY loaded when explicitly requested via safe-deploy.sh --demo
 
 permissions:
   contents: read
@@ -30,43 +37,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject mission control data into dashboard
+      - name: Prepare dashboard (static assets only)
         run: |
+          echo "📦 Deploying static dashboard assets"
+          echo ""
+          echo "⚠️  NOTE: User data is NOT included in GitHub Actions deployments."
+          echo "    User data is gitignored and lives on your server, not in the repo."
+          echo ""
+          echo "    To deploy with data, run locally:"
+          echo "      ./scripts/safe-deploy.sh"
+          echo ""
+          
+          # Create minimal placeholder to indicate no data
           mkdir -p dashboard/data
-
-          # Check if user has real data in .mission-control/
-          HAS_REAL_DATA=false
-          for dir in agents humans tasks messages; do
-            count=$(find ".mission-control/$dir" -name '*.json' 2>/dev/null | wc -l)
-            if [ "$count" -gt 0 ]; then
-              HAS_REAL_DATA=true
-              break
-            fi
-          done
-
-          if [ "$HAS_REAL_DATA" = true ]; then
-            echo "Found user data in .mission-control/ — using real data"
-            DATA_SOURCE=".mission-control"
-          else
-            echo "No user data found — loading demo data from examples/demo-data/"
-            DATA_SOURCE="examples/demo-data"
-          fi
-
-          # Copy data from the selected source
+          cat > dashboard/data/_deployment_info.json << 'EOF'
+          {
+            "source": "github-actions",
+            "hasUserData": false,
+            "message": "This is a static deployment. Connect to your Mission Control server for live data.",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          EOF
+          
+          # Create empty index files for the dashboard to handle gracefully
           for dir in agents humans tasks queue messages; do
-            if [ -d "$DATA_SOURCE/$dir" ]; then
-              mkdir -p "dashboard/data/$dir"
-              cp "$DATA_SOURCE/$dir/"*.json "dashboard/data/$dir/" 2>/dev/null || true
-              ls "dashboard/data/$dir/" 2>/dev/null | grep '\.json$' | sed 's/\.json$//' > "dashboard/data/$dir/_index.txt" || true
-            fi
+            mkdir -p "dashboard/data/$dir"
+            touch "dashboard/data/$dir/.gitkeep"
+            echo "" > "dashboard/data/$dir/_index.txt"
           done
-
-          # Also copy from .mission-control/ for config and state (always)
-          cp .mission-control/config.yaml dashboard/data/ 2>/dev/null || true
-          cp .mission-control/STATE.md dashboard/data/ 2>/dev/null || true
-
-          echo "Dashboard data injection complete (source: $DATA_SOURCE)"
-          find dashboard/data -type f | head -20
+          
+          echo "✅ Static dashboard prepared"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
