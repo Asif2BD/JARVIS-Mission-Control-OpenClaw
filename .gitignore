@@ -45,3 +45,6 @@ coverage/
 
 # Archive (optional - uncomment to exclude)
 # .mission-control/archive/
+
+# Backups (local only)
+.backups/

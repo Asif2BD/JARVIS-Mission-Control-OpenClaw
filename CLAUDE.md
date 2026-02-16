@@ -15,6 +15,30 @@ For full project context, see these files:
 | `.context/DECISIONS.md` | **All architectural decisions made** |
 | `CHANGELOG.md` | Version history and changes |
 | `README.md` | Project overview for humans |
+| `DEPLOYMENT-RULES.md` | **⚠️ CRITICAL** — Safe update procedures |
+
+---
+
+## ⚠️ DEPLOYMENT SAFETY (READ FIRST)
+
+**Before updating Mission Control code, read `DEPLOYMENT-RULES.md`!**
+
+Quick rules:
+- ❌ **NEVER** use raw `git pull` — it can destroy production data
+- ✅ **ALWAYS** use `./scripts/safe-deploy.sh --pull` instead
+- ✅ **ALWAYS** backup before any operation
+- User data in `.mission-control/` is **NOT in git** — it's sacred production data
+
+```bash
+# Safe update (backs up first, then pulls)
+./scripts/safe-deploy.sh --pull
+
+# Create backup
+./scripts/safe-deploy.sh --backup
+
+# Restore if something went wrong
+./scripts/safe-deploy.sh --restore BACKUP_NAME
+```
 
 ---
 
