@@ -336,3 +336,24 @@ Version 1.0.0 will be released when:
 - [ ] Webhook system is battle-tested
 - [ ] Dashboard is production-ready
 - [ ] Security audit completed
+
+## [0.9.6] - 2026-02-18
+
+### Added
+- **`scripts/mc` — Agent CLI** (inspired by [Clawe](https://github.com/getclawe/clawe))
+  - `mc tasks [--status S] [--assignee id] [--mine]` — list & filter tasks
+  - `mc task:view <id>` — view full task details
+  - `mc task:status <id> <STATUS>` — update task status
+  - `mc task:comment <id> "<text>"` — add a comment
+  - `mc task:create --title "..." [options]` — create new task
+  - `mc task:done <id>` — shortcut to mark done
+  - `mc agent:status <active|busy|idle>` — update your own status
+  - `mc squad` — see all agents + their status
+  - `mc notify "<msg>"` — broadcast notification
+  - `mc deliver "<title>" --path <file>` — register a deliverable
+  - `mc feed` — recent activity log
+  - `mc check` — my pending tasks
+  - Colour-coded output (status, priority, agents)
+  - Auto-detects agent ID from workspace path or hostname
+  - `MC_AGENT_ID` and `MC_SERVER_URL` env var overrides
+  - No external dependencies — Node.js stdlib only
