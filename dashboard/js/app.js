@@ -377,12 +377,12 @@ function renderHumans() {
         const channelIcons = getChannelIcons(human.channels);
 
         return `
-            <div class="entity-row human-row clickable" data-entity-id="${human.id}" onclick="highlightEntityTasks('${human.id}')">
-                <div class="entity-status ${human.status}"></div>
+            <div class="entity-row human-row clickable" data-entity-id="${escapeAttr(human.id)}" onclick="highlightEntityTasks('${escapeAttr(human.id)}')">
+                <div class="entity-status ${escapeAttr(human.status)}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
                     <span class="entity-name">${escapeHtml(human.name)}</span>
-                    <span class="entity-role ${human.role}">${human.role}</span>
+                    <span class="entity-role ${escapeAttr(human.role)}">${escapeHtml(human.role)}</span>
                     ${channelIcons}
                 </div>
                 <span class="entity-tasks">${human.completed_tasks || 0}</span>
@@ -440,8 +440,8 @@ function renderAgents() {
         const channelIcons = getChannelIcons(agent.channels);
 
         return `
-            <div class="entity-row agent-row ${agent.role} clickable" data-entity-id="${agent.id}" onclick="openAgentProfile('${agent.id}')">
-                <div class="entity-status ${agent.status}"></div>
+            <div class="entity-row agent-row ${escapeAttr(agent.role)} clickable" data-entity-id="${escapeAttr(agent.id)}" onclick="openAgentProfile('${escapeAttr(agent.id)}')">
+                <div class="entity-status ${escapeAttr(agent.status)}"></div>
                 ${avatarHtml}
                 <div class="entity-info">
                     <span class="entity-name">${escapeHtml(agent.name)}</span>
@@ -840,6 +840,29 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+/**
+ * Escape a value for use in HTML attributes (onclick, href, etc.)
+ * Prevents XSS through attribute injection
+ */
+function escapeAttr(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/'/g, '&#39;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\\/g, '\\\\');
+}
+
+/**
+ * Sanitize an ID to only allow safe characters
+ */
+function sanitizeId(id) {
+    if (!id) return '';
+    return String(id).replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
 }
 
 function capitalizeFirst(str) {
@@ -1415,10 +1438,10 @@ function renderAttentionItems(container, items) {
         }
 
         return `
-            <div class="attention-item ${colorClass}" onclick="${item.task_id ? `openTaskById('${item.task_id}')` : ''}">
-                <div class="attention-icon">${icon}</div>
+            <div class="attention-item ${escapeAttr(colorClass)}" onclick="${item.task_id ? `openTaskById('${escapeAttr(item.task_id)}')` : ''}">
+                <div class="attention-icon">${escapeHtml(icon)}</div>
                 <div class="attention-content">
-                    <div class="attention-label">${label}</div>
+                    <div class="attention-label">${escapeHtml(label)}</div>
                     <div class="attention-title">${escapeHtml(item.title)}</div>
                     ${item.author ? `<div class="attention-meta">by ${escapeHtml(item.author)}</div>` : ''}
                 </div>
@@ -1657,7 +1680,7 @@ function renderConversationsList(container, threads, agentId) {
             : thread.lastMessage.content;
 
         return `
-            <div class="conversation-item ${thread.unread > 0 ? 'unread' : ''}" onclick="openConversationThread('${thread.threadId}', '${agent.id}', '${escapeHtml(agent.name)}')">
+            <div class="conversation-item ${thread.unread > 0 ? 'unread' : ''}" onclick="openConversationThread('${escapeAttr(thread.threadId)}', '${escapeAttr(agent.id)}', '${escapeAttr(agent.name)}')">
                 ${avatarHtml}
                 <div class="conv-info">
                     <div class="conv-name">${escapeHtml(agent.name)}</div>
@@ -2582,7 +2605,7 @@ function renderCredentialsList() {
                 </div>
             </div>
             <div class="credential-actions">
-                <button class="btn-delete" onclick="deleteCredential('${cred.id}')" title="Delete">
+                <button class="btn-delete" onclick="deleteCredential('${escapeAttr(cred.id)}')" title="Delete">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -2660,7 +2683,7 @@ function renderResourcesList() {
                 </div>
             </div>
             <div class="resource-actions">
-                <button class="btn btn-sm btn-secondary" onclick="quickBookResource('${res.id}')">Book</button>
+                <button class="btn btn-sm btn-secondary" onclick="quickBookResource('${escapeAttr(res.id)}')">Book</button>
             </div>
         </div>
     `).join('');

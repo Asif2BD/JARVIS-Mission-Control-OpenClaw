@@ -30,6 +30,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Security middleware: sanitize route parameters
+app.use((req, res, next) => {
+    // Sanitize all :id parameters to prevent path traversal
+    if (req.params) {
+        for (const key of Object.keys(req.params)) {
+            if (typeof req.params[key] === 'string') {
+                // Allow only safe characters in IDs
+                req.params[key] = req.params[key].replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
+            }
+        }
+    }
+    next();
+});
+
 // Create HTTP server for both Express and WebSocket
 const server = http.createServer(app);
 
@@ -38,6 +52,38 @@ const wss = new WebSocketServer({ server, path: '/ws' });
 
 // Webhook subscriptions
 const webhooks = new Map();
+
+// ============================================
+// SECURITY UTILITIES
+// ============================================
+
+/**
+ * Sanitize an ID parameter to prevent path traversal attacks
+ * Only allows alphanumeric, hyphens, underscores, and dots
+ */
+function sanitizeId(id) {
+    if (!id || typeof id !== 'string') return '';
+    // Remove any path traversal attempts and dangerous characters
+    return id.replace(/[^a-zA-Z0-9\-_\.]/g, '').slice(0, 256);
+}
+
+/**
+ * Sanitize a string for safe logging (prevent log injection)
+ */
+function sanitizeForLog(str) {
+    if (!str || typeof str !== 'string') return '';
+    // Remove newlines and control characters that could inject fake log entries
+    return str.replace(/[\r\n\x00-\x1f\x7f]/g, ' ').slice(0, 500);
+}
+
+/**
+ * Validate that a path stays within the allowed directory
+ */
+function isPathSafe(filePath, baseDir) {
+    const resolvedPath = path.resolve(filePath);
+    const resolvedBase = path.resolve(baseDir);
+    return resolvedPath.startsWith(resolvedBase + path.sep) || resolvedPath === resolvedBase;
+}
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -107,14 +153,19 @@ async function deleteJsonFile(filePath) {
  */
 async function logActivity(actor, action, description) {
     const timestamp = new Date().toISOString();
-    const logEntry = `${timestamp} [${actor}] ${action}: ${description}\n`;
+    // Sanitize inputs to prevent log injection
+    const safeActor = sanitizeForLog(actor);
+    const safeAction = sanitizeForLog(action);
+    const safeDescription = sanitizeForLog(description);
+    
+    const logEntry = `${timestamp} [${safeActor}] ${safeAction}: ${safeDescription}\n`;
     const logPath = path.join(MISSION_CONTROL_DIR, 'logs', 'activity.log');
 
     await fs.mkdir(path.dirname(logPath), { recursive: true });
     await fs.appendFile(logPath, logEntry);
 
     // Broadcast log event
-    broadcast('log', { timestamp, actor, action, description });
+    broadcast('log', { timestamp, actor: safeActor, action: safeAction, description: safeDescription });
 }
 
 // ============================================
