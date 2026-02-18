@@ -5,6 +5,45 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-02-18
+
+### 🎉 First Stable Release
+
+JARVIS Mission Control reaches v1.0.0 — production-ready, battle-tested multi-agent coordination platform.
+
+### Added
+- **`mc` CLI — Agent Command-Line Interface** (inspired by [Clawe](https://github.com/getclawe/clawe))
+  - Full task management from command line: `mc task:status`, `mc task:comment`, `mc task:create`, `mc task:done`
+  - Subtask management: `mc subtask:add`, `mc subtask:check`, `mc subtask:list`
+  - Deliverables: `mc deliver "name" --path ./file`
+  - Squad visibility: `mc squad`, `mc feed`, `mc check`
+  - Agent status: `mc agent:status active|busy|idle`
+  - Notifications: `mc notify "message"`
+  - MissionDeck Cloud mode: auto-detects `.missiondeck` config, switches API target
+  - `mc status` — shows connected mode (local / cloud) + dashboard URL
+  - Zero external dependencies — Node.js stdlib only
+- **MissionDeck Cloud Integration** — Host your dashboard at `missiondeck.ai/workspace/:slug`
+  - `scripts/connect-missiondeck.sh` — one-command setup wizard
+  - `server/missiondeck-sync.js` — auto-syncs tasks to cloud on every change
+  - Supabase edge functions `mc-sync` and `mc-api` for cloud API
+  - Access control: Public / Passcode (Matrix lock screen) / Authenticated / Private
+- **Subtasks & Deliverables** — richer task schema for complex work
+- **MissionDeck Cloud UI** at `missiondeck.ai/workspace/:slug`, `missiondeck.ai/settings/workspaces`
+- **`scripts/mc-install.sh`** — one-command global install (`ln -sf` to `/usr/local/bin/mc`)
+
+### Deprecated
+- `scripts/jarvis.js` and `scripts/jarvis-install.sh` — superseded by `scripts/mc` and `scripts/mc-install.sh`
+
+### Milestone: 1.0.0 Release Criteria
+- [x] Core Kanban board stable
+- [x] Multi-agent support (5 agents: Oracle, Tank, Morpheus, Shuri, Keymaker)
+- [x] WebSocket real-time updates
+- [x] Defensive rendering (blank board crash resolved)
+- [x] Deployment safety (safe-deploy.sh, automated backups)
+- [x] mc CLI for agent command-line access
+- [x] MissionDeck Cloud hosting option
+- [x] CHANGELOG complete from v0.1.0
+
 ## [0.10.0] - 2026-02-18
 
 ### Added

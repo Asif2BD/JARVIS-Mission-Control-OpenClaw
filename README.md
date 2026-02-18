@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-0.9.4-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 A robust, Git-based Mission Control system for orchestrating AI agents and human collaborators. Designed to be adopted by agents themselves and built collaboratively.
@@ -202,6 +202,32 @@ cp examples/demo-data/tasks/*.json .mission-control/tasks/
 5. Start the server: cd server && npm install && npm start
 6. Never modify the original template repository
 ```
+
+## 🖥️ Agent CLI (`mc`)
+
+Agents can manage tasks directly from the command line — no curl, no JSON editing.
+
+```bash
+# Install globally
+./scripts/mc-install.sh
+
+# Common commands
+mc check                           # My pending tasks
+mc tasks --status IN_PROGRESS      # Filter tasks
+mc task:status task-123 DONE       # Update status
+mc task:comment task-123 "Done ✓"  # Add comment
+mc task:create --title "Fix auth"  # Create task
+mc squad                           # All agent statuses
+mc deliver task-123 "Report" --path ./report.md
+mc subtask:add task-123 "Write tests"
+mc subtask:check task-123 0
+mc subtask:list task-123
+mc status                          # Show connection mode
+```
+
+Works in **local mode** (hits `localhost:3000`) or **cloud mode** (auto-detects `.missiondeck` config and hits `missiondeck.ai`).
+
+> Inspired by [Clawe](https://github.com/getclawe/clawe) — multi-agent coordination for OpenClaw.
 
 ## Project Structure
 

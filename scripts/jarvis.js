@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /**
+ * DEPRECATED — Use `mc` instead (scripts/mc). This file is superseded by v1.0.0.
  * JARVIS CLI — Agent command-line interface for JARVIS Mission Control
  * Inspired by clawe (https://github.com/getclawe/clawe)
  *
