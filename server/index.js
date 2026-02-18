@@ -289,7 +289,46 @@ app.post('/api/tasks', async (req, res) => {
     }
 });
 
-// --- FILE DOWNLOADS ---
+// --- FILE LISTING & DOWNLOADS ---
+
+// Directory listing endpoint — GET /api/files?dir=reports
+app.get('/api/files', async (req, res) => {
+    try {
+        const dir = req.query.dir || 'reports';
+        const fullPath = path.join(MISSION_CONTROL_DIR, dir);
+
+        const resolvedPath = path.resolve(fullPath);
+        const resolvedBase = path.resolve(MISSION_CONTROL_DIR);
+        if (!resolvedPath.startsWith(resolvedBase)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const entries = await fs.readdir(fullPath);
+        const files = [];
+        for (const entry of entries) {
+            try {
+                const entryPath = path.join(fullPath, entry);
+                const stat = await fs.stat(entryPath);
+                if (stat.isFile()) {
+                    files.push({
+                        name: entry,
+                        path: `${dir}/${entry}`,
+                        size: stat.size,
+                        modified: stat.mtime,
+                        ext: path.extname(entry).toLowerCase()
+                    });
+                }
+            } catch (e) { /* skip unreadable entries */ }
+        }
+        res.json({ directory: dir, files });
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            res.json({ directory: req.query.dir || 'reports', files: [] });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
+    }
+});
 
 app.get('/api/files/:path(*)', async (req, res) => {
     try {
