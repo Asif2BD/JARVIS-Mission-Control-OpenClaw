@@ -5,6 +5,18 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.5] - 2026-02-18
+
+### Fixed
+- **Dashboard blank board — `undefined.startsWith()` crash in `getCompletedToday()`** — Tasks created with non-standard date field names (`completed` or `completed_at` instead of `updated_at`) caused a silent `TypeError` inside `getCompletedToday()` → `getMetrics()` → `renderMetrics()`, aborting `renderDashboard()` before `renderKanban()` could run. The board appeared completely empty even though the API returned all tasks correctly. Fixed by normalising the date field lookup: `(task.updated_at || task.completed_at || task.completed || '')`.
+
+### Improved
+- **`renderMetrics()` is now crash-isolated** — wrapped in try/catch so a single malformed task field can never abort the entire dashboard render again. Metric counters silently stay at 0 on error; `renderKanban()` always runs.
+- **WebSocket reconnect triggers full data reload** — If the server restarts while the dashboard is open, data now reloads automatically on WebSocket reconnect instead of staying stale/empty.
+- **Refresh button** — Added "Refresh" button next to "+ New Task" to manually force-reload all board data without a full page reload.
+- **Auto-retry on empty board** — If `init()` completes but the board has 0 tasks, an automatic retry fires after 2 seconds (guards against race condition during server restart).
+- **Last-resort recovery** — If `init()` crashes after data is loaded, a fallback attempt to render the dashboard is made so tasks already in memory are not lost.
+
 ## [0.9.4] - 2026-02-18
 
 ### Fixed
