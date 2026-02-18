@@ -103,6 +103,45 @@ If you downloaded the ZIP instead of forking:
 2. Give it to your AI agent with: "Read CLAUDE.md and set up Mission Control for me"
 3. The agent will ask your name, create your profile, and initialize everything
 
+## ☁️ MissionDeck Cloud (No Server Required)
+
+Want your dashboard live on the internet without running a server? **MissionDeck Cloud** syncs your local `.mission-control/` data to a hosted dashboard — no DevOps required.
+
+### One-Liner Setup
+
+```bash
+./scripts/connect-missiondeck.sh
+```
+
+That's it. The wizard will:
+
+1. **Connect** — authenticate with your MissionDeck API key
+2. **Sync** — push your existing tasks and agents to the cloud
+3. **Live URL** — your board is instantly available at `missiondeck.ai/workspace/your-slug`
+
+From that point on, every time a task changes locally the server auto-syncs to the cloud within a few seconds.
+
+### Access Control
+
+You choose who can see your dashboard in **Settings → Workspaces**:
+
+| Mode | Description |
+|------|-------------|
+| **Public** | Anyone with the URL can view |
+| **Passcode** | Share a password with your team |
+| **Authenticated** | MissionDeck account required |
+| **Private** | Only you (the workspace owner) |
+
+### Get Started
+
+1. Sign up for a free API key at **[missiondeck.ai](https://missiondeck.ai)**
+2. Run `./scripts/connect-missiondeck.sh`
+3. Share `missiondeck.ai/workspace/your-slug` with your team
+
+> **No server, no port-forwarding, no cloud bills.** Your tasks stay local; MissionDeck just mirrors them.
+
+---
+
 ## Overview
 
 Mission Control is a **local-first** task management and agent orchestration system. Data is stored as JSON files that can be version-controlled with Git. A lightweight Node.js server provides real-time dashboard updates and webhook notifications for agents.
