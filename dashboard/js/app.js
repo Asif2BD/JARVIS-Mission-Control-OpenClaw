@@ -2244,10 +2244,12 @@ function renderTaskAttachments(task) {
     }
     
     container.innerHTML = task.attachments.map(att => {
-        const pathParts = att.path.split('/');
-        const filename = pathParts[pathParts.length - 1];
-        const dir = pathParts.slice(0, -1).join('/') || 'reports';
-        const ext = filename.split('.').pop().toLowerCase();
+        // Support both path-based and url-based attachments
+        const resolvedPath = att.path || att.url || '';
+        const pathParts = resolvedPath.split('/');
+        const filename = att.name || pathParts[pathParts.length - 1] || 'file';
+        const dir = att.path ? pathParts.slice(0, -1).join('/') || 'reports' : 'reports';
+        const downloadTarget = att.path || resolvedPath;
         
         return `
             <div class="attachment-item">
@@ -2257,11 +2259,11 @@ function renderTaskAttachments(task) {
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
                 </div>
-                <div class="attachment-info" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" style="cursor: pointer; flex: 1;">
+                <div class="attachment-info" style="cursor: pointer; flex: 1;" onclick="${att.url ? `window.open('${escapeHtml(att.url)}', '_blank')` : `openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')`}">
                     <div class="attachment-name">${escapeHtml(filename)}</div>
                     ${att.description ? `<div class="attachment-desc">${escapeHtml(att.description)}</div>` : ''}
                 </div>
-                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); downloadAttachment('${escapeHtml(att.path)}', '${escapeHtml(filename)}');" style="margin-left: auto;" title="Download">
+                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); ${att.url ? `window.open('${escapeHtml(att.url)}', '_blank')` : `downloadAttachment('${escapeHtml(downloadTarget)}', '${escapeHtml(filename)}')`};" style="margin-left: auto;" title="Download">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
