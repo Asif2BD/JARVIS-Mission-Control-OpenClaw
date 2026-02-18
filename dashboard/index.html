@@ -29,7 +29,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v0.9.4</span>
+            <span class="version">v0.9.5</span>
         </div>
         <div class="header-right">
             <div class="metrics">
@@ -50,6 +50,13 @@
                     <span class="metric-label">Agents</span>
                 </div>
             </div>
+            <button class="btn btn-secondary" id="refresh-btn" onclick="forceRefreshBoard()" title="Reload all tasks from server">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+                Refresh
+            </button>
             <button class="btn btn-primary" onclick="openCreateTaskModal()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>

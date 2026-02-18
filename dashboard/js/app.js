@@ -273,12 +273,17 @@ function renderDashboard() {
  * Render metrics in the header
  */
 function renderMetrics() {
-    const metrics = window.missionControlData.getMetrics();
+    try {
+        const metrics = window.missionControlData.getMetrics();
 
-    document.getElementById('total-tasks').textContent = metrics.totalTasks;
-    document.getElementById('in-progress').textContent = metrics.tasksByStatus.IN_PROGRESS || 0;
-    document.getElementById('completed-today').textContent = metrics.tasksByStatus.DONE || 0;
-    document.getElementById('active-agents').textContent = metrics.activeAgents;
+        document.getElementById('total-tasks').textContent = metrics.totalTasks;
+        document.getElementById('in-progress').textContent = metrics.tasksByStatus.IN_PROGRESS || 0;
+        document.getElementById('completed-today').textContent = metrics.tasksByStatus.DONE || 0;
+        document.getElementById('active-agents').textContent = metrics.activeAgents;
+    } catch (e) {
+        console.error('renderMetrics error (non-fatal):', e);
+        // Don't crash renderDashboard — just leave metric counters at 0
+    }
 }
 
 /**
@@ -2375,8 +2380,47 @@ document.addEventListener('DOMContentLoaded', () => {
         initDragAndDrop();
         // Check URL for task ID or agent ID after data is loaded
         checkUrlForTask();
+        // If board loaded empty (server restart race), auto-retry after 2s
+        setTimeout(() => {
+            const total = window.missionControlData && window.missionControlData.tasks
+                ? window.missionControlData.tasks.length : 0;
+            if (total === 0) {
+                console.log('Board empty after init — auto-retrying data load...');
+                forceRefreshBoard();
+            }
+        }, 2000);
+    }).catch(err => {
+        console.error('init() crashed:', err);
+        // Last-resort: try rendering with whatever data loaded
+        if (window.missionControlData && window.missionControlData.tasks.length > 0) {
+            try { renderDashboard(); } catch(e) { /* ignore */ }
+        }
     });
 });
+
+/**
+ * Force-refresh all board data from the API and re-render
+ */
+async function forceRefreshBoard() {
+    const btn = document.getElementById('refresh-btn');
+    if (btn) btn.disabled = true;
+    try {
+        if (window.missionControlData && window.MissionControlAPI) {
+            const loaded = await window.missionControlData.loadFromAPI();
+            if (loaded) {
+                renderDashboard();
+                initDragAndDrop();
+                showToast('success', 'Refreshed', 'Board data reloaded from server');
+            } else {
+                showToast('error', 'Refresh Failed', 'Could not reach server. Check connection.');
+            }
+        }
+    } catch (e) {
+        console.error('forceRefreshBoard error:', e);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
 
 // ============================================
 // RESOURCE MANAGEMENT
