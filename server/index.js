@@ -412,7 +412,7 @@ app.patch('/api/tasks/:id', async (req, res) => {
         }
 
         // Apply partial updates (only allowed fields)
-        const allowedFields = ['status', 'assignee', 'priority', 'title', 'description'];
+        const allowedFields = ['status', 'assignee', 'priority', 'title', 'description', 'labels', 'subtasks', 'deliverables'];
         const updates = req.body;
         const changes = [];
 
@@ -455,6 +455,201 @@ app.delete('/api/tasks/:id', async (req, res) => {
         triggerWebhooks('task.deleted', { id: req.params.id });
 
         res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- TASK COMMENTS (CLI support) ---
+
+app.post('/api/tasks/:id/comments', async (req, res) => {
+    try {
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${req.params.id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { content, author, type } = req.body;
+        if (!content) {
+            return res.status(400).json({ error: 'Comment content required' });
+        }
+
+        const comment = {
+            id: `comment-${Date.now()}`,
+            author: author || req.headers['x-agent-id'] || 'system',
+            content: content,
+            timestamp: new Date().toISOString(),
+            type: type || 'comment'
+        };
+
+        task.comments = task.comments || [];
+        task.comments.push(comment);
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(comment.author, 'COMMENT', `Task ${task.id}: ${content.substring(0, 50)}`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.comment', { task_id: task.id, comment });
+
+        res.status(201).json(comment);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- TASK SUBTASKS (CLI support) ---
+
+app.post('/api/tasks/:id/subtasks', async (req, res) => {
+    try {
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${req.params.id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { text } = req.body;
+        if (!text) {
+            return res.status(400).json({ error: 'Subtask text required' });
+        }
+
+        const subtask = {
+            text: text,
+            done: false,
+            added_at: new Date().toISOString(),
+            added_by: req.headers['x-agent-id'] || 'system'
+        };
+
+        task.subtasks = task.subtasks || [];
+        task.subtasks.push(subtask);
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(subtask.added_by, 'SUBTASK', `Added to ${task.id}: ${text}`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.subtask', { task_id: task.id, subtask, index: task.subtasks.length - 1 });
+
+        res.status(201).json({ subtask, index: task.subtasks.length - 1 });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.patch('/api/tasks/:id/subtasks/:index', async (req, res) => {
+    try {
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${req.params.id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const index = parseInt(req.params.index, 10);
+        if (!task.subtasks || index < 0 || index >= task.subtasks.length) {
+            return res.status(404).json({ error: 'Subtask not found' });
+        }
+
+        // Toggle done status
+        task.subtasks[index].done = !task.subtasks[index].done;
+        task.subtasks[index].toggled_at = new Date().toISOString();
+        task.subtasks[index].toggled_by = req.headers['x-agent-id'] || 'system';
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+
+        const status = task.subtasks[index].done ? 'completed' : 'uncompleted';
+        await logActivity(task.subtasks[index].toggled_by, 'SUBTASK', `${status} in ${task.id}: ${task.subtasks[index].text}`);
+
+        broadcast('task.updated', task);
+
+        res.json(task.subtasks[index]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- TASK DELIVERABLES (CLI support) ---
+
+app.post('/api/tasks/:id/deliverables', async (req, res) => {
+    try {
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${req.params.id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { name, url, path: filePath, type } = req.body;
+        if (!name) {
+            return res.status(400).json({ error: 'Deliverable name required' });
+        }
+        if (!url && !filePath) {
+            return res.status(400).json({ error: 'Deliverable must have url or path' });
+        }
+
+        const deliverable = {
+            id: `del-${Date.now()}`,
+            name: name,
+            url: url || null,
+            path: filePath || null,
+            type: type || (url ? 'url' : 'file'),
+            added_at: new Date().toISOString(),
+            added_by: req.headers['x-agent-id'] || 'system'
+        };
+
+        task.deliverables = task.deliverables || [];
+        task.deliverables.push(deliverable);
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(deliverable.added_by, 'DELIVER', `Added to ${task.id}: ${name}`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.deliverable', { task_id: task.id, deliverable });
+
+        res.status(201).json(deliverable);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- ACTIVITY FEED (CLI support) ---
+
+app.get('/api/activity', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit, 10) || 50;
+        const logPath = path.join(MISSION_CONTROL_DIR, 'logs', 'activity.log');
+        
+        let entries = [];
+        try {
+            const content = await fs.readFile(logPath, 'utf-8');
+            const lines = content.trim().split('\n').filter(l => l);
+            entries = lines.slice(-limit).reverse(); // Most recent first
+        } catch (e) {
+            // No log file yet
+        }
+
+        // Also get recent task updates for richer activity
+        const tasks = await readJsonDirectory('tasks');
+        const recentTasks = tasks
+            .filter(t => t.updated_at)
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .slice(0, 10);
+
+        res.json({ 
+            entries,
+            recent_tasks: recentTasks.map(t => ({
+                id: t.id,
+                title: t.title,
+                status: t.status,
+                assignee: t.assignee,
+                updated_at: t.updated_at
+            }))
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

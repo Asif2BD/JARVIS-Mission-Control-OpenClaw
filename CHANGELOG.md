@@ -5,6 +5,34 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-02-18
+
+### Added
+- **Mission Control CLI (`mc`)** — Command-line interface for AI agents to manage tasks without the dashboard. Agents can now update task status, add comments, manage subtasks, and register deliverables directly from terminal.
+- **Subtasks** — Tasks now support nested subtask checklists. Break down complex tasks into smaller actionable items with completion tracking.
+- **Deliverables** — Track work outputs (PRs, files, URLs) attached to tasks. Register what was produced when completing a task.
+- **Activity Feed API** — `GET /api/activity` returns unified timeline of all task changes, comments, and agent actions.
+- **Task Comment API** — `POST /api/tasks/:id/comments` allows adding comments via API (CLI support).
+- **Task Subtask APIs** — `POST /api/tasks/:id/subtasks` and `PATCH /api/tasks/:id/subtasks/:index` for subtask management.
+- **Task Deliverable API** — `POST /api/tasks/:id/deliverables` for registering deliverables.
+
+### CLI Commands
+```bash
+mc tasks                    # List tasks
+mc tasks --mine             # My tasks only
+mc task <id>                # View task details
+mc task:status <id> <status># Update status
+mc task:comment <id> "msg"  # Add comment
+mc subtask:add <id> "text"  # Add subtask
+mc subtask:check <id> 0     # Toggle subtask
+mc deliver <id> "PR" --url  # Add deliverable
+mc activity                 # View feed
+mc squad                    # View agents
+```
+
+### Changed
+- **PATCH /api/tasks/:id** — Now accepts `labels`, `subtasks`, and `deliverables` fields.
+
 ## [0.9.5] - 2026-02-18
 
 ### Fixed
