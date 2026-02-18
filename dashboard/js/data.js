@@ -1100,6 +1100,18 @@ class MissionControlData {
                 initDragAndDrop();
             }
         });
+
+        // Refresh data on WebSocket reconnect (handles server restart / missed initial load)
+        window.MissionControlAPI.on('ws.reconnected', async () => {
+            console.log('WebSocket reconnected — refreshing data...');
+            const loaded = await this.loadFromAPI();
+            if (loaded && typeof renderDashboard === 'function') {
+                renderDashboard();
+            }
+            if (typeof initDragAndDrop === 'function') {
+                initDragAndDrop();
+            }
+        });
     }
 
     /**
@@ -1401,7 +1413,7 @@ class MissionControlData {
         const today = new Date().toISOString().split('T')[0];
         return this.tasks.filter(task =>
             task.status === 'DONE' &&
-            task.updated_at.startsWith(today)
+            (task.updated_at || task.completed_at || task.completed || '').startsWith(today)
         ).length;
     }
 

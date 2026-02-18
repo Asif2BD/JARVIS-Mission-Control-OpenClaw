@@ -388,6 +388,8 @@ const MissionControlAPI = {
                 console.log('WebSocket connected');
                 this.wsReconnectAttempts = 0;
                 this.emit('ws.connected');
+                // Refresh data on (re)connect in case initial load missed data
+                this.emit('ws.reconnected');
             };
 
             this.ws.onclose = () => {
