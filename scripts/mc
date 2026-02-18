@@ -18,6 +18,10 @@
  *   mc squad                       (show all agents + statuses)
  *   mc feed                        (recent activity)
  *   mc check                       (my pending tasks)
+ *   mc status                      (show connection mode + dashboard URL)
+ *   mc subtask:add <id> "<text>"   (add subtask to task)
+ *   mc subtask:check <id> <index>  (toggle subtask done at index)
+ *   mc subtask:list <id>           (list subtasks with checkboxes)
  */
 
 const http = require('http');
@@ -40,10 +44,34 @@ function detectAgentId() {
   return os.hostname().split('-')[0].toLowerCase();
 }
 
+// ── MissionDeck Cloud config ─────────────────────────────────────────────
+function loadMissionDeckConfig() {
+  const mcDir = path.resolve(__dirname, '..');
+  const envFile = path.join(mcDir, '.missiondeck');
+  if (fs.existsSync(envFile)) {
+    fs.readFileSync(envFile, 'utf8').split('\n').forEach(line => {
+      const eq = line.indexOf('=');
+      if (eq > 0 && !line.startsWith('#')) {
+        const k = line.slice(0, eq).trim();
+        const v = line.slice(eq + 1).trim();
+        if (k && !process.env[k]) process.env[k] = v;
+      }
+    });
+  }
+  const apiKey = process.env.MISSIONDECK_API_KEY;
+  const slug = process.env.MISSIONDECK_SLUG;
+  const base = process.env.MISSIONDECK_URL || 'https://missiondeck.ai';
+  if (apiKey && slug) {
+    return { mode: 'cloud', baseUrl: `${base}/functions/v1/mc-api/${slug}`, headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, dashboardUrl: `${base}/workspace/${slug}` };
+  }
+  return { mode: 'local', baseUrl: process.env.MC_SERVER_URL || SERVER_URL, headers: { 'Content-Type': 'application/json' }, dashboardUrl: SERVER_URL };
+}
+const CONFIG = loadMissionDeckConfig();
+
 // ── HTTP helper ─────────────────────────────────────────────────────────────
 function request(method, urlPath, body) {
   return new Promise((resolve, reject) => {
-    const url = new URL(SERVER_URL + urlPath);
+    const url = new URL(CONFIG.baseUrl + urlPath);
     const lib = url.protocol === 'https:' ? https : http;
     const data = body ? JSON.stringify(body) : null;
 
@@ -53,7 +81,7 @@ function request(method, urlPath, body) {
       path: url.pathname + url.search,
       method,
       headers: {
-        'Content-Type': 'application/json',
+        ...CONFIG.headers,
         ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
       }
     }, (res) => {
@@ -443,6 +471,105 @@ async function cmdCheck(args) {
   }
 }
 
+async function cmdStatus(_args) {
+  if (CONFIG.mode === 'cloud') {
+    const slug = process.env.MISSIONDECK_SLUG || '?';
+    let taskCount = '?';
+    try {
+      const res = await GET('/api/tasks');
+      if (res.status === 200 && Array.isArray(res.body)) taskCount = res.body.length;
+    } catch (_) {}
+    console.log(`\n${C.bold}Mission Control${C.reset}\n`);
+    console.log(`  Mode:      ${C.cyan}☁️  MissionDeck Cloud${C.reset}`);
+    console.log(`  Workspace: ${C.blue}${CONFIG.dashboardUrl}${C.reset}`);
+    console.log(`  Tasks:     ${taskCount} total`);
+    console.log(`  Slug:      ${slug}`);
+  } else {
+    let taskCount = '?';
+    try {
+      const res = await GET('/api/tasks');
+      if (res.status === 200 && Array.isArray(res.body)) taskCount = res.body.length;
+    } catch (_) {}
+    console.log(`\n${C.bold}Mission Control${C.reset}\n`);
+    console.log(`  Mode:      ${C.yellow}🖥️  Local${C.reset}`);
+    console.log(`  Dashboard: ${C.blue}${CONFIG.dashboardUrl}${C.reset}`);
+    console.log(`  Tasks:     ${taskCount} total`);
+  }
+  console.log('');
+}
+
+// ── Subtask helpers ───────────────────────────────────────────────────────────
+function findTaskFile(idOrSuffix) {
+  const tasksDir = path.join(__dirname, '..', '.mission-control', 'tasks');
+  if (!fs.existsSync(tasksDir)) return null;
+  // Exact match first
+  const exact = path.join(tasksDir, `${idOrSuffix}.json`);
+  if (fs.existsSync(exact)) return exact;
+  // Suffix match
+  const files = fs.readdirSync(tasksDir).filter(f => f.endsWith('.json'));
+  const match = files.find(f => f.replace('.json','').endsWith(idOrSuffix));
+  return match ? path.join(tasksDir, match) : null;
+}
+
+async function cmdSubtaskAdd(args) {
+  const id = args[0];
+  const text = args.slice(1).join(' ').replace(/^["']|["']$/g, '');
+  if (!id || !text) {
+    console.error('Usage: mc subtask:add <task_id> "<description>"'); process.exit(1);
+  }
+  const taskFile = findTaskFile(id);
+  if (!taskFile) { console.error(`Task not found: ${id}`); process.exit(1); }
+  const task = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
+  if (!Array.isArray(task.subtasks)) task.subtasks = [];
+  task.subtasks.push({ text, done: false });
+  task.updated_at = timestamp();
+  fs.writeFileSync(taskFile, JSON.stringify(task, null, 2));
+  const idx = task.subtasks.length - 1;
+  console.log(`${C.green}✓${C.reset} Subtask [${idx}] added to ${C.dim}${task.id}${C.reset}`);
+  console.log(`  ${C.dim}☐${C.reset} ${text}`);
+}
+
+async function cmdSubtaskCheck(args) {
+  const id = args[0];
+  const index = parseInt(args[1], 10);
+  if (!id || isNaN(index)) {
+    console.error('Usage: mc subtask:check <task_id> <index>'); process.exit(1);
+  }
+  const taskFile = findTaskFile(id);
+  if (!taskFile) { console.error(`Task not found: ${id}`); process.exit(1); }
+  const task = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
+  if (!Array.isArray(task.subtasks) || !task.subtasks[index]) {
+    console.error(`Subtask index ${index} not found (task has ${(task.subtasks||[]).length} subtasks)`);
+    process.exit(1);
+  }
+  task.subtasks[index].done = !task.subtasks[index].done;
+  task.updated_at = timestamp();
+  fs.writeFileSync(taskFile, JSON.stringify(task, null, 2));
+  const sub = task.subtasks[index];
+  const mark = sub.done ? `${C.green}☑${C.reset}` : `${C.dim}☐${C.reset}`;
+  console.log(`${C.green}✓${C.reset} Subtask [${index}] → ${sub.done ? 'done' : 'undone'}`);
+  console.log(`  ${mark} ${sub.text}`);
+}
+
+async function cmdSubtaskList(args) {
+  const id = args[0];
+  if (!id) { console.error('Usage: mc subtask:list <task_id>'); process.exit(1); }
+  const taskFile = findTaskFile(id);
+  if (!taskFile) { console.error(`Task not found: ${id}`); process.exit(1); }
+  const task = JSON.parse(fs.readFileSync(taskFile, 'utf8'));
+  const subtasks = task.subtasks || [];
+  if (!subtasks.length) {
+    console.log(`${C.dim}No subtasks for ${task.id}${C.reset}`); return;
+  }
+  const done = subtasks.filter(s => s.done).length;
+  console.log(`\n${C.bold}Subtasks${C.reset} — ${task.title} (${done}/${subtasks.length} done)\n`);
+  subtasks.forEach((s, i) => {
+    const mark = s.done ? `${C.green}☑${C.reset}` : `${C.dim}☐${C.reset}`;
+    console.log(`  [${i}] ${mark}  ${s.done ? C.dim : ''}${s.text}${C.reset}`);
+  });
+  console.log('');
+}
+
 function printHelp() {
   console.log(`
 ${C.bold}mc${C.reset} — Mission Control CLI for AI Agents
@@ -460,15 +587,23 @@ ${C.bold}Agent Commands:${C.reset}
   mc agent:status <active|busy|idle|offline>
   mc squad
 
+${C.bold}Subtask Commands:${C.reset}
+  mc subtask:add <id> "<description>"
+  mc subtask:check <id> <index>
+  mc subtask:list <id>
+
 ${C.bold}Team Commands:${C.reset}
   mc notify "<message>"
   mc deliver "<title>" --path <file>
   mc feed
   mc check
+  mc status
 
 ${C.bold}Environment:${C.reset}
-  MC_SERVER_URL   Server URL (default: http://localhost:3000)
-  MC_AGENT_ID     Your agent ID (default: auto-detected)
+  MC_SERVER_URL         Server URL (default: http://localhost:3000)
+  MC_AGENT_ID           Your agent ID (default: auto-detected)
+  MISSIONDECK_API_KEY   MissionDeck Cloud API key (auto-loaded from .missiondeck)
+  MISSIONDECK_SLUG      Your workspace slug
 
 ${C.bold}Examples:${C.reset}
   mc check
@@ -484,21 +619,25 @@ ${C.bold}Examples:${C.reset}
 const [,, cmd, ...args] = process.argv;
 
 const commands = {
-  'tasks':         cmdTasks,
-  'task:view':     cmdTaskView,
-  'task:status':   cmdTaskStatus,
-  'task:comment':  cmdTaskComment,
-  'task:create':   cmdTaskCreate,
-  'task:done':     cmdTaskDone,
-  'agent:status':  cmdAgentStatus,
-  'notify':        cmdNotify,
-  'deliver':       cmdDeliver,
-  'squad':         cmdSquad,
-  'feed':          cmdFeed,
-  'check':         cmdCheck,
-  'help':          async () => printHelp(),
-  '--help':        async () => printHelp(),
-  '-h':            async () => printHelp(),
+  'tasks':          cmdTasks,
+  'task:view':      cmdTaskView,
+  'task:status':    cmdTaskStatus,
+  'task:comment':   cmdTaskComment,
+  'task:create':    cmdTaskCreate,
+  'task:done':      cmdTaskDone,
+  'agent:status':   cmdAgentStatus,
+  'notify':         cmdNotify,
+  'deliver':        cmdDeliver,
+  'squad':          cmdSquad,
+  'feed':           cmdFeed,
+  'check':          cmdCheck,
+  'status':         cmdStatus,
+  'subtask:add':    cmdSubtaskAdd,
+  'subtask:check':  cmdSubtaskCheck,
+  'subtask:list':   cmdSubtaskList,
+  'help':           async () => printHelp(),
+  '--help':         async () => printHelp(),
+  '-h':             async () => printHelp(),
 };
 
 if (!cmd || !commands[cmd]) {

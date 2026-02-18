@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# DEPRECATED — Use scripts/mc-install.sh instead. Superseded by v1.0.0 mc CLI.
 # jarvis-install.sh — Install jarvis CLI globally via symlink
 # Run from any directory: bash /path/to/scripts/jarvis-install.sh
 
