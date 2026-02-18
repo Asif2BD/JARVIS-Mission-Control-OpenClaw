@@ -36,11 +36,17 @@ const AGENT_ID   = process.env.MC_AGENT_ID   || detectAgentId();
 const TELEGRAM_CHAT = process.env.MC_TELEGRAM_CHAT || 'TELEGRAM_CHAT_ID';
 
 function detectAgentId() {
-  // Try to detect from workspace path
+  // 1. Check .mc-agent file in cwd (for agents whose workspace is root-level)
+  const mcAgentFile = path.join(process.cwd(), '.mc-agent');
+  if (fs.existsSync(mcAgentFile)) {
+    const id = fs.readFileSync(mcAgentFile, 'utf8').trim();
+    if (id) return id;
+  }
+  // 2. Try to detect from workspace path (e.g. /agents/morpheus/)
   const cwd = process.cwd();
   const match = cwd.match(/agents\/([^/]+)/);
   if (match) return match[1];
-  // Fall back to hostname
+  // 3. Fall back to hostname
   return os.hostname().split('-')[0].toLowerCase();
 }
 
