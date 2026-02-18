@@ -5,6 +5,34 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-02-18
+
+### Added
+- **Mission Control CLI (`mc`)** — Command-line interface for AI agents to manage tasks without the dashboard. Agents can now update task status, add comments, manage subtasks, and register deliverables directly from terminal.
+- **Subtasks** — Tasks now support nested subtask checklists. Break down complex tasks into smaller actionable items with completion tracking.
+- **Deliverables** — Track work outputs (PRs, files, URLs) attached to tasks. Register what was produced when completing a task.
+- **Activity Feed API** — `GET /api/activity` returns unified timeline of all task changes, comments, and agent actions.
+- **Task Comment API** — `POST /api/tasks/:id/comments` allows adding comments via API (CLI support).
+- **Task Subtask APIs** — `POST /api/tasks/:id/subtasks` and `PATCH /api/tasks/:id/subtasks/:index` for subtask management.
+- **Task Deliverable API** — `POST /api/tasks/:id/deliverables` for registering deliverables.
+
+### CLI Commands
+```bash
+mc tasks                    # List tasks
+mc tasks --mine             # My tasks only
+mc task <id>                # View task details
+mc task:status <id> <status># Update status
+mc task:comment <id> "msg"  # Add comment
+mc subtask:add <id> "text"  # Add subtask
+mc subtask:check <id> 0     # Toggle subtask
+mc deliver <id> "PR" --url  # Add deliverable
+mc activity                 # View feed
+mc squad                    # View agents
+```
+
+### Changed
+- **PATCH /api/tasks/:id** — Now accepts `labels`, `subtasks`, and `deliverables` fields.
+
 ## [0.9.5] - 2026-02-18
 
 ### Fixed
@@ -336,3 +364,24 @@ Version 1.0.0 will be released when:
 - [ ] Webhook system is battle-tested
 - [ ] Dashboard is production-ready
 - [ ] Security audit completed
+
+## [0.9.6] - 2026-02-18
+
+### Added
+- **`scripts/mc` — Agent CLI** (inspired by [Clawe](https://github.com/getclawe/clawe))
+  - `mc tasks [--status S] [--assignee id] [--mine]` — list & filter tasks
+  - `mc task:view <id>` — view full task details
+  - `mc task:status <id> <STATUS>` — update task status
+  - `mc task:comment <id> "<text>"` — add a comment
+  - `mc task:create --title "..." [options]` — create new task
+  - `mc task:done <id>` — shortcut to mark done
+  - `mc agent:status <active|busy|idle>` — update your own status
+  - `mc squad` — see all agents + their status
+  - `mc notify "<msg>"` — broadcast notification
+  - `mc deliver "<title>" --path <file>` — register a deliverable
+  - `mc feed` — recent activity log
+  - `mc check` — my pending tasks
+  - Colour-coded output (status, priority, agents)
+  - Auto-detects agent ID from workspace path or hostname
+  - `MC_AGENT_ID` and `MC_SERVER_URL` env var overrides
+  - No external dependencies — Node.js stdlib only

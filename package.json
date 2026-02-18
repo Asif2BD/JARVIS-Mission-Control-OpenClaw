@@ -1,0 +1,17 @@
+{
+  "name": "jarvis-mission-control",
+  "version": "1.0.0",
+  "description": "JARVIS Mission Control — agent task management system with CLI",
+  "bin": {
+    "jarvis": "./scripts/jarvis.js"
+  },
+  "scripts": {
+    "jarvis": "node ./scripts/jarvis.js",
+    "server": "cd server && node index.js",
+    "install-cli": "bash ./scripts/jarvis-install.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

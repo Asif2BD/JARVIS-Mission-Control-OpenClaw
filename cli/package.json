@@ -1,0 +1,18 @@
+{
+  "name": "mc-cli",
+  "version": "1.0.0",
+  "description": "Mission Control CLI for AI agents",
+  "main": "mc.js",
+  "bin": {
+    "mc": "./mc.js"
+  },
+  "scripts": {
+    "start": "node mc.js"
+  },
+  "keywords": ["mission-control", "cli", "ai-agents", "openclaw"],
+  "author": "Matrix Zion",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

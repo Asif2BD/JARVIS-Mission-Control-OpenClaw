@@ -1,0 +1,513 @@
+#!/usr/bin/env node
+/**
+ * mc — Mission Control CLI for AI Agents
+ *
+ * Inspired by Clawe (https://github.com/getclawe/clawe)
+ * Built for JARVIS Mission Control (https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw)
+ *
+ * Usage:
+ *   mc tasks [--status <status>] [--assignee <id>]
+ *   mc task:view <id>
+ *   mc task:status <id> <status>
+ *   mc task:comment <id> "<text>"
+ *   mc task:create --title "..." [--assignee <id>] [--priority <p>] [--labels <a,b>]
+ *   mc task:done <id>
+ *   mc agent:status <status>       (active|busy|idle)
+ *   mc notify "<message>"          (send notification to humans/Telegram)
+ *   mc deliver "<title>" --path <file>
+ *   mc squad                       (show all agents + statuses)
+ *   mc feed                        (recent activity)
+ *   mc check                       (my pending tasks)
+ */
+
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+// ── Config ─────────────────────────────────────────────────────────────────
+const SERVER_URL = process.env.MC_SERVER_URL || 'http://localhost:3000';
+const AGENT_ID   = process.env.MC_AGENT_ID   || detectAgentId();
+const TELEGRAM_CHAT = process.env.MC_TELEGRAM_CHAT || 'TELEGRAM_CHAT_ID';
+
+function detectAgentId() {
+  // Try to detect from workspace path
+  const cwd = process.cwd();
+  const match = cwd.match(/agents\/([^/]+)/);
+  if (match) return match[1];
+  // Fall back to hostname
+  return os.hostname().split('-')[0].toLowerCase();
+}
+
+// ── HTTP helper ─────────────────────────────────────────────────────────────
+function request(method, urlPath, body) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(SERVER_URL + urlPath);
+    const lib = url.protocol === 'https:' ? https : http;
+    const data = body ? JSON.stringify(body) : null;
+
+    const req = lib.request({
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      path: url.pathname + url.search,
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {})
+      }
+    }, (res) => {
+      let raw = '';
+      res.on('data', d => raw += d);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
+        catch { resolve({ status: res.statusCode, body: raw }); }
+      });
+    });
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
+}
+
+const GET    = (p)      => request('GET',    p, null);
+const POST   = (p, b)   => request('POST',   p, b);
+const PATCH  = (p, b)   => request('PATCH',  p, b);
+const PUT    = (p, b)   => request('PUT',    p, b);
+
+// ── Colours ─────────────────────────────────────────────────────────────────
+const C = {
+  reset: '\x1b[0m',  bold: '\x1b[1m',  dim: '\x1b[2m',
+  red:   '\x1b[31m', green: '\x1b[32m', yellow: '\x1b[33m',
+  blue:  '\x1b[34m', cyan:  '\x1b[36m', white: '\x1b[37m',
+  magenta: '\x1b[35m'
+};
+
+function colorStatus(s) {
+  const map = {
+    INBOX: C.dim, ASSIGNED: C.blue, IN_PROGRESS: C.yellow,
+    REVIEW: C.magenta, DONE: C.green, BLOCKED: C.red,
+    TODO: C.cyan, pending: C.dim, complete: C.green, done: C.green
+  };
+  return (map[s] || '') + s + C.reset;
+}
+
+function colorPriority(p) {
+  const map = { critical: C.red, high: C.yellow, medium: C.cyan, low: C.dim };
+  return (map[p] || '') + (p || 'medium') + C.reset;
+}
+
+function truncate(str, n) {
+  if (!str) return '';
+  return str.length > n ? str.slice(0, n - 1) + '…' : str;
+}
+
+function timestamp() {
+  return new Date().toISOString();
+}
+
+// ── Commands ─────────────────────────────────────────────────────────────────
+
+async function cmdTasks(args) {
+  // Parse flags
+  let filterStatus = null, filterAssignee = null;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--status'   && args[i+1]) { filterStatus   = args[++i]; }
+    if (args[i] === '--assignee' && args[i+1]) { filterAssignee = args[++i]; }
+    if (args[i] === '--mine')                  { filterAssignee = AGENT_ID; }
+  }
+
+  const res = await GET('/api/tasks');
+  if (res.status !== 200) { console.error('Error fetching tasks:', res.body); process.exit(1); }
+
+  let tasks = res.body;
+  if (filterStatus)   tasks = tasks.filter(t => t.status === filterStatus);
+  if (filterAssignee) tasks = tasks.filter(t => t.assignee === filterAssignee ||
+    t.assignee === `agent-${filterAssignee}`);
+
+  if (!tasks.length) {
+    console.log(C.dim + 'No tasks found.' + C.reset); return;
+  }
+
+  console.log(`\n${C.bold}Tasks${filterStatus ? ` [${filterStatus}]` : ''}${filterAssignee ? ` → ${filterAssignee}` : ''}${C.reset} (${tasks.length})\n`);
+  const STATUSES = ['INBOX','ASSIGNED','IN_PROGRESS','REVIEW','DONE','BLOCKED','TODO','pending','complete','done'];
+  tasks.sort((a,b) => STATUSES.indexOf(a.status) - STATUSES.indexOf(b.status));
+
+  for (const t of tasks) {
+    const assignee = t.assignee ? C.cyan + t.assignee + C.reset : C.dim + 'unassigned' + C.reset;
+    console.log(
+      `  ${C.dim}${t.id.slice(-16)}${C.reset}  ` +
+      `${colorStatus(t.status).padEnd(20)}  ` +
+      `${colorPriority(t.priority || 'medium').padEnd(16)}  ` +
+      `${assignee.padEnd(30)}  ` +
+      `${truncate(t.title, 55)}`
+    );
+  }
+  console.log('');
+}
+
+async function cmdTaskView(args) {
+  const id = args[0];
+  if (!id) { console.error('Usage: mc task:view <id>'); process.exit(1); }
+
+  const res = await GET(`/api/tasks/${id}`);
+  if (res.status !== 200) {
+    // Fallback: get all and find
+    const all = await GET('/api/tasks');
+    const task = all.body.find(t => t.id === id || t.id.endsWith(id));
+    if (!task) { console.error(`Task not found: ${id}`); process.exit(1); }
+    printTask(task); return;
+  }
+  printTask(res.body);
+}
+
+function printTask(t) {
+  console.log(`\n${C.bold}${t.title}${C.reset}`);
+  console.log(`  ID:       ${C.dim}${t.id}${C.reset}`);
+  console.log(`  Status:   ${colorStatus(t.status)}`);
+  console.log(`  Priority: ${colorPriority(t.priority)}`);
+  console.log(`  Assignee: ${t.assignee ? C.cyan + t.assignee + C.reset : C.dim + 'unassigned' + C.reset}`);
+  if (t.labels?.length) console.log(`  Labels:   ${C.blue}${t.labels.join(', ')}${C.reset}`);
+  if (t.description) {
+    console.log(`\n  ${C.dim}Description:${C.reset}`);
+    const lines = t.description.split('\n').slice(0, 10);
+    lines.forEach(l => console.log(`    ${l}`));
+    if (t.description.split('\n').length > 10) console.log(`    ${C.dim}...${C.reset}`);
+  }
+  if (t.comments?.length) {
+    console.log(`\n  ${C.dim}Comments (${t.comments.length}):${C.reset}`);
+    t.comments.slice(-3).forEach(c => {
+      const author = c.author || c.id;
+      const text = c.text || c.content || '';
+      console.log(`    ${C.cyan}${author}${C.reset}: ${truncate(text, 80)}`);
+    });
+  }
+  if (t.attachments?.length) {
+    console.log(`\n  ${C.dim}Attachments:${C.reset}`);
+    t.attachments.forEach(a => console.log(`    📎 ${a.name || a.path}`));
+  }
+  console.log('');
+}
+
+async function cmdTaskStatus(args) {
+  const [id, newStatus] = args;
+  if (!id || !newStatus) {
+    console.error('Usage: mc task:status <id> <INBOX|ASSIGNED|IN_PROGRESS|REVIEW|DONE|BLOCKED>');
+    process.exit(1);
+  }
+
+  const VALID = ['INBOX','ASSIGNED','IN_PROGRESS','REVIEW','DONE','BLOCKED','TODO','CANCELLED'];
+  const status = newStatus.toUpperCase();
+  if (!VALID.includes(status)) {
+    console.error(`Invalid status. Valid: ${VALID.join(', ')}`); process.exit(1);
+  }
+
+  // Find full task id
+  const all = await GET('/api/tasks');
+  const task = all.body.find(t => t.id === id || t.id.endsWith(id));
+  if (!task) { console.error(`Task not found: ${id}`); process.exit(1); }
+
+  // Update task file directly (most reliable)
+  const taskPath = path.join(
+    __dirname, '..', '.mission-control', 'tasks', `${task.id}.json`
+  );
+
+  const updated = {
+    ...task,
+    status,
+    updated_at: timestamp(),
+    comments: [
+      ...(task.comments || []),
+      {
+        author: AGENT_ID,
+        text: `Status changed to ${status}`,
+        timestamp: timestamp()
+      }
+    ]
+  };
+
+  fs.writeFileSync(taskPath, JSON.stringify(updated, null, 2));
+  console.log(`${C.green}✓${C.reset} Task ${C.dim}${task.id}${C.reset} → ${colorStatus(status)}`);
+}
+
+async function cmdTaskComment(args) {
+  const id = args[0];
+  const text = args.slice(1).join(' ').replace(/^["']|["']$/g, '');
+  if (!id || !text) {
+    console.error('Usage: mc task:comment <id> "<text>"'); process.exit(1);
+  }
+
+  const all = await GET('/api/tasks');
+  const task = all.body.find(t => t.id === id || t.id.endsWith(id));
+  if (!task) { console.error(`Task not found: ${id}`); process.exit(1); }
+
+  const taskPath = path.join(
+    __dirname, '..', '.mission-control', 'tasks', `${task.id}.json`
+  );
+
+  const comment = { author: AGENT_ID, text, timestamp: timestamp() };
+  const updated = {
+    ...task,
+    updated_at: timestamp(),
+    comments: [...(task.comments || []), comment]
+  };
+
+  fs.writeFileSync(taskPath, JSON.stringify(updated, null, 2));
+  console.log(`${C.green}✓${C.reset} Comment added to ${C.dim}${task.id}${C.reset}`);
+  console.log(`  ${C.cyan}${AGENT_ID}${C.reset}: ${text}`);
+}
+
+async function cmdTaskCreate(args) {
+  const opts = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--title'    && args[i+1]) opts.title    = args[++i];
+    if (args[i] === '--assignee' && args[i+1]) opts.assignee = args[++i];
+    if (args[i] === '--priority' && args[i+1]) opts.priority = args[++i];
+    if (args[i] === '--labels'   && args[i+1]) opts.labels   = args[++i].split(',');
+    if (args[i] === '--desc'     && args[i+1]) opts.description = args[++i];
+    if (args[i] === '--status'   && args[i+1]) opts.status   = args[++i];
+  }
+  if (!opts.title) {
+    console.error('Usage: mc task:create --title "..." [--assignee id] [--priority high] [--labels a,b] [--desc "..."]');
+    process.exit(1);
+  }
+
+  const now = timestamp();
+  const id = `task-${now.slice(0,10).replace(/-/g,'')}-${Date.now()}`;
+  const task = {
+    id,
+    title: opts.title,
+    description: opts.description || '',
+    status: opts.status || 'INBOX',
+    priority: opts.priority || 'medium',
+    assignee: opts.assignee || null,
+    created_by: AGENT_ID,
+    labels: opts.labels || [],
+    comments: [],
+    attachments: [],
+    created_at: now,
+    updated_at: now
+  };
+
+  const taskPath = path.join(
+    __dirname, '..', '.mission-control', 'tasks', `${id}.json`
+  );
+  fs.writeFileSync(taskPath, JSON.stringify(task, null, 2));
+  console.log(`${C.green}✓${C.reset} Task created: ${C.bold}${opts.title}${C.reset}`);
+  console.log(`  ID: ${C.dim}${id}${C.reset}`);
+  if (opts.assignee) console.log(`  Assignee: ${C.cyan}${opts.assignee}${C.reset}`);
+}
+
+async function cmdTaskDone(args) {
+  return cmdTaskStatus([args[0], 'DONE']);
+}
+
+async function cmdAgentStatus(args) {
+  const status = args[0];
+  if (!status || !['active','busy','idle','offline'].includes(status)) {
+    console.error('Usage: mc agent:status <active|busy|idle|offline>'); process.exit(1);
+  }
+
+  const agentPath = path.join(
+    __dirname, '..', '.mission-control', 'agents', `${AGENT_ID}.json`
+  );
+  if (!fs.existsSync(agentPath)) {
+    console.error(`Agent file not found: ${agentPath}`); process.exit(1);
+  }
+
+  const agent = JSON.parse(fs.readFileSync(agentPath, 'utf8'));
+  agent.status = status;
+  agent.updated_at = timestamp();
+  fs.writeFileSync(agentPath, JSON.stringify(agent, null, 2));
+  console.log(`${C.green}✓${C.reset} Agent ${C.cyan}${AGENT_ID}${C.reset} → ${status}`);
+}
+
+async function cmdNotify(args) {
+  const msg = args.join(' ').replace(/^["']|["']$/g, '');
+  if (!msg) { console.error('Usage: mc notify "<message>"'); process.exit(1); }
+
+  // Write to activity log
+  const logPath = path.join(
+    __dirname, '..', '.mission-control', 'logs', 'activity.log'
+  );
+  const entry = `${timestamp()} [${AGENT_ID}] NOTIFY: ${msg}\n`;
+  fs.appendFileSync(logPath, entry);
+
+  // Post to messages via API
+  try {
+    await POST('/api/messages', {
+      from: AGENT_ID,
+      to: 'broadcast',
+      type: 'notification',
+      content: msg,
+      timestamp: timestamp()
+    });
+  } catch (e) { /* API might not have this endpoint */ }
+
+  console.log(`${C.green}✓${C.reset} Notification sent: ${msg}`);
+}
+
+async function cmdDeliver(args) {
+  const title = args[0]?.replace(/^["']|["']$/g, '');
+  let filePath = null;
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--path' && args[i+1]) filePath = args[++i];
+  }
+  if (!title) {
+    console.error('Usage: mc deliver "<title>" --path <file>'); process.exit(1);
+  }
+
+  const delivDir = path.join(__dirname, '..', '.mission-control', 'deliverables');
+  if (!fs.existsSync(delivDir)) fs.mkdirSync(delivDir, { recursive: true });
+
+  let size = null;
+  let destPath = filePath;
+  if (filePath && fs.existsSync(filePath)) {
+    const ext = path.extname(filePath);
+    const base = path.basename(filePath, ext).replace(/\s+/g, '-').toLowerCase();
+    const dest = path.join(delivDir, `${base}-${Date.now()}${ext}`);
+    fs.copyFileSync(filePath, dest);
+    size = fs.statSync(dest).size;
+    destPath = dest;
+    console.log(`${C.green}✓${C.reset} Deliverable saved: ${dest}`);
+  }
+
+  const logPath = path.join(__dirname, '..', '.mission-control', 'logs', 'activity.log');
+  const entry = `${timestamp()} [${AGENT_ID}] DELIVER: "${title}"${destPath ? ` → ${destPath}` : ''}\n`;
+  fs.appendFileSync(logPath, entry);
+
+  console.log(`${C.green}✓${C.reset} Deliverable registered: ${C.bold}${title}${C.reset}`);
+  if (size) console.log(`  Size: ${(size/1024).toFixed(1)}KB`);
+}
+
+async function cmdSquad(args) {
+  const res = await GET('/api/agents');
+  if (res.status !== 200) { console.error('Error fetching agents'); process.exit(1); }
+
+  const agents = res.body;
+  console.log(`\n${C.bold}Squad${C.reset} (${agents.length} agents)\n`);
+  for (const a of agents) {
+    const statusColor = { active: C.green, busy: C.yellow, idle: C.dim, offline: C.red }[a.status] || C.dim;
+    const dot = statusColor + '●' + C.reset;
+    console.log(
+      `  ${dot}  ${C.bold}${(a.emoji||'🤖') + ' ' + a.name}${C.reset}` +
+      `  ${C.dim}${a.designation || ''}${C.reset}` +
+      `  ${C.dim}${a.model || ''}${C.reset}`
+    );
+  }
+  console.log('');
+}
+
+async function cmdFeed(args) {
+  const logPath = path.join(__dirname, '..', '.mission-control', 'logs', 'activity.log');
+  if (!fs.existsSync(logPath)) { console.log('No activity yet.'); return; }
+
+  const lines = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean);
+  const recent = lines.slice(-20);
+  console.log(`\n${C.bold}Activity Feed${C.reset} (last ${recent.length})\n`);
+  for (const line of recent.reverse()) {
+    const match = line.match(/^(\S+) \[([^\]]+)\] (.+)$/);
+    if (match) {
+      const [, ts, agent, msg] = match;
+      const time = ts.slice(11, 19);
+      console.log(`  ${C.dim}${time}${C.reset}  ${C.cyan}${agent}${C.reset}  ${msg}`);
+    } else {
+      console.log(`  ${C.dim}${line}${C.reset}`);
+    }
+  }
+  console.log('');
+}
+
+async function cmdCheck(args) {
+  const res = await GET('/api/tasks');
+  if (res.status !== 200) { console.error('Error'); process.exit(1); }
+
+  const myTasks = res.body.filter(t =>
+    (t.assignee === AGENT_ID || t.assignee === `agent-${AGENT_ID}`) &&
+    !['DONE','CANCELLED'].includes(t.status)
+  );
+
+  if (!myTasks.length) {
+    console.log(`${C.green}✓${C.reset} No pending tasks for ${C.cyan}${AGENT_ID}${C.reset}`);
+    return;
+  }
+
+  console.log(`\n${C.bold}My Tasks${C.reset} — ${C.cyan}${AGENT_ID}${C.reset} (${myTasks.length} pending)\n`);
+  for (const t of myTasks) {
+    console.log(
+      `  ${colorStatus(t.status).padEnd(20)}  ` +
+      `${colorPriority(t.priority||'medium').padEnd(14)}  ` +
+      `${truncate(t.title, 60)}`
+    );
+    console.log(`  ${C.dim}id: ${t.id}${C.reset}\n`);
+  }
+}
+
+function printHelp() {
+  console.log(`
+${C.bold}mc${C.reset} — Mission Control CLI for AI Agents
+${C.dim}Inspired by Clawe (github.com/getclawe/clawe)${C.reset}
+
+${C.bold}Task Commands:${C.reset}
+  mc tasks [--status <S>] [--assignee <id>] [--mine]
+  mc task:view <id>
+  mc task:status <id> <INBOX|ASSIGNED|IN_PROGRESS|REVIEW|DONE|BLOCKED>
+  mc task:comment <id> "<text>"
+  mc task:create --title "..." [--assignee id] [--priority high] [--labels a,b] [--desc "..."]
+  mc task:done <id>
+
+${C.bold}Agent Commands:${C.reset}
+  mc agent:status <active|busy|idle|offline>
+  mc squad
+
+${C.bold}Team Commands:${C.reset}
+  mc notify "<message>"
+  mc deliver "<title>" --path <file>
+  mc feed
+  mc check
+
+${C.bold}Environment:${C.reset}
+  MC_SERVER_URL   Server URL (default: http://localhost:3000)
+  MC_AGENT_ID     Your agent ID (default: auto-detected)
+
+${C.bold}Examples:${C.reset}
+  mc check
+  mc task:status task-20260218-dev-pipeline DONE
+  mc task:comment task-20260218 "Starting work on this now"
+  mc tasks --mine
+  mc agent:status busy
+  mc notify "Report ready for review"
+`);
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+const [,, cmd, ...args] = process.argv;
+
+const commands = {
+  'tasks':         cmdTasks,
+  'task:view':     cmdTaskView,
+  'task:status':   cmdTaskStatus,
+  'task:comment':  cmdTaskComment,
+  'task:create':   cmdTaskCreate,
+  'task:done':     cmdTaskDone,
+  'agent:status':  cmdAgentStatus,
+  'notify':        cmdNotify,
+  'deliver':       cmdDeliver,
+  'squad':         cmdSquad,
+  'feed':          cmdFeed,
+  'check':         cmdCheck,
+  'help':          async () => printHelp(),
+  '--help':        async () => printHelp(),
+  '-h':            async () => printHelp(),
+};
+
+if (!cmd || !commands[cmd]) {
+  if (cmd && !commands[cmd]) console.error(`Unknown command: ${cmd}\n`);
+  printHelp();
+  process.exit(cmd ? 1 : 0);
+}
+
+commands[cmd](args).catch(err => {
+  console.error(`${C.red}Error:${C.reset}`, err.message || err);
+  process.exit(1);
+});
