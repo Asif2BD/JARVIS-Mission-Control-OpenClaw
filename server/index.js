@@ -1444,6 +1444,32 @@ app.get('*', (req, res) => {
 // ============================================
 
 server.listen(PORT, () => {
+    // Load .missiondeck env file if present and not already set
+    const missionDeckEnvFile = path.join(__dirname, '..', '.missiondeck');
+    if (!process.env.MISSIONDECK_API_KEY && require('fs').existsSync(missionDeckEnvFile)) {
+        require('fs').readFileSync(missionDeckEnvFile, 'utf8')
+            .split('\n')
+            .filter(l => l && !l.startsWith('#'))
+            .forEach(l => {
+                const [k, ...v] = l.split('=');
+                if (k && v.length) process.env[k.trim()] = v.join('=').trim();
+            });
+    }
+
+    // Start MissionDeck sync if configured
+    if (process.env.MISSIONDECK_API_KEY) {
+        const { startMissionDeckSync } = require('./missiondeck-sync');
+        startMissionDeckSync({
+            missionControlDir: MISSION_CONTROL_DIR,
+            apiKey: process.env.MISSIONDECK_API_KEY,
+            clientVersion: '0.9.5',
+        });
+    }
+
+    const mdLine = process.env.MISSIONDECK_API_KEY
+        ? `║   MissionDeck:  https://missiondeck.ai/workspace/${process.env.MISSIONDECK_SLUG || '???'}    ║`
+        : '║   MissionDeck:  Not connected (run scripts/connect-missiondeck.sh)  ║';
+
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║           JARVIS MISSION CONTROL - SERVER                     ║
@@ -1454,6 +1480,8 @@ server.listen(PORT, () => {
 ║   WebSocket:    ws://localhost:${PORT}/ws                       ║
 ║                                                               ║
 ║   Data Dir:     ${MISSION_CONTROL_DIR}
+║                                                               ║
+${mdLine}
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
     `);
