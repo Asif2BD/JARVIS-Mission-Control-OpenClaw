@@ -5,6 +5,23 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.4] - 2026-02-18
+
+### Fixed
+- **Task modal crash on url-only attachments** — `renderTaskAttachments()` called `att.path.split('/')` unconditionally, throwing a silent `TypeError` when an attachment had a `url` field but no `path` field. Affected all task cards with URL-based attachments (appeared unclickable). ([PR #32](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/pull/32))
+- **Reports & Files "Failed to load files" error** — Server only had a file-download endpoint (`/api/files/:path`); the dashboard called `/api/files?dir=reports` (directory listing) which matched nothing. Added proper `GET /api/files?dir=` directory listing endpoint.
+- **Sub-agent session tasks cluttering board** — Auto-created session tasks from spawned sub-agents now cleanly archived instead of appearing in the REVIEW column.
+
+### Added
+- **Deployment safety system** — `scripts/safe-deploy.sh` always backs up production data before any git operation. Replaces raw `git pull` with a backup-first workflow. ([PR #31](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/pull/31))
+- **`DEPLOYMENT-RULES.md`** — Agent deployment rules: production data is sacred, never run `init-mission-control.sh` on live instances, always use `safe-deploy.sh`. ([PR #31](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/pull/31))
+- **Automated daily backups** — Cron job backs up `.mission-control/` data daily at 2 AM, retains last 7 days.
+- **URL-based attachment support** — Attachments now support both `path`-based (internal file viewer) and `url`-based (opens in new tab) formats in task JSON.
+
+### Changed
+- **GitHub Actions deploy workflow** — No longer injects demo/sample data on deployment, preventing accidental production data wipe. ([PR #31](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/pull/31))
+- **`CLAUDE.md`** — Deployment safety section added at the top; agents must read before any deploy operation.
+
 ## [0.9.3] - 2026-02-09
 
 ### Added
