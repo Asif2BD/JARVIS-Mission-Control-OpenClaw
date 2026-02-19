@@ -432,7 +432,7 @@ async function processSessionActivity(sessionId) {
                         await telegramBridge.createTaskFromTelegram({
                             from: sender,
                             message: userContent,
-                            chat_id: session.sessionKey?.includes('group') ? 'TELEGRAM_CHAT_ID' : 'dm',
+                            chat_id: session.sessionKey?.includes('group') ? (process.env.MC_TELEGRAM_CHAT || 'group') : 'dm',
                             message_id: `${Date.now()}`,
                             timestamp: new Date().toISOString()
                         });

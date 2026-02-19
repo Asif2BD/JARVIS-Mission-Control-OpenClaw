@@ -33,7 +33,7 @@ const os = require('os');
 // ── Config ─────────────────────────────────────────────────────────────────
 const SERVER_URL = process.env.MC_SERVER_URL || 'http://localhost:3000';
 const AGENT_ID   = process.env.MC_AGENT_ID   || detectAgentId();
-const TELEGRAM_CHAT = process.env.MC_TELEGRAM_CHAT || 'TELEGRAM_CHAT_ID';
+const TELEGRAM_CHAT = process.env.MC_TELEGRAM_CHAT || '';
 
 function detectAgentId() {
   // 1. Check .mc-agent file in cwd (for agents whose workspace is root-level)
