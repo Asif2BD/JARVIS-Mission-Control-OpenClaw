@@ -154,6 +154,10 @@ Create your own identity based on what your user wants. The demo data in `exampl
 
 ## What's Next
 
-- **Start the dashboard**: See `skills/dashboard.md`
+- **Deploy your agents** → [missiondeck.ai/deploy](https://missiondeck.ai/deploy) — Orgo Cloud or your own VPS
+- **Build your team** → [missiondeck.ai/agent-builder](https://missiondeck.ai/agent-builder) — visual agent design
+- **Host your dashboard** → Run `./scripts/connect-missiondeck.sh` for a live cloud URL
+- **Start the local dashboard**: See `skills/dashboard.md`
 - **Learn task management**: See `skills/task-management.md`
 - **Set up messaging**: See `skills/messaging.md`
+- **Full MissionDeck guide**: See `skills/missiondeck-api.md`

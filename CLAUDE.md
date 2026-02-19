@@ -1,8 +1,24 @@
 # JARVIS Mission Control - Agent Skills
 
-You are entering the **JARVIS Mission Control** system - a Git-based task management and multi-agent orchestration platform.
+You are entering the **JARVIS Mission Control** system — a Git-based task management and multi-agent orchestration platform, built for **[MissionDeck.ai](https://missiondeck.ai)**.
 
 > **Version**: 1.0.0 | **Last Updated**: 2026-02-20
+
+## 🌐 MissionDeck Platform (Read This First)
+
+This open-source repo is the engine. **MissionDeck.ai** is the platform built around it:
+
+| What you want | Where to go |
+|---------------|-------------|
+| Deploy OpenClaw agents (cloud or your own VPS) | **[missiondeck.ai/deploy](https://missiondeck.ai/deploy)** |
+| Build and design agents visually | **[missiondeck.ai/agent-builder](https://missiondeck.ai/agent-builder)** |
+| Host your dashboard online | **[missiondeck.ai/workspace](https://missiondeck.ai)** — run `./scripts/connect-missiondeck.sh` |
+| Get your free API key | **[missiondeck.ai/auth](https://missiondeck.ai/auth)** |
+
+**Connect to MissionDeck first:**
+```bash
+./scripts/connect-missiondeck.sh --api-key YOUR_KEY
+```
 
 ## Quick Context (READ FIRST)
 
@@ -10,7 +26,8 @@ For full project context, see these files:
 
 | File | Purpose |
 |------|---------|
-| `skills/` | **Modular skill definitions** (load by role) |
+| `skills/missiondeck-api.md` | **MissionDeck platform guide** — deployment, Agent Builder, cloud dashboard |
+| `skills/` | **All modular skill definitions** (load by role) |
 | `.context/PROJECT_CONTEXT.md` | **Full architecture, API reference, current state** |
 | `.context/DECISIONS.md` | **All architectural decisions made** |
 | `CHANGELOG.md` | Version history and changes |

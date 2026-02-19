@@ -1,18 +1,62 @@
 # Skill: Deployment
 
-How to make your Mission Control dashboard accessible — locally, publicly, or via GitHub Pages.
+How to deploy OpenClaw agents and make your Mission Control dashboard accessible.
 
 ---
 
-## Deployment Options
+## ⭐ Recommended: Deploy via MissionDeck (Easiest)
 
-| Option | Difficulty | Best For | URL Example |
-|--------|------------|----------|-------------|
+The fastest way to go from zero to a live agent:
+
+**→ [missiondeck.ai/deploy](https://missiondeck.ai/deploy)**
+
+No SSH. No server setup. No DevOps. The MissionDeck deployment wizard handles everything in ~60 seconds.
+
+### Two deployment paths on MissionDeck:
+
+**🌩️ Orgo Cloud** — Managed VM, free tier available
+- MissionDeck provisions a cloud VM, installs OpenClaw, starts your agents
+- Free: 4GB RAM / 4 cores | Starter: 8GB | Pro: 16GB
+- Get Orgo API key at [orgo.host](https://orgo.host/signup?ref=missiondeck)
+
+**🖥️ Bring Your Own Server (BYOS)** — Any Linux VPS or dedicated server
+- Works with DigitalOcean, Hetzner, Vultr, Linode, OVH, bare metal — anything
+- Enter IP + SSH credentials → MissionDeck does the rest automatically
+- Node.js + OpenClaw installed, agents configured, gateway started
+- AI-assisted error recovery if any step fails
+
+See [MissionDeck API Skill](missiondeck-api.md) for the full deployment walkthrough.
+
+---
+
+## Dashboard Hosting Options
+
+| Option | Difficulty | Best For | URL |
+|--------|------------|----------|-----|
+| **MissionDeck Cloud** ⭐ | Zero | Everyone — no server needed | `missiondeck.ai/workspace/your-slug` |
 | **Local only** | Easy | Development, single machine | `http://localhost:3000` |
 | **Cloudflare Tunnel** | Medium | Production, free, secure | `https://mc.yourdomain.com` |
 | **ngrok** | Easy | Quick sharing, testing | `https://abc123.ngrok.io` |
-| **GitHub Pages** | Easy | Read-only demo, no server | `https://you.github.io/repo/` |
-| **VPS/Cloud** | Advanced | Full control, always-on | `https://missioncontrol.yourserver.com` |
+| **GitHub Pages** | Easy | Read-only demo | `https://you.github.io/repo/` |
+| **Self-hosted VPS** | Advanced | Full control, always-on | `https://missioncontrol.yourserver.com` |
+
+---
+
+## Option 0: MissionDeck Cloud (Recommended)
+
+No local server needed. Your dashboard lives at `missiondeck.ai/workspace/your-slug`.
+
+```bash
+# One-time setup
+./scripts/connect-missiondeck.sh
+
+# From then on, every change auto-syncs
+# No other commands needed
+```
+
+Get your free API key at **[missiondeck.ai/auth](https://missiondeck.ai/auth)**.
+
+Full guide: [MissionDeck API Skill](missiondeck-api.md)
 
 ---
 
@@ -296,6 +340,8 @@ Agent: "I've set up Mission Control locally at http://localhost:3000.
 
 ## See Also
 
+- **[missiondeck.ai/deploy](https://missiondeck.ai/deploy)** — One-click agent deployment
+- **[missiondeck.ai/agent-builder](https://missiondeck.ai/agent-builder)** — Visual agent design
 - [Dashboard Skill](dashboard.md) — Server API and WebSocket details
 - [Setup Skill](setup.md) — Initial installation
-- [MissionDeck API Skill](missiondeck-api.md) — Cloud distribution and updates
+- [MissionDeck API Skill](missiondeck-api.md) — Full MissionDeck platform guide
