@@ -1,6 +1,6 @@
 {
   "name": "jarvis-mission-control-server",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "Backend server for JARVIS Mission Control - handles data persistence, real-time updates, and OpenClaw agent integration",
   "main": "index.js",
   "scripts": {

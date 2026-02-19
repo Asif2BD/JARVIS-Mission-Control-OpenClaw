@@ -59,7 +59,7 @@ curl -H "x-api-key: YOUR_API_KEY" \
 Response:
 ```json
 {
-  "version": "0.9.0",
+  "version": "1.0.0",
   "releasedAt": "2026-02-07T00:00:00Z",
   "changelog": "https://missiondeck.ai/changelog"
 }

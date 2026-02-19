@@ -9,7 +9,7 @@ A robust, Git-based Mission Control system for orchestrating AI agents and human
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-| **0.9.2** | Pre-release | 2026-02-07 |
+| **1.0.0** | Stable | 2026-02-20 |
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 

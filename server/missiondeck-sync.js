@@ -31,7 +31,7 @@ let isRunning = false;
  * @param {object} opts
  * @param {string} opts.missionControlDir - path to .mission-control directory
  * @param {string} [opts.apiKey]           - override env var
- * @param {string} [opts.clientVersion]    - e.g. "0.9.5"
+ * @param {string} [opts.clientVersion]    - e.g. "1.0.0"
  */
 function startMissionDeckSync({ missionControlDir, apiKey, clientVersion = 'unknown' }) {
   const key = apiKey || process.env.MISSIONDECK_API_KEY;

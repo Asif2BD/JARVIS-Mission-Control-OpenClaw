@@ -1708,7 +1708,7 @@ server.listen(PORT, () => {
         startMissionDeckSync({
             missionControlDir: MISSION_CONTROL_DIR,
             apiKey: process.env.MISSIONDECK_API_KEY,
-            clientVersion: '0.9.5',
+            clientVersion: '1.0.0',
         });
     }
 

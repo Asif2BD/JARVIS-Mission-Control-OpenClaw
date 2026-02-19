@@ -21,7 +21,7 @@
 
 ## Current Version
 
-**v0.9.0** (2026-02-07)
+**v1.0.0** (2026-02-20)
 
 See [CHANGELOG.md](../CHANGELOG.md) for full version history.
 
@@ -177,7 +177,7 @@ Connect to `ws://localhost:3000/ws` for real-time events.
 
 ---
 
-## Recent Changes (v0.9.0)
+## Recent Changes (v1.0.0)
 
 1. **Agent Profile Panel** - Slide-out panel with personality, skills, attention, timeline, messages tabs
 2. **Agent Personality System** - Agents have personality fields (about, tone, traits, greeting)
@@ -292,4 +292,4 @@ JARVIS-Mission-Control-OpenClaw/
 
 ---
 
-*Last updated: 2026-02-07 by Claude (v0.9.0)*
+*Last updated: 2026-02-20 (v1.0.0)*
