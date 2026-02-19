@@ -48,3 +48,12 @@ coverage/
 
 # Backups (local only)
 .backups/
+
+# Operational data — never commit
+.mission-control/reports/
+.mission-control/archived-tasks/
+.mission-control/logs/activity.log
+.mission-control/logs/*.log
+.mission-control/tasks/*.json
+.mission-control/queue/*.json
+.mission-control/messages/
