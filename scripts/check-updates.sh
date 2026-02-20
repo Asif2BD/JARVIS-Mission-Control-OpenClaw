@@ -31,7 +31,7 @@ elif [ -f "$MC_ROOT/CHANGELOG.md" ]; then
 fi
 
 # Check latest version
-API_URL="https://sqykgceibcmnmgfuioso.supabase.co/functions/v1/distribution/version"
+API_URL="${MISSIONDECK_API_BASE:-https://missiondeck.ai/api/distribution}/version"
 
 echo "🔍 Checking for updates..."
 echo "   Current version: $CURRENT_VERSION"

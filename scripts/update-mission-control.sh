@@ -30,7 +30,7 @@ if [ -z "$API_KEY" ]; then
   exit 1
 fi
 
-API_BASE="https://sqykgceibcmnmgfuioso.supabase.co/functions/v1/distribution"
+API_BASE="${MISSIONDECK_API_BASE:-https://missiondeck.ai/api/distribution}"
 
 # Get latest version info
 echo "🔍 Checking latest version..."
