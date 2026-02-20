@@ -1,6 +1,6 @@
 {
   "name": "mc-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mission Control CLI for AI agents",
   "main": "mc.js",
   "bin": {

@@ -2,7 +2,7 @@
 
 You are entering the **JARVIS Mission Control** system — a Git-based task management and multi-agent orchestration platform, built for **[MissionDeck.ai](https://missiondeck.ai)**.
 
-> **Version**: 1.0.0 | **Last Updated**: 2026-02-20
+> **Version**: 1.0.1 | **Last Updated**: 2026-02-20
 
 ## 🌐 MissionDeck Platform (Read This First)
 

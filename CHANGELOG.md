@@ -5,6 +5,15 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-02-20
+
+### Fixed
+- **Removed hardcoded Supabase project ID from update scripts** — `scripts/update-mission-control.sh` and `scripts/check-updates.sh` now use public `missiondeck.ai/api/distribution` endpoint by default, removing the last internal data reference from the public repo
+- Scripts now support `MISSIONDECK_API_BASE` environment variable for custom API endpoints
+
+### Security
+- No internal infrastructure details exposed in public repository
+
 ## [1.0.0] - 2026-02-18
 
 ### 🎉 First Stable Release

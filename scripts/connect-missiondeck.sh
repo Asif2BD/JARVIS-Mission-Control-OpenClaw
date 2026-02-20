@@ -126,7 +126,7 @@ for f in glob.glob(os.path.join(tasks_dir, "*.json")):
     except:
         pass
 
-print(json.dumps({"tasks": tasks, "agents": [], "deleted_ids": [], "client_version": "1.0.0"}))
+print(json.dumps({"tasks": tasks, "agents": [], "deleted_ids": [], "client_version": "1.0.1"}))
 PYEOF
 )
 
