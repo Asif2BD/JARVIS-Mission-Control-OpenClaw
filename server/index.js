@@ -30,18 +30,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Security middleware: sanitize route parameters
-app.use((req, res, next) => {
-    // Sanitize all :id parameters to prevent path traversal
-    if (req.params) {
-        for (const key of Object.keys(req.params)) {
-            if (typeof req.params[key] === 'string') {
-                // Allow only safe characters in IDs
-                req.params[key] = req.params[key].replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
-            }
-        }
-    }
-    next();
+// Security middleware: sanitize route parameters using app.param()
+// This runs AFTER Express parses route params (unlike app.use middleware)
+const PARAM_NAMES = ['id', 'taskId', 'agentId', 'humanId', 'key', 'channel'];
+PARAM_NAMES.forEach(paramName => {
+    app.param(paramName, (req, res, next, value) => {
+        // Sanitize: allow only safe characters, prevent path traversal
+        req.params[paramName] = String(value).replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
+        next();
+    });
 });
 
 // Create HTTP server for both Express and WebSocket
@@ -123,6 +120,10 @@ async function readJsonDirectory(dirPath) {
  */
 async function readJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    // Security: ensure path stays within allowed directory
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Invalid file path');
+    }
     const content = await fs.readFile(fullPath, 'utf-8');
     return JSON.parse(content);
 }
@@ -132,6 +133,10 @@ async function readJsonFile(filePath) {
  */
 async function writeJsonFile(filePath, data) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    // Security: ensure path stays within allowed directory
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Invalid file path');
+    }
 
     // Ensure directory exists
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -145,6 +150,10 @@ async function writeJsonFile(filePath, data) {
  */
 async function deleteJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    // Security: ensure path stays within allowed directory
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Invalid file path');
+    }
     await fs.unlink(fullPath);
 }
 
