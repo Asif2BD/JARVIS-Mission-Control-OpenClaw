@@ -5,6 +5,19 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-02-21
+
+### Security
+- **Fixed path traversal via `req.body.id`** — POST `/api/tasks`, `/api/messages`, `/api/schedules` now sanitize user-supplied IDs with `sanitizeId()` before file writes; `isPathSafe()` boundary check added to all file I/O functions (`readJsonFile`, `writeJsonFile`, `deleteJsonFile`)
+- **Fixed no-op parameter sanitization middleware** — `app.use()` middleware ran before Express parsed route params (always saw `{}`); replaced with `app.param()` which correctly intercepts named params after route matching. Note: `:path(*)` wildcard deliberately excluded (has its own `path.resolve()` boundary check)
+- **Fixed unescaped data in `onerror` event handlers** — `agent.role` and `getInitials()` output now wrapped in `escapeAttr()` in all avatar `onerror` fallback handlers
+- **Fixed `escapeHtml()` used in `onclick` attributes** — `escapeHtml()` does not escape single quotes; replaced with `escapeAttr()` in all attachment onclick handlers
+- **Fixed unescaped avatar URLs in `img src`** — `human.avatar`, `agent.avatar`, `sub.avatar` now wrapped in `escapeAttr()` to prevent attribute injection
+- **Fixed unescaped fields in resources/credentials/costs UI** — `cred.type`, `cred.service`, `cred.owner`, `res.type`, `res.tags`, `booking.status`, `booking.agent_id`, `cost.type`, `cost.category`, `cost.agent_id` all wrapped in `escapeHtml()`
+- **Fixed unescaped `booking.id` in `cancelBooking` onclick** — now uses `escapeAttr()`
+
+_Security review conducted by Morpheus (Opus 4.6), final approval by Oracle. 61 scanner findings triaged to 10 genuine vulnerabilities (2 HIGH, 3 MEDIUM, 5 LOW)._
+
 ## [1.0.1] - 2026-02-20
 
 ### Fixed
