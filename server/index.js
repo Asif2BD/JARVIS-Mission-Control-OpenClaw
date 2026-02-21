@@ -30,19 +30,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Security middleware: sanitize route parameters
-app.use((req, res, next) => {
-    // Sanitize all :id parameters to prevent path traversal
-    if (req.params) {
-        for (const key of Object.keys(req.params)) {
-            if (typeof req.params[key] === 'string') {
-                // Allow only safe characters in IDs
-                req.params[key] = req.params[key].replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
-            }
-        }
-    }
-    next();
+// Security middleware: sanitize named route parameters
+// app.param() runs *after* route matching so req.params is populated — unlike app.use() which is a no-op here
+['id', 'taskId', 'agentId', 'humanId', 'threadId', 'index', 'itemId', 'type'].forEach(name => {
+    app.param(name, (req, res, next, value) => {
+        req.params[name] = String(value).replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
+        next();
+    });
 });
+// Note: :path(*) wildcard is NOT sanitized here — it is validated with isPathSafe() + path.resolve() in the route handler
 
 // Create HTTP server for both Express and WebSocket
 const server = http.createServer(app);
@@ -123,6 +119,9 @@ async function readJsonDirectory(dirPath) {
  */
 async function readJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Path traversal attempt blocked');
+    }
     const content = await fs.readFile(fullPath, 'utf-8');
     return JSON.parse(content);
 }
@@ -132,6 +131,9 @@ async function readJsonFile(filePath) {
  */
 async function writeJsonFile(filePath, data) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Path traversal attempt blocked');
+    }
 
     // Ensure directory exists
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -145,6 +147,9 @@ async function writeJsonFile(filePath, data) {
  */
 async function deleteJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Path traversal attempt blocked');
+    }
     await fs.unlink(fullPath);
 }
 
@@ -316,6 +321,9 @@ app.get('/api/tasks/:id', async (req, res) => {
 app.post('/api/tasks', async (req, res) => {
     try {
         const task = req.body;
+
+        // Sanitize user-supplied ID before using in file path (HIGH-1: path traversal)
+        if (task.id) task.id = sanitizeId(task.id);
 
         // Generate ID if not provided
         if (!task.id) {
@@ -869,6 +877,9 @@ app.get('/api/messages/thread/:threadId', async (req, res) => {
 app.post('/api/messages', async (req, res) => {
     try {
         const message = req.body;
+
+        // Sanitize user-supplied ID before using in file path (HIGH-1: path traversal)
+        if (message.id) message.id = sanitizeId(message.id);
 
         // Generate ID if not provided
         if (!message.id) {
@@ -1585,7 +1596,7 @@ app.post('/api/schedules/sync', async (req, res) => {
 app.post('/api/schedules', async (req, res) => {
     try {
         const job = {
-            id: req.body.id || `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+            id: req.body.id ? sanitizeId(req.body.id) : `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
             name: req.body.name,
             type: req.body.type || 'cron',
             schedule: req.body.schedule,
