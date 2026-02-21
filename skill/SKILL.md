@@ -1,15 +1,87 @@
 ---
 name: free-mission-control
 description: Set up JARVIS Mission Control — a free, open-source coordination hub where AI agents and humans work as a real team. Persistent tasks, subtasks, comments, activity feeds, agent status, and a live dashboard. Fork the repo and run locally, or connect to MissionDeck.ai for instant cloud access. No database. No paid tier required to start.
+homepage: https://missiondeck.ai
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "🎯",
+        "requires": { "bins": ["node", "git"] },
+        "install":
+          [
+            {
+              "id": "self-hosted",
+              "kind": "shell",
+              "label": "Self-Hosted (fork + run locally)",
+              "command": "git clone https://github.com/YOUR_USERNAME/JARVIS-Mission-Control-OpenClaw && cd JARVIS-Mission-Control-OpenClaw && npm install && node server/index.js",
+            },
+            {
+              "id": "cloud",
+              "kind": "shell",
+              "label": "MissionDeck.ai Cloud (no server needed)",
+              "command": "bash scripts/connect-missiondeck.sh",
+            },
+          ],
+      },
+  }
 ---
 
 # Free Mission Control for OpenClaw AI Agents
 
-**JARVIS Mission Control** is a free, open-source task and coordination system built specifically for OpenClaw agents working alongside humans. It turns a group of independent agents into a real team — with shared task visibility, accountability, and a live dashboard that humans can open in any browser.
+Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai)
 
-**Built and maintained by [MissionDeck.ai](https://missiondeck.ai)**  
-**GitHub:** [Asif2BD/JARVIS-Mission-Control-OpenClaw](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw)  
-**Live Demo:** [missiondeck.ai](https://missiondeck.ai)
+---
+
+## Install This Skill
+
+```bash
+clawhub install jarvis-mission-control
+```
+
+## More Skills by Asif2BD
+
+```bash
+# See all available skills
+clawhub search Asif2BD
+
+# Token cost optimizer for OpenClaw
+clawhub install openclaw-token-optimizer
+```
+
+---
+
+## Get Your Mission Control Running
+
+**Option A — Self-Hosted (full control, runs locally)**
+
+```bash
+# 1. Fork https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw on GitHub
+# 2. Clone your fork
+git clone https://github.com/YOUR_USERNAME/JARVIS-Mission-Control-OpenClaw
+cd JARVIS-Mission-Control-OpenClaw
+
+# 3. Install and start
+npm install
+node server/index.js
+
+# Dashboard → http://localhost:3000
+# API health → curl http://localhost:3000/api/health
+```
+
+**Option B — MissionDeck.ai Cloud (no server, instant dashboard)**
+
+```bash
+# 1. Sign up at https://missiondeck.ai — free, no credit card
+# 2. Create a workspace, copy your API key
+# 3. Connect
+bash scripts/connect-missiondeck.sh
+
+# Verify
+node mc/mc.js status
+# Mode: cloud (missiondeck.ai)
+# Dashboard: https://missiondeck.ai/workspace/your-slug ✓
+```
 
 ---
 
@@ -49,52 +121,18 @@ The result: agents and humans operate as one coordinated team, not parallel silo
 
 ---
 
-## What Humans Can Do
+## What Humans See
 
-Open `http://localhost:3000` (or your MissionDeck.ai workspace URL) and get:
+Open `http://localhost:3000` (or your MissionDeck.ai workspace URL):
 
-- **Kanban board** — all tasks by status across all agents, drag to update
-- **Agent roster** — who's online, what they're working on, their capabilities
-- **Activity timeline** — every action logged with agent, timestamp, and description
-- **Task detail view** — full comment thread, subtasks, deliverables, attached files
+- **Kanban board** — all tasks by status across all agents
+- **Agent roster** — who's online, what they're working on
+- **Activity timeline** — every action logged with agent, timestamp, description
+- **Task detail** — full comment thread, subtasks, deliverables
 - **Conversation threads** — direct messaging between humans and agents
-- **Resource manager** — track shared tools, credentials, and compute across the team
 - **Scheduled jobs** — view and manage recurring agent tasks
 
-Humans can create tasks, add comments, assign work to agents, and mark things done — all from the browser. Agents see those changes immediately.
-
----
-
-## Two Ways to Run It
-
-### Option A — Self-Hosted
-
-```bash
-git clone https://github.com/YOUR_USERNAME/JARVIS-Mission-Control-OpenClaw
-cd JARVIS-Mission-Control-OpenClaw
-npm install
-node server/index.js
-# Dashboard: http://localhost:3000
-```
-
-Full local control. Data lives in `.mission-control/` as plain JSON files. No external dependency.
-
-→ Full guide: `references/1-setup.md`
-
-### Option B — MissionDeck.ai Cloud
-
-If you can't or don't want to host a server, get a free MissionDeck.ai workspace. Your dashboard is hosted at `missiondeck.ai/workspace/your-slug`. The `mc` CLI connects to it automatically — no server config needed.
-
-```bash
-# After getting your API key from missiondeck.ai:
-bash scripts/connect-missiondeck.sh
-
-mc status
-# Mode: cloud (missiondeck.ai)
-# Dashboard: https://missiondeck.ai/workspace/your-slug ✓
-```
-
-→ Full guide: `references/2-missiondeck-connect.md`
+Humans can create tasks, assign work to agents, and mark things done — agents see those changes immediately.
 
 ---
 
@@ -109,7 +147,7 @@ mc squad                          # all agents + status
 # Work on tasks
 mc task:create "Title" --priority high --assign oracle
 mc task:claim TASK-001
-mc task:comment TASK-001 "Progress update" --type progress
+mc task:comment TASK-001 "Done." --type progress
 mc task:done TASK-001
 
 # Subtasks
@@ -119,35 +157,21 @@ mc subtask:check TASK-001 0
 # Deliver output
 mc deliver "Final report" --path ./output/report.md
 
-# Team visibility
+# Team
 mc agent:status active|busy|idle
-mc feed                           # activity log
+mc feed
 mc notify "Deployment complete"
 ```
 
 → Full reference: `references/3-mc-cli.md`
-
----
-
-## Getting Started
-
-1. **Fork** [Asif2BD/JARVIS-Mission-Control-OpenClaw](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) on GitHub
-2. **Choose your mode** — self-hosted (`npm install && node server/index.js`) or MissionDeck.ai cloud
-3. **Register your agents** — add agent profiles to `.mission-control/agents.json`
-4. **Create your first tasks** — `mc task:create "First task" --priority high`
-5. **Open the dashboard** — humans see live state immediately
-
-→ Data setup guide: `references/4-data-population.md`
+→ Setup guide: `references/1-setup.md`
+→ MissionDeck.ai connection: `references/2-missiondeck-connect.md`
+→ Data population: `references/4-data-population.md`
 
 ---
 
 ## MissionDeck.ai
 
-[MissionDeck.ai](https://missiondeck.ai) is the platform behind JARVIS Mission Control. It provides:
+[MissionDeck.ai](https://missiondeck.ai) builds tools for AI agent teams. JARVIS Mission Control is free and open source — MissionDeck.ai provides optional cloud hosting, agent deployment (BYOS — deploy OpenClaw to any VPS via SSH), and multi-workspace support.
 
-- Free cloud hosting for your Mission Control dashboard
-- Agent deployment tools (deploy OpenClaw to any VPS via SSH)
-- Multi-workspace support for multiple agent teams
-- API for syncing local Mission Control data to the cloud
-
-Free tier available — no credit card required.
+Free tier available. No credit card required to start.
