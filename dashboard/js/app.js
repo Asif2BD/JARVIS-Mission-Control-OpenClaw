@@ -371,7 +371,7 @@ function renderHumans() {
 
     container.innerHTML = humans.map(human => {
         const avatarHtml = human.avatar
-            ? `<img src="${human.avatar}" alt="${escapeHtml(human.name)}" class="entity-avatar-img human" onerror="this.outerHTML='<div class=\\'entity-avatar human\\'>${getInitials(human.name)}</div>'"/>`
+            ? `<img src="${escapeAttr(human.avatar)}" alt="${escapeHtml(human.name)}" class="entity-avatar-img human" onerror="this.outerHTML='<div class=\\'entity-avatar human\\'>${escapeAttr(getInitials(human.name))}</div>'"/>`
             : `<div class="entity-avatar human">${getInitials(human.name)}</div>`;
 
         const channelIcons = getChannelIcons(human.channels);
@@ -434,8 +434,8 @@ function renderAgents() {
         const activeTasks = agent.current_tasks ? agent.current_tasks.length : 0;
 
         const avatarHtml = agent.avatar
-            ? `<img src="${agent.avatar}" alt="${escapeHtml(agent.name)}" class="entity-avatar-img agent ${agent.role}" onerror="this.outerHTML='<div class=\\'entity-avatar agent ${agent.role}\\'>${getInitials(agent.name)}</div>'"/>`
-            : `<div class="entity-avatar agent ${agent.role}">${getInitials(agent.name)}</div>`;
+            ? `<img src="${escapeAttr(agent.avatar)}" alt="${escapeHtml(agent.name)}" class="entity-avatar-img agent ${escapeAttr(agent.role)}" onerror="this.outerHTML='<div class=\\'entity-avatar agent ${escapeAttr(agent.role)}\\'>${escapeAttr(getInitials(agent.name))}</div>'"/>`
+            : `<div class="entity-avatar agent ${escapeAttr(agent.role)}">${getInitials(agent.name)}</div>`;
 
         const channelIcons = getChannelIcons(agent.channels);
 
@@ -452,12 +452,12 @@ function renderAgents() {
             </div>
             ${subAgents.length > 0 ? subAgents.map(sub => {
                 const subAvatarHtml = sub.avatar
-                    ? `<img src="${sub.avatar}" alt="${escapeHtml(sub.name)}" class="entity-avatar-img sub-agent" onerror="this.outerHTML='<div class=\\'entity-avatar sub-agent\\'>↳</div>'"/>`
+                    ? `<img src="${escapeAttr(sub.avatar)}" alt="${escapeHtml(sub.name)}" class="entity-avatar-img sub-agent" onerror="this.outerHTML='<div class=\\'entity-avatar sub-agent\\'>↳</div>'"/>`
                     : `<div class="entity-avatar sub-agent">↳</div>`;
 
                 return `
                     <div class="entity-row sub-agent-row">
-                        <div class="entity-status ${sub.status}"></div>
+                        <div class="entity-status ${escapeAttr(sub.status)}"></div>
                         ${subAvatarHtml}
                         <div class="entity-info">
                             <span class="entity-name sub">${escapeHtml(sub.name)}</span>
@@ -1672,7 +1672,7 @@ function renderConversationsList(container, threads, agentId) {
     container.innerHTML = threads.map(thread => {
         const agent = thread.otherAgent;
         const avatarHtml = agent.avatar
-            ? `<img src="${agent.avatar}" class="conv-avatar" alt="${escapeHtml(agent.name)}" onerror="this.outerHTML='<div class=\\'conv-avatar-fallback\\'>${getInitials(agent.name)}</div>'">`
+            ? `<img src="${escapeAttr(agent.avatar)}" class="conv-avatar" alt="${escapeHtml(agent.name)}" onerror="this.outerHTML='<div class=\\'conv-avatar-fallback\\'>${escapeAttr(getInitials(agent.name))}</div>'">`
             : `<div class="conv-avatar-fallback">${getInitials(agent.name)}</div>`;
 
         const preview = thread.lastMessage.content.length > 60
@@ -2281,17 +2281,17 @@ function renderTaskAttachments(task) {
         
         return `
             <div class="attachment-item">
-                <div class="attachment-icon" onclick="openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')" style="cursor: pointer;">
+                <div class="attachment-icon" onclick="openFileViewer('${escapeAttr(dir)}', '${escapeAttr(filename)}')" style="cursor: pointer;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
                     </svg>
                 </div>
-                <div class="attachment-info" style="cursor: pointer; flex: 1;" onclick="${att.url ? `window.open('${escapeHtml(att.url)}', '_blank')` : `openFileViewer('${escapeHtml(dir)}', '${escapeHtml(filename)}')`}">
+                <div class="attachment-info" style="cursor: pointer; flex: 1;" onclick="${att.url ? `window.open('${escapeAttr(att.url)}', '_blank')` : `openFileViewer('${escapeAttr(dir)}', '${escapeAttr(filename)}')`}">
                     <div class="attachment-name">${escapeHtml(filename)}</div>
                     ${att.description ? `<div class="attachment-desc">${escapeHtml(att.description)}</div>` : ''}
                 </div>
-                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); ${att.url ? `window.open('${escapeHtml(att.url)}', '_blank')` : `downloadAttachment('${escapeHtml(downloadTarget)}', '${escapeHtml(filename)}')`};" style="margin-left: auto;" title="Download">
+                <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); ${att.url ? `window.open('${escapeAttr(att.url)}', '_blank')` : `downloadAttachment('${escapeAttr(downloadTarget)}', '${escapeAttr(filename)}')`};" style="margin-left: auto;" title="Download">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
@@ -2598,9 +2598,9 @@ function renderCredentialsList() {
             <div class="credential-info">
                 <div class="credential-name">${escapeHtml(cred.name)}</div>
                 <div class="credential-meta">
-                    <span class="credential-type">${cred.type}</span>
-                    <span>${cred.service || 'General'}</span>
-                    <span>Owner: ${cred.owner}</span>
+                    <span class="credential-type">${escapeHtml(cred.type)}</span>
+                    <span>${escapeHtml(cred.service || 'General')}</span>
+                    <span>Owner: ${escapeHtml(cred.owner)}</span>
                     ${cred.last_used ? `<span>Last used: ${formatRelativeTime(cred.last_used)}</span>` : ''}
                 </div>
             </div>
@@ -2676,10 +2676,10 @@ function renderResourcesList() {
             <div class="resource-info">
                 <div class="resource-name">${escapeHtml(res.name)}</div>
                 <div class="resource-meta">
-                    <span class="resource-type">${res.type}</span>
+                    <span class="resource-type">${escapeHtml(res.type)}</span>
                     <span>$${res.cost_per_hour}/hr</span>
                     <span>Max ${res.max_booking_hours}h</span>
-                    ${res.tags?.length ? `<span>${res.tags.join(', ')}</span>` : ''}
+                    ${res.tags?.length ? `<span>${escapeHtml(res.tags.join(', '))}</span>` : ''}
                 </div>
             </div>
             <div class="resource-actions">
@@ -2746,8 +2746,8 @@ function renderBookingsList() {
                 <div class="booking-info">
                     <div class="booking-title">${escapeHtml(booking.resource_name)}</div>
                     <div class="booking-meta">
-                        <span class="booking-status ${statusClass}">${booking.status}</span>
-                        ${booking.agent_id ? `<span>Agent: ${booking.agent_id}</span>` : ''}
+                        <span class="booking-status ${statusClass}">${escapeHtml(booking.status)}</span>
+                        ${booking.agent_id ? `<span>Agent: ${escapeHtml(booking.agent_id)}</span>` : ''}
                         <span>Est. $${booking.estimated_cost?.toFixed(2) || '0.00'}</span>
                     </div>
                 </div>
@@ -2761,7 +2761,7 @@ function renderBookingsList() {
                 </div>
                 ${booking.status === 'confirmed' ? `
                     <div class="booking-actions">
-                        <button class="btn-delete" onclick="cancelBooking('${booking.id}')" title="Cancel">
+                        <button class="btn-delete" onclick="cancelBooking('${escapeAttr(booking.id)}')" title="Cancel">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
                                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -2879,9 +2879,9 @@ function renderCostsList() {
             <div class="cost-info">
                 <div class="credential-name">${escapeHtml(cost.description)}</div>
                 <div class="credential-meta">
-                    <span class="cost-type-badge">${cost.type}</span>
-                    <span>${cost.category || 'General'}</span>
-                    ${cost.agent_id ? `<span>Agent: ${cost.agent_id}</span>` : ''}
+                    <span class="cost-type-badge">${escapeHtml(cost.type)}</span>
+                    <span>${escapeHtml(cost.category || 'General')}</span>
+                    ${cost.agent_id ? `<span>Agent: ${escapeHtml(cost.agent_id)}</span>` : ''}
                     <span>${formatRelativeTime(cost.recorded_at)}</span>
                 </div>
             </div>
@@ -2935,8 +2935,8 @@ function renderQuotasList() {
         return `
             <div class="quota-item">
                 <div class="quota-header">
-                    <span class="quota-type">${formatQuotaType(quota.type)}</span>
-                    <span class="quota-agent">${quota.agent_id || 'Global'}</span>
+                    <span class="quota-type">${escapeHtml(formatQuotaType(quota.type))}</span>
+                    <span class="quota-agent">${escapeHtml(quota.agent_id || 'Global')}</span>
                 </div>
                 <div class="quota-progress">
                     <div class="quota-progress-bar">
