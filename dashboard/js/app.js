@@ -452,12 +452,12 @@ function renderAgents() {
             </div>
             ${subAgents.length > 0 ? subAgents.map(sub => {
                 const subAvatarHtml = sub.avatar
-                    ? `<img src="${sub.avatar}" alt="${escapeHtml(sub.name)}" class="entity-avatar-img sub-agent" onerror="this.outerHTML='<div class=\\'entity-avatar sub-agent\\'>↳</div>'"/>`
+                    ? `<img src="${escapeAttr(sub.avatar)}" alt="${escapeHtml(sub.name)}" class="entity-avatar-img sub-agent" onerror="this.outerHTML='<div class=\\'entity-avatar sub-agent\\'>↳</div>'"/>`
                     : `<div class="entity-avatar sub-agent">↳</div>`;
 
                 return `
                     <div class="entity-row sub-agent-row">
-                        <div class="entity-status ${sub.status}"></div>
+                        <div class="entity-status ${escapeAttr(sub.status)}"></div>
                         ${subAvatarHtml}
                         <div class="entity-info">
                             <span class="entity-name sub">${escapeHtml(sub.name)}</span>
@@ -2935,8 +2935,8 @@ function renderQuotasList() {
         return `
             <div class="quota-item">
                 <div class="quota-header">
-                    <span class="quota-type">${formatQuotaType(quota.type)}</span>
-                    <span class="quota-agent">${quota.agent_id || 'Global'}</span>
+                    <span class="quota-type">${escapeHtml(formatQuotaType(quota.type))}</span>
+                    <span class="quota-agent">${escapeHtml(quota.agent_id || 'Global')}</span>
                 </div>
                 <div class="quota-progress">
                     <div class="quota-progress-bar">
