@@ -1,0 +1,10 @@
+{
+  "name": "Free Mission Control for OpenClaw AI Agents",
+  "slug": "mission-control",
+  "version": "1.0.0",
+  "description": "Set up JARVIS Mission Control — a free, self-hosted task and coordination hub for OpenClaw AI agents. Fork the GitHub repo, run locally, or connect to MissionDeck.ai for a cloud dashboard without hosting anything.",
+  "author": "Asif2BD",
+  "tags": ["mission-control", "tasks", "coordination", "multi-agent", "missiondeck", "free"],
+  "repository": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw",
+  "homepage": "https://missiondeck.ai"
+}
