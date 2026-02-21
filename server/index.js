@@ -30,18 +30,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Security middleware: sanitize route parameters
-app.use((req, res, next) => {
-    // Sanitize all :id parameters to prevent path traversal
-    if (req.params) {
-        for (const key of Object.keys(req.params)) {
-            if (typeof req.params[key] === 'string') {
-                // Allow only safe characters in IDs
-                req.params[key] = req.params[key].replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
-            }
-        }
-    }
-    next();
+// Security middleware: sanitize route parameters via app.param()
+// NOTE: app.use() runs BEFORE Express parses route params (req.params is {}).
+// app.param() runs AFTER parsing, so sanitization actually takes effect.
+['id', 'taskId', 'threadId', 'index', 'itemId'].forEach(paramName => {
+    app.param(paramName, (req, res, next, value) => {
+        req.params[paramName] = String(value).replace(/[^a-zA-Z0-9\-_\.@]/g, '').slice(0, 256);
+        next();
+    });
 });
 
 // Create HTTP server for both Express and WebSocket
@@ -123,6 +119,9 @@ async function readJsonDirectory(dirPath) {
  */
 async function readJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Access denied: invalid file path');
+    }
     const content = await fs.readFile(fullPath, 'utf-8');
     return JSON.parse(content);
 }
@@ -132,6 +131,9 @@ async function readJsonFile(filePath) {
  */
 async function writeJsonFile(filePath, data) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Access denied: invalid file path');
+    }
 
     // Ensure directory exists
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
@@ -145,6 +147,9 @@ async function writeJsonFile(filePath, data) {
  */
 async function deleteJsonFile(filePath) {
     const fullPath = path.join(MISSION_CONTROL_DIR, filePath);
+    if (!isPathSafe(fullPath, MISSION_CONTROL_DIR)) {
+        throw new Error('Access denied: invalid file path');
+    }
     await fs.unlink(fullPath);
 }
 
@@ -321,6 +326,9 @@ app.post('/api/tasks', async (req, res) => {
         if (!task.id) {
             const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
             task.id = `task-${date}-${Date.now()}`;
+        } else {
+            // Sanitize user-supplied ID to prevent path traversal
+            task.id = sanitizeId(task.id);
         }
 
         // Set timestamps
@@ -873,6 +881,9 @@ app.post('/api/messages', async (req, res) => {
         // Generate ID if not provided
         if (!message.id) {
             message.id = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+        } else {
+            // Sanitize user-supplied ID to prevent path traversal
+            message.id = sanitizeId(message.id);
         }
 
         // Set defaults
@@ -1585,7 +1596,7 @@ app.post('/api/schedules/sync', async (req, res) => {
 app.post('/api/schedules', async (req, res) => {
     try {
         const job = {
-            id: req.body.id || `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+            id: req.body.id ? sanitizeId(req.body.id) : `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
             name: req.body.name,
             type: req.body.type || 'cron',
             schedule: req.body.schedule,
