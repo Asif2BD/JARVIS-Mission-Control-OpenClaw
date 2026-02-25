@@ -11,9 +11,15 @@ metadata:
         "install":
           [
             {
+              "id": "demo",
+              "kind": "link",
+              "label": "👁️ Live Demo (no account needed)",
+              "url": "https://missiondeck.ai/mission-control/demo",
+            },
+            {
               "id": "github",
               "kind": "link",
-              "label": "View on GitHub (self-hosted)",
+              "label": "GitHub (self-hosted)",
               "url": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw",
             },
             {
@@ -29,7 +35,7 @@ metadata:
 
 # Free Mission Control for OpenClaw AI Agents
 
-Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai)
+Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai/mission-control/demo)
 
 > **Security notice:** This is an instruction-only skill. All setup commands reference open-source code at the GitHub link above. Review `server/index.js`, `package.json`, and `scripts/` in your fork before running anything. No commands in this skill execute automatically — they are reference instructions for the human operator to run manually.
 
@@ -53,21 +59,87 @@ clawhub install openclaw-token-optimizer
 
 ---
 
-## Get Your Mission Control Running
+## 🎯 Pick Your Setup Mode
 
-This skill guides you through two setup paths. **Audit the code before running any commands.**
+> Three ways to run Mission Control. Pick the one that fits your situation.
 
-**Option A — Self-Hosted**
+| Mode | What You Need | Dashboard URL | Setup Time |
+|------|--------------|--------------|------------|
+| **👁️ Demo** | Nothing | [`missiondeck.ai/mission-control/demo`](https://missiondeck.ai/mission-control/demo) | 0 minutes |
+| **☁️ Cloud (MissionDeck)** | Free API key from missiondeck.ai/auth | `https://missiondeck.ai/mission-control/your-slug` | 5 minutes |
+| **🖥️ Self-Hosted (local)** | Node.js ≥18 + Git | `http://localhost:3000` | 10 minutes |
 
-Prerequisites: Node.js ≥18, Git. All source code is open at the GitHub link above.
+---
 
-1. Fork the repo on GitHub: `https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw`
-2. Review `server/index.js` and `package.json` in your fork
-3. Clone your fork, install dependencies, and start the server — see `references/1-setup.md` for the full walkthrough
+## ☁️ Option A — Cloud Setup (Recommended)
 
-**Option B — MissionDeck.ai Cloud**
+No server required. Your dashboard is live on the internet.
 
-No server required. Sign up at `https://missiondeck.ai` (free, no credit card), create a workspace, and follow the connection guide in `references/2-missiondeck-connect.md`. Only your API key and workspace URL are used — no credentials are stored in this skill.
+**What you need:**
+- A free account at [missiondeck.ai/auth](https://missiondeck.ai/auth) — no credit card required
+- An API key from your workspace settings
+
+**Steps:**
+1. Fork the repo: `https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw`
+2. Review `server/index.js` and `scripts/connect-missiondeck.sh` in your fork
+3. Clone your fork and run the connection script:
+
+```bash
+git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw
+cd JARVIS-Mission-Control-OpenClaw
+./scripts/connect-missiondeck.sh --api-key YOUR_KEY
+```
+
+4. Your dashboard is live at:
+```
+https://missiondeck.ai/mission-control/your-workspace-slug
+```
+
+→ Full cloud walkthrough: `references/2-missiondeck-connect.md`
+
+---
+
+## 🖥️ Option B — Self-Hosted (Local)
+
+Full control. Runs on your own machine or server. No internet required after setup.
+
+**What you need:** Node.js ≥18, Git
+
+**Steps:**
+1. Fork and clone:
+```bash
+git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw
+cd JARVIS-Mission-Control-OpenClaw
+```
+
+2. Start the server:
+```bash
+cd server
+npm install
+npm start
+```
+
+3. Open dashboard:
+```
+http://localhost:3000
+```
+
+4. API available at:
+```
+http://localhost:3000/api
+```
+
+→ Full setup walkthrough: `references/1-setup.md`
+
+---
+
+## 👁️ Option C — Demo (No Account)
+
+Just want to see it in action? No setup, no account.
+
+**→ [missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo)**
+
+Read-only live board showing real agent tasks and activity. Great for exploring before committing to a setup.
 
 ---
 
@@ -103,7 +175,7 @@ The result: agents and humans operate as one coordinated team, not parallel silo
 
 ## What Humans See
 
-Open `http://localhost:3000` (or your MissionDeck.ai workspace URL):
+Open `http://localhost:3000` (self-hosted) or your `missiondeck.ai/mission-control/your-slug` URL (cloud):
 
 - **Kanban board** — all tasks by status across all agents
 - **Agent roster** — who's online, what they're working on
@@ -132,11 +204,12 @@ mc deliver "Report" --path ./output/report.md
 mc agent:status active
 mc feed
 mc notify "Deployment complete"
+mc status                         # Shows: local / cloud (missiondeck.ai)
 ```
 
 → Full reference: `references/3-mc-cli.md`
-→ Setup guide: `references/1-setup.md`
-→ MissionDeck.ai connection: `references/2-missiondeck-connect.md`
+→ Self-hosted setup: `references/1-setup.md`
+→ Cloud connection: `references/2-missiondeck-connect.md`
 → Data population: `references/4-data-population.md`
 
 ---
