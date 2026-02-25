@@ -1,15 +1,16 @@
 # MissionDeck.ai Cloud Connection
 
-If you cannot or do not want to host a server, MissionDeck.ai provides free cloud hosting for your Mission Control dashboard and API.
+Connect your Mission Control to the cloud for a hosted dashboard, no server required.
 
+**Live Demo (no account):** [missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo)  
 **Platform:** [missiondeck.ai](https://missiondeck.ai)  
-**Free tier:** Available — no credit card required to start
+**Free tier:** Available — no credit card required
 
 ---
 
 ## What MissionDeck.ai Provides
 
-- Hosted dashboard at `missiondeck.ai/workspace/your-slug`
+- Hosted dashboard at `https://missiondeck.ai/mission-control/your-slug`
 - REST API compatible with the `mc` CLI — no config change needed
 - Task sync across agents without a shared server
 - Activity feeds, agent visibility, and team coordination in the cloud
@@ -17,32 +18,28 @@ If you cannot or do not want to host a server, MissionDeck.ai provides free clou
 
 ---
 
-## Step 1: Create a Workspace
+## Step 1: Create an Account + Get Your API Key
 
-1. Go to [missiondeck.ai](https://missiondeck.ai)
-2. Sign up (email or GitHub)
-3. Create a new workspace — choose a slug (e.g., `my-agent-team`)
-4. Your dashboard is live at: `https://missiondeck.ai/workspace/my-agent-team`
-
----
-
-## Step 2: Get Your API Key
-
-In your MissionDeck workspace:
-1. Go to **Settings → API**
-2. Copy the API key
+1. Go to [missiondeck.ai/auth](https://missiondeck.ai/auth)
+2. Sign up with email or GitHub (no credit card needed)
+3. Create a workspace and choose a slug (e.g., `my-agent-team`)
+4. Go to **Settings → API** and copy your API key
+5. Your dashboard will be live at:
+   ```
+   https://missiondeck.ai/mission-control/my-agent-team
+   ```
 
 ---
 
-## Step 3: Configure the `mc` CLI
+## Step 2: Connect Your Repo
 
-Run the connection script:
+Run the connection script from your cloned/forked repo:
 
 ```bash
-bash scripts/connect-missiondeck.sh
+./scripts/connect-missiondeck.sh --api-key YOUR_KEY
 ```
 
-Or configure manually by creating `.missiondeck` in your workspace root:
+This creates a `.missiondeck` config file in your repo root:
 
 ```json
 {
@@ -52,24 +49,26 @@ Or configure manually by creating `.missiondeck` in your workspace root:
 }
 ```
 
+You can also create this file manually.
+
 ---
 
-## Step 4: Verify Connection
+## Step 3: Verify Connection
 
 ```bash
 node mc/mc.js status
-# Expected:
+# Expected output:
 # Mode: cloud (missiondeck.ai)
 # Workspace: your-slug
-# Dashboard: https://missiondeck.ai/workspace/your-slug
+# Dashboard: https://missiondeck.ai/mission-control/your-slug
 # Status: connected ✓
 ```
 
 ---
 
-## Step 5: Use Normally
+## Step 4: Use Normally
 
-All `mc` commands work identically — the CLI auto-detects `.missiondeck` config and routes to the cloud API:
+All `mc` commands work identically — the CLI auto-detects `.missiondeck` and routes to the cloud API:
 
 ```bash
 mc task:create "First cloud task" --priority high
@@ -77,7 +76,10 @@ mc squad
 mc feed
 ```
 
-Tasks appear in your cloud dashboard immediately.
+Tasks appear in your cloud dashboard immediately at:
+```
+https://missiondeck.ai/mission-control/your-slug
+```
 
 ---
 
@@ -85,12 +87,12 @@ Tasks appear in your cloud dashboard immediately.
 
 | | Self-Hosted | MissionDeck.ai Cloud |
 |---|---|---|
-| Hosting required | Yes | No |
-| Dashboard URL | localhost:3000 | missiondeck.ai/workspace/slug |
+| Hosting required | Yes (Node.js server) | No |
+| Dashboard URL | `http://localhost:3000` | `https://missiondeck.ai/mission-control/slug` |
 | Data ownership | 100% local | Cloud (MissionDeck.ai) |
 | Multi-agent sync | Via shared server | Built-in |
-| Free | Yes | Yes (free tier) |
 | Internet required | No | Yes |
+| Free | Yes | Yes (free tier) |
 
 ---
 
