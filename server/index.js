@@ -1715,12 +1715,21 @@ server.listen(PORT, () => {
 
     // Start MissionDeck sync if configured
     if (process.env.MISSIONDECK_API_KEY) {
-        const { startMissionDeckSync } = require('./missiondeck-sync');
+        const { startMissionDeckSync, startCloudPull } = require('./missiondeck-sync');
         startMissionDeckSync({
             missionControlDir: MISSION_CONTROL_DIR,
             apiKey: process.env.MISSIONDECK_API_KEY,
             clientVersion: '1.0.1',
         });
+        // Pull cloud-created tasks back to local so agents get Telegram notifications
+        if (process.env.MISSIONDECK_SLUG) {
+            startCloudPull({
+                missionControlDir: MISSION_CONTROL_DIR,
+                apiKey: process.env.MISSIONDECK_API_KEY,
+                slug: process.env.MISSIONDECK_SLUG,
+                intervalMs: 30000,
+            });
+        }
     }
 
     const mdLine = process.env.MISSIONDECK_API_KEY
