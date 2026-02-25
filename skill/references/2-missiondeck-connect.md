@@ -2,13 +2,18 @@
 
 Connect your Mission Control to the cloud for a hosted dashboard, no server required.
 
+> ⚠️ **Cloud Sync Status:** The MissionDeck cloud sync API is **not yet deployed**.
+> Running `connect-missiondeck.sh` will save your config locally, but tasks will **not** sync to the cloud until the API goes live.
+> Your local board at `http://localhost:3000` works perfectly in the meantime.
+> Re-run the script when cloud sync is announced at [missiondeck.ai](https://missiondeck.ai).
+
 **Live Demo (no account):** [missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo)  
 **Platform:** [missiondeck.ai](https://missiondeck.ai)  
 **Free tier:** Available — no credit card required
 
 ---
 
-## What MissionDeck.ai Provides
+## What MissionDeck.ai Will Provide (When Live)
 
 - Hosted dashboard at `https://missiondeck.ai/mission-control/your-slug`
 - REST API compatible with the `mc` CLI — no config change needed
@@ -18,87 +23,68 @@ Connect your Mission Control to the cloud for a hosted dashboard, no server requ
 
 ---
 
-## Step 1: Create an Account + Get Your API Key
+## Setup Steps (For When Cloud API Is Available)
 
-1. Go to [missiondeck.ai/auth](https://missiondeck.ai/auth)
+### Step 1: Create an Account + Get Your API Key
+
+1. Go to [missiondeck.ai/settings/api-keys](https://missiondeck.ai/settings/api-keys)
 2. Sign up with email or GitHub (no credit card needed)
 3. Create a workspace and choose a slug (e.g., `my-agent-team`)
-4. Go to **Settings → API** and copy your API key
-5. Your dashboard will be live at:
+4. Copy your API key
+5. Your dashboard will be at:
    ```
    https://missiondeck.ai/mission-control/my-agent-team
    ```
 
----
-
-## Step 2: Connect Your Repo
-
-Run the connection script from your cloned/forked repo:
+### Step 2: Connect Your Repo
 
 ```bash
 ./scripts/connect-missiondeck.sh --api-key YOUR_KEY
 ```
 
-This creates a `.missiondeck` config file in your repo root:
+The script now checks if the cloud API is live before proceeding. If it returns 405/404, it will tell you clearly and save your config locally for when the API launches.
 
-```json
-{
-  "workspace": "your-slug",
-  "apiKey": "your-api-key",
-  "apiUrl": "https://missiondeck.ai/api"
-}
-```
-
-You can also create this file manually.
-
----
-
-## Step 3: Verify Connection
+### Step 3: Verify Connection
 
 ```bash
 node mc/mc.js status
-# Expected output:
+# Expected when connected:
 # Mode: cloud (missiondeck.ai)
 # Workspace: your-slug
 # Dashboard: https://missiondeck.ai/mission-control/your-slug
 # Status: connected ✓
+#
+# Expected when cloud unavailable:
+# Mode: local
+# Dashboard: http://localhost:3000
+# Status: cloud API not yet available
 ```
 
 ---
 
-## Step 4: Use Normally
+## What To Do Right Now (Cloud Not Available)
 
-All `mc` commands work identically — the CLI auto-detects `.missiondeck` and routes to the cloud API:
+Your local setup is complete and fully functional:
+
+| | Self-Hosted (Now) | MissionDeck Cloud (Coming Soon) |
+|---|---|---|
+| Dashboard | `http://localhost:3000` | `https://missiondeck.ai/mission-control/slug` |
+| Data | 100% local | Cloud-synced |
+| Works offline | Yes | No |
+| Multi-device | Via reverse proxy | Built-in |
+| Status | ✅ Available now | ⏳ Coming soon |
+
+**For remote access right now:** See `skills/deployment.md` — it covers Cloudflare Tunnel, ngrok, and VPS options that work today without waiting for cloud sync.
+
+---
+
+## When Cloud Sync Is Available
+
+The `connect-missiondeck.sh` script will detect it automatically:
 
 ```bash
-mc task:create "First cloud task" --priority high
-mc squad
-mc feed
+# Re-run when ready — script auto-detects availability
+./scripts/connect-missiondeck.sh
 ```
 
-Tasks appear in your cloud dashboard immediately at:
-```
-https://missiondeck.ai/mission-control/your-slug
-```
-
----
-
-## When to Use Cloud vs Self-Hosted
-
-| | Self-Hosted | MissionDeck.ai Cloud |
-|---|---|---|
-| Hosting required | Yes (Node.js server) | No |
-| Dashboard URL | `http://localhost:3000` | `https://missiondeck.ai/mission-control/slug` |
-| Data ownership | 100% local | Cloud (MissionDeck.ai) |
-| Multi-agent sync | Via shared server | Built-in |
-| Internet required | No | Yes |
-| Free | Yes | Yes (free tier) |
-
----
-
-## API Reference
-
-Base URL (cloud): `https://missiondeck.ai/api`  
-Base URL (local): `http://localhost:3000/api`
-
-All endpoints are identical between local and cloud modes. The `mc` CLI handles routing automatically based on `.missiondeck` config presence.
+No other changes needed. The `mc` CLI auto-routes to cloud once `.missiondeck` config is valid.
