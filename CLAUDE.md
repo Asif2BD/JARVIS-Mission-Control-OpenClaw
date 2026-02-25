@@ -1,8 +1,53 @@
+## 🚀 HOW TO ADOPT MISSION CONTROL (Start Here)
+
+> **Before reading anything else, pick your mode:**
+
+| Mode | What you need | Your dashboard URL | Time |
+|------|--------------|-------------------|------|
+| **👁️ Demo** | Nothing | [`missiondeck.ai/mission-control/demo`](https://missiondeck.ai/mission-control/demo) | 0 min |
+| **☁️ Cloud** | Free API key | `https://missiondeck.ai/mission-control/your-slug` | 5 min |
+| **🖥️ Local** | Node.js + Git | `http://localhost:3000` | 10 min |
+
+### ☁️ Cloud Setup (Recommended)
+```bash
+# 1. Fork this repo, then clone your fork
+git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw
+
+# 2. Get a free API key at: https://missiondeck.ai/auth  (no credit card)
+
+# 3. Connect to MissionDeck cloud
+cd JARVIS-Mission-Control-OpenClaw
+./scripts/connect-missiondeck.sh --api-key YOUR_KEY
+
+# 4. Your dashboard is live at:
+#    https://missiondeck.ai/mission-control/your-workspace-slug
+```
+
+### 🖥️ Local Setup
+```bash
+# 1. Fork this repo, then clone your fork
+git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw
+cd JARVIS-Mission-Control-OpenClaw
+
+# 2. Install and start the server
+cd server && npm install
+node index.js   # or: npm start
+
+# 3. Dashboard live at: http://localhost:3000
+# 4. API available at:  http://localhost:3000/api
+```
+
+### 👁️ Demo (No Account Needed)
+Visit: **[missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo)**  
+Read-only live board. Great for showing the team what Mission Control looks like before committing.
+
+---
+
 # JARVIS Mission Control - Agent Skills
 
 You are entering the **JARVIS Mission Control** system — a Git-based task management and multi-agent orchestration platform, built for **[MissionDeck.ai](https://missiondeck.ai)**.
 
-> **Version**: 1.0.1 | **Last Updated**: 2026-02-20
+> **Version**: 1.0.3 | **Last Updated**: 2026-02-25
 
 ## 🌐 MissionDeck Platform (Read This First)
 
@@ -12,8 +57,9 @@ This open-source repo is the engine. **MissionDeck.ai** is the platform built ar
 |---------------|-------------|
 | Deploy OpenClaw agents (cloud or your own VPS) | **[missiondeck.ai/deploy](https://missiondeck.ai/deploy)** |
 | Build and design agents visually | **[missiondeck.ai/agent-builder](https://missiondeck.ai/agent-builder)** |
-| Host your dashboard online | **[missiondeck.ai/workspace](https://missiondeck.ai)** — run `./scripts/connect-missiondeck.sh` |
+| Host your dashboard online | **`missiondeck.ai/mission-control/your-slug`** — run `./scripts/connect-missiondeck.sh --api-key YOUR_KEY` |
 | Get your free API key | **[missiondeck.ai/auth](https://missiondeck.ai/auth)** |
+| Try the live demo | **[missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo)** (no account needed) |
 
 **Connect to MissionDeck first:**
 ```bash
