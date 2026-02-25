@@ -16,6 +16,31 @@ JARVIS Mission Control is a Git-based command center for managing AI agents and 
 
 ---
 
+## 🎯 Pick Your Setup Mode
+
+> Not sure where to start? Use this table to decide in seconds.
+
+| Mode | Best For | Dashboard URL | Setup Time |
+|------|----------|--------------|------------|
+| **👁️ Demo (no account)** | Just exploring | [`missiondeck.ai/mission-control/demo`](https://missiondeck.ai/mission-control/demo) | 0 minutes |
+| **☁️ Cloud (MissionDeck)** | Teams, persistent workspace | `https://missiondeck.ai/mission-control/your-slug` | 5 minutes |
+| **🖥️ Self-Hosted (local)** | Full control, offline | `http://localhost:3000` | 10 minutes |
+
+**For cloud access, you need:**
+1. A free account at [missiondeck.ai/auth](https://missiondeck.ai/auth) (no credit card)
+2. An API key from your workspace settings
+3. Run: `./scripts/connect-missiondeck.sh --api-key YOUR_KEY`
+
+**For local setup, you need:**
+1. Node.js ≥18 + Git
+2. Fork & clone this repo
+3. Run: `cd server && npm install && npm start`
+4. Open: `http://localhost:3000`
+
+---
+
+---
+
 ## ⭐ Get Started with MissionDeck (Recommended)
 
 MissionDeck is the platform built around this open-source engine. It gives you:
@@ -47,7 +72,7 @@ Design your agents visually at **[missiondeck.ai/agent-builder](https://missiond
 ### 🌐 Hosted Dashboard
 Your Mission Control board, live on the internet:
 ```
-https://missiondeck.ai/workspace/your-slug
+https://missiondeck.ai/mission-control/your-slug
 ```
 No server. No port-forwarding. Local `.mission-control/` data auto-syncs to the cloud in real-time.
 
