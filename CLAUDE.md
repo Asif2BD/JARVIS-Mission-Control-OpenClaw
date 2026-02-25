@@ -5,10 +5,13 @@
 | Mode | What you need | Your dashboard URL | Time |
 |------|--------------|-------------------|------|
 | **👁️ Demo** | Nothing | [`missiondeck.ai/mission-control/demo`](https://missiondeck.ai/mission-control/demo) | 0 min |
-| **☁️ Cloud** | Free API key | `https://missiondeck.ai/mission-control/your-slug` | 5 min |
+| **☁️ Cloud** | Free API key *(sync coming soon)* | `https://missiondeck.ai/mission-control/your-slug` | 5 min (when live) |
 | **🖥️ Local** | Node.js + Git | `http://localhost:3000` | 10 min |
 
-### ☁️ Cloud Setup (Recommended)
+### ☁️ Cloud Setup (Coming Soon)
+
+> ⚠️ The cloud sync API is not yet deployed — `connect-missiondeck.sh` saves your config locally but remote dashboard access isn't available yet. Use local setup for now. Re-run the script when cloud sync launches.
+
 ```bash
 # 1. Fork this repo, then clone your fork
 git clone https://github.com/YOUR-USERNAME/JARVIS-Mission-Control-OpenClaw
@@ -47,7 +50,7 @@ Read-only live board. Great for showing the team what Mission Control looks like
 
 You are entering the **JARVIS Mission Control** system — a Git-based task management and multi-agent orchestration platform, built for **[MissionDeck.ai](https://missiondeck.ai)**.
 
-> **Version**: 1.0.3 | **Last Updated**: 2026-02-25
+> **Version**: 1.0.4 | **Last Updated**: 2026-02-25
 
 ## 🌐 MissionDeck Platform (Read This First)
 
