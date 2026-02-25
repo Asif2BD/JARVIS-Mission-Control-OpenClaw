@@ -122,8 +122,8 @@ fi
 printf '\n# MissionDeck Cloud (added by connect-missiondeck.sh)\nmissiondeck_enabled: true\nmissiondeck_slug: %s\nmissiondeck_url: %s\n' \
   "$WORKSPACE_SLUG" "$MISSIONDECK_URL" >> "$CONFIG_FILE"
 
-printf 'MISSIONDECK_API_KEY=%s\nMISSIONDECK_URL=%s\nMISSIONDECK_SLUG=%s\n' \
-  "$API_KEY" "$MISSIONDECK_URL" "$WORKSPACE_SLUG" > "$MC_DIR/.missiondeck"
+printf 'MISSIONDECK_API_KEY=%s\nMISSIONDECK_URL=%s\nMISSIONDECK_SLUG=%s\nMISSIONDECK_API_URL=%s\n' \
+  "$API_KEY" "$MISSIONDECK_URL" "$WORKSPACE_SLUG" "$MISSIONDECK_API_URL" > "$MC_DIR/.missiondeck"
 chmod 600 "$MC_DIR/.missiondeck"
 
 echo -e "  ${GREEN}✅ Config saved to .missiondeck${NC}"
