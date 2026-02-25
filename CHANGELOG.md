@@ -5,6 +5,22 @@ All notable changes to JARVIS Mission Control will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-02-25
+
+### Added
+- **Live Demo URL** — `https://missiondeck.ai/mission-control/demo` now documented throughout (README, CLAUDE.md, SKILL.md, skill references). No account or setup required to preview Mission Control.
+- **Three-path setup guide** — README and CLAUDE.md now open with a "Pick Your Setup Mode" decision table: Demo (0 min) / Cloud (5 min) / Self-Hosted (10 min). Agents no longer need to read the full file to know how to start.
+- **Adoption section in CLAUDE.md** — `## 🚀 HOW TO ADOPT MISSION CONTROL` added as the very first section with copy-paste commands for both cloud and local setup.
+
+### Fixed
+- **Cloud dashboard URL pattern** — All references corrected from `missiondeck.ai/workspace/slug` to `missiondeck.ai/mission-control/slug`.
+- **ClawHub skill clarity** — `skill/SKILL.md` rewritten with three explicit options (A/B/C), each with prerequisites, steps, and the correct dashboard URL.
+- **`skill/references/2-missiondeck-connect.md`** — Updated cloud URL, added demo link, clarified what the API key enables.
+
+### Changed
+- CLAUDE.md version bumped to 1.0.3 / Last Updated 2026-02-25
+- ClawHub published as `jarvis-mission-control@1.0.5`
+
 ## [1.0.2] - 2026-02-21
 
 ### Security
