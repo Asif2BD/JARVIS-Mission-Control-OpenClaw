@@ -787,6 +787,29 @@ async function setupFileWatcher() {
         return;
     }
     
+    // Pre-seed mainSessionOffsets with current line counts so we only process
+    // messages that arrive AFTER this bridge process started (avoids bulk-creating
+    // tasks for all historical @mentions on every restart).
+    for (const watchPath of watchPaths) {
+        try {
+            const files = await fs.readdir(watchPath);
+            for (const fname of files) {
+                if (!fname.endsWith('.jsonl')) continue;
+                const fpath = path.join(watchPath, fname);
+                const sessionId = fname.replace(/\.jsonl$/, '');
+                // Only pre-seed main sessions (spawned sessions are in trackedSessions)
+                if (!trackedSessions.has(sessionId)) {
+                    try {
+                        const content = await fs.readFile(fpath, 'utf-8');
+                        const lineCount = content.split('\n').filter(Boolean).length;
+                        mainSessionOffsets.set(fpath, lineCount);
+                    } catch (_) {}
+                }
+            }
+        } catch (_) {}
+    }
+    console.log(`[Bridge] Pre-seeded ${mainSessionOffsets.size} main session offsets`);
+
     const watcher = chokidar.watch(watchPaths, {
         ignored: /\.lock$/,
         persistent: true,
