@@ -1,8 +1,8 @@
 {
   "name": "Free Mission Control for OpenClaw AI Agents",
   "slug": "jarvis-mission-control",
-  "version": "1.0.6",
-  "description": "Set up JARVIS Mission Control — a free, self-hosted task and coordination hub for OpenClaw AI agents. Fork the GitHub repo, run locally, or connect to MissionDeck.ai for a cloud dashboard without hosting anything.",
+  "version": "1.0.7",
+  "description": "Set up JARVIS Mission Control \u2014 a free, self-hosted task and coordination hub for OpenClaw AI agents. Fork the GitHub repo, run locally, or connect to MissionDeck.ai for a cloud dashboard without hosting anything.",
   "author": "Asif2BD",
   "tags": [
     "mission-control",
@@ -14,5 +14,5 @@
   ],
   "repository": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw",
   "homepage": "https://missiondeck.ai",
-  "changelog": "v1.0.6: Context window meter in agent cards — live usage bar per agent (green/amber/red). New POST /api/agents/:id/context endpoint + report-context.sh heartbeat script. v1.0.5: Bidirectional cloud sync — cloud-created tasks sync back to local MC via startCloudPull() polling mc-api every 30s, triggering Telegram notifications."
+  "changelog": "v1.0.7: Telegram \u2192 MC auto-routing \u2014 bridge now watches OpenClaw JSONL sessions and auto-creates task cards when users mention bots in Telegram. Idempotent via message_id deduplication. SKILL.md updated with bot-mapping config docs."
 }
