@@ -37,27 +37,75 @@ const processedTelegramMessages = new Set();
 const mainSessionOffsets = new Map(); // filePath -> lastLineNum
 
 /**
- * Parse [Telegram ...] header from OpenClaw session user messages.
- * Format: "[Telegram SenderName (@handle) id:SENDER_ID +Xs YYYY-MM-DD HH:MM UTC] message\n[message_id: MSG_ID]"
- * Group format may include: "id:-1003748058940 topic:158"
- * Returns { sender, chatId, messageId } or null if not a Telegram message.
+ * Parse OpenClaw session user message metadata.
+ *
+ * Handles two formats emitted by the OpenClaw gateway:
+ *
+ * Format A (older / DM):
+ *   "[Telegram SenderName (@handle) id:SENDER_ID +Xs YYYY-MM-DD HH:MM UTC] body\n[message_id: MSG_ID]"
+ *
+ * Format B (current group sessions):
+ *   "Conversation info (untrusted metadata):\n```json\n{ \"message_id\": \"692\", ... }\n```\n
+ *    Sender (untrusted metadata):\n```json\n{ \"label\": \"M Asif Rahman\", ... }\n```\n
+ *    ...\n
+ *    <actual message body>"
+ *
+ * Returns { sender, chatId, messageId, body } or null if not a recognisable Telegram message.
  */
 function parseTelegramHeader(text) {
-    if (!text || !text.startsWith('[Telegram ')) return null;
-    try {
-        // Extract chat/group id
-        const chatIdMatch = text.match(/\bid:(-?\d+)/);
-        const chatId = chatIdMatch ? chatIdMatch[1] : 'unknown';
-        // Extract sender name (before the first parenthesis or id: token)
-        const senderMatch = text.match(/^\[Telegram\s+([^\](@]+?)(?:\s+\(@|\s+id:)/);
-        const sender = senderMatch ? senderMatch[1].trim() : 'Unknown';
-        // Extract message_id
-        const msgIdMatch = text.match(/\[message_id:\s*(\d+)\]/);
-        const messageId = msgIdMatch ? msgIdMatch[1] : String(Date.now());
-        return { sender, chatId, messageId };
-    } catch (e) {
-        return null;
+    if (!text) return null;
+
+    // ── Format B: Conversation info blocks ──────────────────────────────────
+    if (text.includes('Conversation info (untrusted metadata):')) {
+        try {
+            // Extract conversation metadata JSON block
+            const convMatch = text.match(/Conversation info \(untrusted metadata\):\s*```json\s*(\{[\s\S]*?\})\s*```/);
+            if (!convMatch) return null;
+            const conv = JSON.parse(convMatch[1]);
+
+            // Only handle Telegram group/direct messages
+            if (!conv.conversation_label) return null;
+
+            // chat id: from conversation_label "Matrix Zion id:-1003748058940 topic:158"
+            const chatIdMatch = conv.conversation_label.match(/id:(-?\d+)/);
+            const chatId = chatIdMatch ? chatIdMatch[1] : conv.chat_id || 'unknown';
+
+            // sender name from Sender block
+            const senderMatch = text.match(/Sender \(untrusted metadata\):\s*```json\s*(\{[\s\S]*?\})\s*```/);
+            let sender = 'Architect';
+            if (senderMatch) {
+                try { sender = JSON.parse(senderMatch[1]).label || sender; } catch (_) {}
+            }
+
+            const messageId = String(conv.message_id || Date.now());
+
+            // Actual body = everything after the last ``` block
+            const lastTicksIdx = text.lastIndexOf('```');
+            const body = lastTicksIdx >= 0 ? text.slice(lastTicksIdx + 3).trim() : text.trim();
+
+            return { sender, chatId, messageId, body };
+        } catch (e) {
+            return null;
+        }
     }
+
+    // ── Format A: [Telegram ...] prefix ─────────────────────────────────────
+    if (text.startsWith('[Telegram ')) {
+        try {
+            const chatIdMatch = text.match(/\bid:(-?\d+)/);
+            const chatId = chatIdMatch ? chatIdMatch[1] : 'unknown';
+            const senderMatch = text.match(/^\[Telegram\s+([^\](@]+?)(?:\s+\(@|\s+id:)/);
+            const sender = senderMatch ? senderMatch[1].trim() : 'Unknown';
+            const msgIdMatch = text.match(/\[message_id:\s*(\d+)\]/);
+            const messageId = msgIdMatch ? msgIdMatch[1] : String(Date.now());
+            const body = text;
+            return { sender, chatId, messageId, body };
+        } catch (e) {
+            return null;
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -82,30 +130,32 @@ async function processMainSessionForTelegramTasks(filePath) {
             ? (msg.content.find(c => c.type === 'text')?.text || '')
             : (msg.content || '');
 
-        // Only forward messages that came from Telegram (not cron, not system)
-        if (!rawContent.startsWith('[Telegram ')) continue;
-
-        const mentions = telegramBridge.parseMentions(rawContent);
-        if (mentions.length === 0) continue;
+        // Only handle Telegram-originated messages (both legacy [Telegram ...] and new Conversation info format)
+        const isTelegram = rawContent.startsWith('[Telegram ') ||
+                           rawContent.includes('Conversation info (untrusted metadata):');
+        if (!isTelegram) continue;
 
         const tgHeader = parseTelegramHeader(rawContent);
-        const msgKey = tgHeader ? `${tgHeader.chatId}:${tgHeader.messageId}` : null;
+        if (!tgHeader) continue;
 
-        if (msgKey && processedTelegramMessages.has(msgKey)) continue;
-        if (msgKey) processedTelegramMessages.add(msgKey);
+        // Use the extracted body for mention detection (avoids false positives from metadata JSON)
+        const bodyForMentions = tgHeader.body || rawContent;
+        const mentions = telegramBridge.parseMentions(bodyForMentions);
+        if (mentions.length === 0) continue;
 
-        const sender = tgHeader ? tgHeader.sender : 'Architect';
-        const chatId = tgHeader ? tgHeader.chatId : 'group';
+        const msgKey = `${tgHeader.chatId}:${tgHeader.messageId}`;
+        if (processedTelegramMessages.has(msgKey)) continue;
+        processedTelegramMessages.add(msgKey);
 
         try {
             await telegramBridge.createTaskFromTelegram({
-                from: sender,
-                message: rawContent,
-                chat_id: chatId,
-                message_id: tgHeader ? tgHeader.messageId : `${Date.now()}`,
+                from: tgHeader.sender,
+                message: bodyForMentions,
+                chat_id: tgHeader.chatId,
+                message_id: tgHeader.messageId,
                 timestamp: new Date().toISOString()
             });
-            console.log(`[Bridge] MC task from main session Telegram: ${telegramBridge.extractTitle(rawContent)}`);
+            console.log(`[Bridge] MC task from main session Telegram: ${telegramBridge.extractTitle(bodyForMentions)}`);
         } catch (err) {
             console.error('[Bridge] Failed to create task from main session:', err.message);
         }
@@ -503,11 +553,13 @@ async function processSessionActivity(sessionId) {
                     : msg.content;
                 
                 // Check for @mentions of any bot in Telegram messages — route to MC task
-                const mentions = telegramBridge.parseMentions(userContent);
+                const tgHeader = parseTelegramHeader(userContent);
+                const bodyForMentions = tgHeader?.body || userContent;
+                const mentions = telegramBridge.parseMentions(bodyForMentions);
                 if (mentions.length > 0) {
-                    // Parse [Telegram ...] header for chat_id, sender, message_id
-                    const tgHeader = parseTelegramHeader(userContent);
-                    const msgKey = tgHeader ? `${tgHeader.chatId}:${tgHeader.messageId}` : null;
+                    const msgKey = tgHeader
+                        ? `${tgHeader.chatId}:${tgHeader.messageId}`
+                        : null;
 
                     // Skip if already forwarded (deduplication)
                     if (!msgKey || !processedTelegramMessages.has(msgKey)) {
@@ -520,12 +572,12 @@ async function processSessionActivity(sessionId) {
                         try {
                             await telegramBridge.createTaskFromTelegram({
                                 from: sender,
-                                message: userContent,
+                                message: bodyForMentions,
                                 chat_id: chatId,
                                 message_id: tgHeader ? tgHeader.messageId : `${Date.now()}`,
                                 timestamp: new Date().toISOString()
                             });
-                            console.log(`[Bridge] Created MC task from Telegram: ${telegramBridge.extractTitle(userContent)}`);
+                            console.log(`[Bridge] Created MC task from Telegram: ${telegramBridge.extractTitle(bodyForMentions)}`);
                         } catch (err) {
                             console.error('[Bridge] Failed to create task from Telegram mention:', err.message);
                         }
