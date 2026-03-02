@@ -103,12 +103,12 @@ function showLoading(message = 'Loading...') {
         overlay = document.createElement('div');
         overlay.id = 'loading-overlay';
         overlay.className = 'loading-overlay';
-        overlay.innerHTML = `
+        overlay.innerHTML = DOMPurify.sanitize(`
             <div class="loading-content">
                 <div class="loading-spinner"></div>
                 <div class="loading-text">${escapeHtml(message)}</div>
             </div>
-        `;
+        `);
         document.body.appendChild(overlay);
     } else {
         overlay.querySelector('.loading-text').textContent = message;
@@ -148,14 +148,14 @@ function showToast(type, title, message) {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = `
+    toast.innerHTML = DOMPurify.sanitize(`
         <span class="toast-icon">${icons[type] || 'ℹ'}</span>
         <div class="toast-content">
             <div class="toast-title">${escapeHtml(title)}</div>
             <div class="toast-message">${escapeHtml(message)}</div>
         </div>
         <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-    `;
+    `);
 
     container.appendChild(toast);
 
@@ -301,7 +301,7 @@ function renderKanban() {
         countBadge.textContent = tasks.length;
 
         // Clear existing tasks
-        container.innerHTML = '';
+        container.innerHTML = ''; // safe: static content
 
         // Render tasks
         tasks.forEach(task => {
@@ -332,7 +332,7 @@ function createTaskCard(task) {
         window.missionControlData.getAgent(task.assignee) : null;
     const assigneeName = assignee ? assignee.name : null;
 
-    card.innerHTML = `
+    card.innerHTML = DOMPurify.sanitize(`
         <div class="task-card-content">
             <div class="task-title">${escapeHtml(task.title)}</div>
             <div class="task-id">${task.id}</div>
@@ -350,7 +350,7 @@ function createTaskCard(task) {
                 </div>
             ` : ''}
         </div>
-    `;
+    `);
 
     return card;
 }
@@ -369,7 +369,7 @@ function renderHumans() {
     const activeCount = humans.filter(h => h.status === 'online' || h.status === 'away').length;
     subtitle.textContent = `${activeCount} online`;
 
-    container.innerHTML = humans.map(human => {
+    container.innerHTML = DOMPurify.sanitize(humans.map(human => {
         const avatarHtml = human.avatar
             ? `<img src="${escapeAttr(human.avatar)}" alt="${escapeHtml(human.name)}" class="entity-avatar-img human" onerror="this.outerHTML='<div class=\\'entity-avatar human\\'>${escapeAttr(getInitials(human.name))}</div>'"/>`
             : `<div class="entity-avatar human">${getInitials(human.name)}</div>`;
@@ -388,7 +388,7 @@ function renderHumans() {
                 <span class="entity-tasks">${human.completed_tasks || 0}</span>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 /**
@@ -429,7 +429,7 @@ function renderAgents() {
     // Get all agents except sub-agents
     const parentAgents = allAgents.filter(a => a.role !== 'sub-agent');
 
-    container.innerHTML = parentAgents.map(agent => {
+    container.innerHTML = DOMPurify.sanitize(parentAgents.map(agent => {
         const subAgents = window.missionControlData.getSubAgents(agent.id);
         const activeTasks = agent.current_tasks ? agent.current_tasks.length : 0;
 
@@ -467,7 +467,7 @@ function renderAgents() {
                 `;
             }).join('') : ''}
         `;
-    }).join('');
+    }).join(''));
 }
 
 /**
@@ -484,7 +484,7 @@ function renderQueue() {
     const runningCount = queue.filter(q => q.status === 'running').length;
     if (countEl) countEl.textContent = `${runningCount} running`;
 
-    container.innerHTML = queue.map(item => {
+    container.innerHTML = DOMPurify.sanitize(queue.map(item => {
         const successRate = item.run_count > 0
             ? Math.round((item.success_count / item.run_count) * 100)
             : 100;
@@ -507,7 +507,7 @@ function renderQueue() {
                 ${item.last_run ? `<div class="job-last-run">Last: ${formatDate(item.last_run)}</div>` : ''}
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 /**
@@ -590,7 +590,7 @@ function updateDashboardName(name) {
     const logo = document.querySelector('.logo');
     if (logo) {
         const icon = logo.querySelector('.logo-icon');
-        logo.innerHTML = '';
+        logo.innerHTML = ''; // safe: static content
         if (icon) logo.appendChild(icon);
         logo.appendChild(document.createTextNode(' ' + name));
     }
@@ -653,16 +653,16 @@ function openTaskModal(task) {
 
     // Labels
     const labelsContainer = document.getElementById('modal-labels');
-    labelsContainer.innerHTML = task.labels && task.labels.length > 0 ?
+    labelsContainer.innerHTML = DOMPurify.sanitize(task.labels && task.labels.length > 0 ?
         task.labels.map(label => `<span class="label">${escapeHtml(label)}</span>`).join('') :
-        '<span class="text-muted">No labels</span>';
+        '<span class="text-muted">No labels</span>');
 
     // Attachments
     renderTaskAttachments(task);
 
     // Comments
     const commentsContainer = document.getElementById('modal-comments');
-    commentsContainer.innerHTML = task.comments && task.comments.length > 0 ?
+    commentsContainer.innerHTML = DOMPurify.sanitize(task.comments && task.comments.length > 0 ?
         task.comments.map(comment => `
             <div class="comment">
                 <div class="comment-header">
@@ -672,7 +672,7 @@ function openTaskModal(task) {
                 <div class="comment-content">${escapeHtml(comment.content)}</div>
             </div>
         `).join('') :
-        '<p class="text-muted">No comments yet</p>';
+        '<p class="text-muted">No comments yet</p>');
 
     // Update URL with task ID
     history.pushState({ taskId: task.id }, '', `#${task.id}`);
@@ -703,10 +703,10 @@ function openCreateTaskModal() {
     const assigneeSelect = document.getElementById('task-assignee');
     const agents = window.missionControlData.getActiveAgents();
 
-    assigneeSelect.innerHTML = '<option value="">Unassigned</option>' +
+    assigneeSelect.innerHTML = DOMPurify.sanitize('<option value="">Unassigned</option>' +
         agents.map(agent => `
             <option value="${agent.id}">${escapeHtml(agent.name)}</option>
-        `).join('');
+        `).join(''));
 
     // Clear form
     document.getElementById('task-title').value = '';
@@ -1254,11 +1254,11 @@ function openAgentProfile(agentId) {
     // Skills / Capabilities (Feature 3)
     const skillsEl = document.getElementById('profile-skills');
     if (agent.capabilities && agent.capabilities.length > 0) {
-        skillsEl.innerHTML = agent.capabilities.map(skill =>
+        skillsEl.innerHTML = DOMPurify.sanitize(agent.capabilities.map(skill =>
             `<span class="skill-tag">${escapeHtml(skill)}</span>`
-        ).join('');
+        ).join(''));
     } else {
-        skillsEl.innerHTML = '<span class="text-muted">No skills listed</span>';
+        skillsEl.innerHTML = '<span class="text-muted">No skills listed</span>'; // safe: static content
     }
 
     // Reset tabs
@@ -1414,11 +1414,11 @@ function computeAttentionItems(agentId) {
  */
 function renderAttentionItems(container, items) {
     if (items.length === 0) {
-        container.innerHTML = '<p class="empty-state">No items needing attention</p>';
+        container.innerHTML = '<p class="empty-state">No items needing attention</p>'; // safe: static content
         return;
     }
 
-    container.innerHTML = items.map(item => {
+    container.innerHTML = DOMPurify.sanitize(items.map(item => {
         let icon, label, colorClass;
         switch (item.type) {
             case 'critical_task':
@@ -1448,7 +1448,7 @@ function renderAttentionItems(container, items) {
                 <div class="attention-time">${formatDate(item.timestamp)}</div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 /**
@@ -1546,11 +1546,11 @@ function computeTimeline(agentId) {
  */
 function renderTimeline(container, items) {
     if (items.length === 0) {
-        container.innerHTML = '<p class="empty-state">No activity recorded yet</p>';
+        container.innerHTML = '<p class="empty-state">No activity recorded yet</p>'; // safe: static content
         return;
     }
 
-    container.innerHTML = items.map((item, idx) => {
+    container.innerHTML = DOMPurify.sanitize(items.map((item, idx) => {
         let actionText, dotClass;
 
         if (item.type === 'comment') {
@@ -1587,7 +1587,7 @@ function renderTimeline(container, items) {
                 </div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 // ============================================
@@ -1665,11 +1665,11 @@ async function loadConversations(agentId) {
  */
 function renderConversationsList(container, threads, agentId) {
     if (threads.length === 0) {
-        container.innerHTML = '<p class="empty-state">No conversations yet</p>';
+        container.innerHTML = '<p class="empty-state">No conversations yet</p>'; // safe: static content
         return;
     }
 
-    container.innerHTML = threads.map(thread => {
+    container.innerHTML = DOMPurify.sanitize(threads.map(thread => {
         const agent = thread.otherAgent;
         const avatarHtml = agent.avatar
             ? `<img src="${escapeAttr(agent.avatar)}" class="conv-avatar" alt="${escapeHtml(agent.name)}" onerror="this.outerHTML='<div class=\\'conv-avatar-fallback\\'>${escapeAttr(getInitials(agent.name))}</div>'">`
@@ -1692,7 +1692,7 @@ function renderConversationsList(container, threads, agentId) {
                 </div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 /**
@@ -1745,7 +1745,7 @@ function renderThreadMessages(messages) {
 
     const myAgentId = currentProfileAgent ? currentProfileAgent.id : '';
 
-    container.innerHTML = messages.map(msg => {
+    container.innerHTML = DOMPurify.sanitize(messages.map(msg => {
         const isMine = msg.from === myAgentId;
         const senderAgent = window.missionControlData.getAgent(msg.from);
         const senderName = senderAgent ? senderAgent.name : msg.from;
@@ -1757,7 +1757,7 @@ function renderThreadMessages(messages) {
                 <div class="message-time">${formatDate(msg.timestamp)}</div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 
     // Scroll to bottom
     container.scrollTop = container.scrollHeight;
@@ -1867,11 +1867,11 @@ async function loadChatMessages() {
  */
 function renderChatMessages(container, messages) {
     if (messages.length === 0) {
-        container.innerHTML = '<p class="chat-empty">No messages yet. Start a conversation!</p>';
+        container.innerHTML = '<p class="chat-empty">No messages yet. Start a conversation!</p>'; // safe: static content
         return;
     }
 
-    container.innerHTML = messages.map(msg => {
+    container.innerHTML = DOMPurify.sanitize(messages.map(msg => {
         const isHuman = msg.from && msg.from.startsWith('human-');
         const sender = isHuman
             ? (window.missionControlData.getHumans().find(h => h.id === msg.from) || { name: msg.from })
@@ -1886,7 +1886,7 @@ function renderChatMessages(container, messages) {
                 <div class="chat-msg-content">${escapeHtml(msg.content)}</div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 
     // Scroll to bottom
     container.scrollTop = container.scrollHeight;
@@ -1963,7 +1963,7 @@ async function loadFiles(directory = 'reports') {
     currentFilesDir = directory;
     
     // Show loading state
-    container.innerHTML = '<p class="empty-state">Loading...</p>';
+    container.innerHTML = '<p class="empty-state">Loading...</p>'; // safe: static content
     
     try {
         let files = [];
@@ -1980,11 +1980,11 @@ async function loadFiles(directory = 'reports') {
         
         // Render files
         if (files.length === 0) {
-            container.innerHTML = `<p class="empty-state">No files in ${directory}</p>`;
+            container.innerHTML = DOMPurify.sanitize(`<p class="empty-state">No files in ${directory}</p>`);
             return;
         }
         
-        container.innerHTML = files.map(file => {
+        container.innerHTML = DOMPurify.sanitize(files.map(file => {
             const sizeStr = formatFileSize(file.size);
             const dateStr = formatDate(file.modified);
             
@@ -2000,11 +2000,11 @@ async function loadFiles(directory = 'reports') {
                     </div>
                 </div>
             `;
-        }).join('');
+        }).join(''));
         
     } catch (error) {
         console.error('Failed to load files:', error);
-        container.innerHTML = '<p class="empty-state">Failed to load files</p>';
+        container.innerHTML = '<p class="empty-state">Failed to load files</p>'; // safe: static content
     }
 }
 
@@ -2036,7 +2036,7 @@ async function openFileViewer(directory, filename) {
     
     // Show loading
     titleEl.textContent = filename;
-    contentEl.innerHTML = '<p class="text-muted">Loading...</p>';
+    contentEl.innerHTML = '<p class="text-muted">Loading...</p>'; // safe: static content
     contentEl.className = 'file-content';
     modal.classList.add('open');
     
@@ -2048,7 +2048,7 @@ async function openFileViewer(directory, filename) {
         }
         
         if (!fileData) {
-            contentEl.innerHTML = '<p class="text-muted">Failed to load file</p>';
+            contentEl.innerHTML = '<p class="text-muted">Failed to load file</p>'; // safe: static content
             return;
         }
         
@@ -2064,10 +2064,10 @@ async function openFileViewer(directory, filename) {
         // Render content based on type
         if (fileData.type === 'md') {
             contentEl.className = 'file-content markdown';
-            contentEl.innerHTML = renderMarkdown(fileData.content);
+            contentEl.innerHTML = DOMPurify.sanitize(renderMarkdown(fileData.content));
         } else if (fileData.type === 'json') {
             contentEl.className = 'file-content json-viewer';
-            contentEl.innerHTML = renderJsonSyntax(fileData.content);
+            contentEl.innerHTML = DOMPurify.sanitize(renderJsonSyntax(fileData.content));
         } else {
             contentEl.className = 'file-content plain-text';
             contentEl.textContent = fileData.content;
@@ -2075,7 +2075,7 @@ async function openFileViewer(directory, filename) {
         
     } catch (error) {
         console.error('Failed to load file:', error);
-        contentEl.innerHTML = `<p class="text-muted">Error: ${escapeHtml(error.message)}</p>`;
+        contentEl.innerHTML = DOMPurify.sanitize(`<p class="text-muted">Error: ${escapeHtml(error.message)}</p>`);
     }
 }
 
@@ -2267,11 +2267,11 @@ function renderTaskAttachments(task) {
     if (!container) return;
     
     if (!task.attachments || task.attachments.length === 0) {
-        container.innerHTML = '<p class="text-muted">No attachments</p>';
+        container.innerHTML = '<p class="text-muted">No attachments</p>'; // safe: static content
         return;
     }
     
-    container.innerHTML = task.attachments.map(att => {
+    container.innerHTML = DOMPurify.sanitize(task.attachments.map(att => {
         // Support both path-based and url-based attachments
         const resolvedPath = att.path || att.url || '';
         const pathParts = resolvedPath.split('/');
@@ -2300,7 +2300,7 @@ function renderTaskAttachments(task) {
                 </button>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 // ============================================
@@ -2498,10 +2498,10 @@ function updateResourceSummary() {
     
     if (warningQuotas.length > 0) {
         quotaWarningsEl.style.display = 'block';
-        quotaWarningList.innerHTML = warningQuotas.map(q => {
+        quotaWarningList.innerHTML = DOMPurify.sanitize(warningQuotas.map(q => {
             const percent = ((q.current_usage / q.limit) * 100).toFixed(0);
             return `<div class="quota-warning-item">${q.type}: ${percent}% used${q.agent_id ? ` (${q.agent_id})` : ''}</div>`;
-        }).join('');
+        }).join(''));
     } else {
         quotaWarningsEl.style.display = 'none';
     }
@@ -2571,7 +2571,7 @@ function populateAgentSelects() {
         
         // Keep first option (system/global)
         const firstOption = select.options[0];
-        select.innerHTML = '';
+        select.innerHTML = ''; // safe: static content
         select.appendChild(firstOption);
         
         agents.forEach(agent => {
@@ -2588,11 +2588,11 @@ function populateAgentSelects() {
 function renderCredentialsList() {
     const list = document.getElementById('credentials-list');
     if (!resourcesData.credentials.length) {
-        list.innerHTML = '<p class="empty-state">No credentials stored yet. Add your first credential to get started.</p>';
+        list.innerHTML = '<p class="empty-state">No credentials stored yet. Add your first credential to get started.</p>'; // safe: static content
         return;
     }
     
-    list.innerHTML = resourcesData.credentials.map(cred => `
+    list.innerHTML = DOMPurify.sanitize(resourcesData.credentials.map(cred => `
         <div class="credential-item">
             <div class="credential-icon">🔐</div>
             <div class="credential-info">
@@ -2613,7 +2613,7 @@ function renderCredentialsList() {
                 </button>
             </div>
         </div>
-    `).join('');
+    `).join(''));
 }
 
 function openAddCredentialForm() {
@@ -2664,13 +2664,13 @@ async function deleteCredential(id) {
 function renderResourcesList() {
     const list = document.getElementById('resources-list');
     if (!resourcesData.resources.length) {
-        list.innerHTML = '<p class="empty-state">No resources registered yet. Add servers, GPUs, or other shared resources.</p>';
+        list.innerHTML = '<p class="empty-state">No resources registered yet. Add servers, GPUs, or other shared resources.</p>'; // safe: static content
         return;
     }
     
     const icons = { server: '🖥️', gpu: '⚡', service: '☁️', license: '📄', other: '📦' };
     
-    list.innerHTML = resourcesData.resources.map(res => `
+    list.innerHTML = DOMPurify.sanitize(resourcesData.resources.map(res => `
         <div class="resource-item">
             <div class="resource-icon">${icons[res.type] || '📦'}</div>
             <div class="resource-info">
@@ -2686,7 +2686,7 @@ function renderResourcesList() {
                 <button class="btn btn-sm btn-secondary" onclick="quickBookResource('${escapeAttr(res.id)}')">Book</button>
             </div>
         </div>
-    `).join('');
+    `).join(''));
 }
 
 function openAddResourceForm() {
@@ -2730,11 +2730,11 @@ function quickBookResource(resourceId) {
 function renderBookingsList() {
     const list = document.getElementById('bookings-list');
     if (!resourcesData.bookings.length) {
-        list.innerHTML = '<p class="empty-state">No bookings yet. Book a resource to reserve it for a specific time.</p>';
+        list.innerHTML = '<p class="empty-state">No bookings yet. Book a resource to reserve it for a specific time.</p>'; // safe: static content
         return;
     }
     
-    list.innerHTML = resourcesData.bookings.map(booking => {
+    list.innerHTML = DOMPurify.sanitize(resourcesData.bookings.map(booking => {
         const start = new Date(booking.start_time);
         const end = new Date(booking.end_time);
         const statusClass = booking.status === 'confirmed' ? 'confirmed' : 
@@ -2771,7 +2771,7 @@ function renderBookingsList() {
                 ` : ''}
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 function openAddBookingForm() {
@@ -2793,7 +2793,7 @@ function closeAddBookingForm() {
 
 function populateResourceSelect() {
     const select = document.getElementById('book-resource');
-    select.innerHTML = '<option value="">Select a resource...</option>';
+    select.innerHTML = '<option value="">Select a resource...</option>'; // safe: static content
     
     resourcesData.resources.forEach(res => {
         const option = document.createElement('option');
@@ -2854,7 +2854,7 @@ function renderCostsList() {
     
     // Render cost overview
     const overviewEl = document.getElementById('cost-overview');
-    overviewEl.innerHTML = `
+    overviewEl.innerHTML = DOMPurify.sanitize(`
         <div class="cost-stat">
             <div class="cost-stat-value">$${costs.total.toFixed(2)}</div>
             <div class="cost-stat-label">Total Costs</div>
@@ -2865,16 +2865,16 @@ function renderCostsList() {
                 <div class="cost-stat-label">${type.replace('_', ' ')}</div>
             </div>
         `).join('')}
-    `;
+    `);
     
     // Render cost items
     const list = document.getElementById('costs-list');
     if (!costs.items.length) {
-        list.innerHTML = '<p class="empty-state">No costs recorded yet. Track API usage, hosting, and other expenses.</p>';
+        list.innerHTML = '<p class="empty-state">No costs recorded yet. Track API usage, hosting, and other expenses.</p>'; // safe: static content
         return;
     }
     
-    list.innerHTML = costs.items.slice().reverse().slice(0, 20).map(cost => `
+    list.innerHTML = DOMPurify.sanitize(costs.items.slice().reverse().slice(0, 20).map(cost => `
         <div class="cost-item">
             <div class="cost-info">
                 <div class="credential-name">${escapeHtml(cost.description)}</div>
@@ -2887,7 +2887,7 @@ function renderCostsList() {
             </div>
             <div class="cost-amount">$${cost.amount.toFixed(2)}</div>
         </div>
-    `).join('');
+    `).join(''));
 }
 
 function openAddCostForm() {
@@ -2924,11 +2924,11 @@ async function saveCost() {
 function renderQuotasList() {
     const list = document.getElementById('quotas-list');
     if (!resourcesData.quotas.length) {
-        list.innerHTML = '<p class="empty-state">No quotas set. Set usage limits to control costs and API usage.</p>';
+        list.innerHTML = '<p class="empty-state">No quotas set. Set usage limits to control costs and API usage.</p>'; // safe: static content
         return;
     }
     
-    list.innerHTML = resourcesData.quotas.map(quota => {
+    list.innerHTML = DOMPurify.sanitize(resourcesData.quotas.map(quota => {
         const usagePercent = (quota.current_usage / quota.limit) * 100;
         const statusClass = usagePercent >= 100 ? 'exceeded' : usagePercent >= quota.warning_threshold * 100 ? 'warning' : '';
         
@@ -2949,7 +2949,7 @@ function renderQuotasList() {
                 </div>
             </div>
         `;
-    }).join('');
+    }).join(''));
 }
 
 function formatQuotaType(type) {

@@ -20,6 +20,12 @@ const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
 
+// Input sanitization helper
+function sanitizeInput(val) {
+  if (typeof val !== 'string') return val;
+  return val.replace(/[<>"'`\\$;|&]/g, '');
+}
+
 // Configuration
 const PORT = process.env.PORT || 3000;
 const MISSION_CONTROL_DIR = path.join(__dirname, '..', '.mission-control');
@@ -353,7 +359,7 @@ app.post('/api/tasks', async (req, res) => {
 // Directory listing endpoint — GET /api/files?dir=reports
 app.get('/api/files', async (req, res) => {
     try {
-        const dir = req.query.dir || 'reports';
+        const dir = sanitizeInput(req.query.dir) || 'reports';
         const fullPath = path.join(MISSION_CONTROL_DIR, dir);
 
         const resolvedPath = path.resolve(fullPath);
@@ -382,7 +388,7 @@ app.get('/api/files', async (req, res) => {
         res.json({ directory: dir, files });
     } catch (error) {
         if (error.code === 'ENOENT') {
-            res.json({ directory: req.query.dir || 'reports', files: [] });
+            res.json({ directory: sanitizeInput(req.query.dir) || 'reports', files: [] });
         } else {
             res.status(500).json({ error: error.message });
         }
@@ -882,7 +888,7 @@ app.delete('/api/webhooks/:id', (req, res) => {
 app.get('/api/messages', async (req, res) => {
     try {
         const messages = await readJsonDirectory('messages');
-        const agentFilter = req.query.agent;
+        const agentFilter = sanitizeInput(req.query.agent);
 
         if (agentFilter) {
             const filtered = messages.filter(m => m.from === agentFilter || m.to === agentFilter);
@@ -1127,7 +1133,7 @@ app.get('/api/credentials/:id', async (req, res) => {
 app.post('/api/credentials', async (req, res) => {
     try {
         const credential = await resourceManager.storeCredential(req.body);
-        await logActivity(req.body.owner || 'system', 'CREATED', `Credential: ${credential.name} (${credential.id})`);
+        await logActivity(sanitizeInput(req.body.owner) || 'system', 'CREATED', `Credential: ${credential.name} (${credential.id})`);
         broadcast('credential.created', credential);
         res.status(201).json(credential);
     } catch (error) {
@@ -1179,7 +1185,7 @@ app.get('/api/resources/:id', async (req, res) => {
 app.post('/api/resources', async (req, res) => {
     try {
         const resource = await resourceManager.createResource(req.body);
-        await logActivity(req.body.owner || 'system', 'CREATED', `Resource: ${resource.name} (${resource.id})`);
+        await logActivity(sanitizeInput(req.body.owner) || 'system', 'CREATED', `Resource: ${resource.name} (${resource.id})`);
         broadcast('resource.created', resource);
         res.status(201).json(resource);
     } catch (error) {
@@ -1208,7 +1214,7 @@ app.get('/api/bookings', async (req, res) => {
 app.post('/api/bookings', async (req, res) => {
     try {
         const booking = await resourceManager.bookResource(req.body);
-        await logActivity(req.body.booked_by || 'system', 'BOOKED', `Resource: ${booking.resource_name} from ${booking.start_time} to ${booking.end_time}`);
+        await logActivity(sanitizeInput(req.body.booked_by) || 'system', 'BOOKED', `Resource: ${booking.resource_name} from ${booking.start_time} to ${booking.end_time}`);
         broadcast('booking.created', booking);
         res.status(201).json(booking);
     } catch (error) {
@@ -1247,7 +1253,7 @@ app.get('/api/costs', async (req, res) => {
 app.post('/api/costs', async (req, res) => {
     try {
         const cost = await resourceManager.recordCost(req.body);
-        await logActivity(req.body.agent_id || 'system', 'COST_RECORDED', `${cost.type}: $${cost.amount} - ${cost.description}`);
+        await logActivity(sanitizeInput(req.body.agent_id) || 'system', 'COST_RECORDED', `${cost.type}: $${cost.amount} - ${cost.description}`);
         broadcast('cost.recorded', cost);
         res.status(201).json(cost);
     } catch (error) {
@@ -1259,7 +1265,7 @@ app.post('/api/costs', async (req, res) => {
 
 app.get('/api/quotas', async (req, res) => {
     try {
-        const agentId = req.query.agent_id || null;
+        const agentId = sanitizeInput(req.query.agent_id) || null;
         const quotas = await resourceManager.getQuotas(agentId);
         res.json(quotas);
     } catch (error) {
@@ -1377,7 +1383,7 @@ app.get('/api/reviews/:id', async (req, res) => {
 app.post('/api/reviews', async (req, res) => {
     try {
         const review = await reviewManager.createReview(req.body);
-        await logActivity(req.body.submitter || 'system', 'REVIEW_CREATED', `${review.title} (${review.id})`);
+        await logActivity(sanitizeInput(req.body.submitter) || 'system', 'REVIEW_CREATED', `${review.title} (${review.id})`);
         broadcast('review.created', review);
         res.status(201).json(review);
     } catch (error) {
@@ -1482,7 +1488,7 @@ app.get('/api/checklists/:id', async (req, res) => {
 app.post('/api/checklists', async (req, res) => {
     try {
         const checklist = await reviewManager.createChecklist(req.body);
-        await logActivity(req.body.created_by || 'system', 'CHECKLIST_CREATED', checklist.name);
+        await logActivity(sanitizeInput(req.body.created_by) || 'system', 'CHECKLIST_CREATED', checklist.name);
         broadcast('checklist.created', checklist);
         res.status(201).json(checklist);
     } catch (error) {
@@ -1520,7 +1526,7 @@ app.get('/api/workflows', async (req, res) => {
 app.post('/api/workflows', async (req, res) => {
     try {
         const workflow = await reviewManager.createWorkflow(req.body);
-        await logActivity(req.body.created_by || 'system', 'WORKFLOW_CREATED', workflow.name);
+        await logActivity(sanitizeInput(req.body.created_by) || 'system', 'WORKFLOW_CREATED', workflow.name);
         broadcast('workflow.created', workflow);
         res.status(201).json(workflow);
     } catch (error) {
@@ -1630,19 +1636,19 @@ app.post('/api/schedules', async (req, res) => {
     try {
         const job = {
             id: req.body.id ? sanitizeId(req.body.id) : `job-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
-            name: req.body.name,
-            type: req.body.type || 'cron',
+            name: sanitizeInput(req.body.name),
+            type: sanitizeInput(req.body.type) || 'cron',
             schedule: req.body.schedule,
             status: req.body.status || 'scheduled',
-            agent: req.body.agent || 'system',
-            description: req.body.description || '',
+            agent: sanitizeInput(req.body.agent) || 'system',
+            description: sanitizeInput(req.body.description) || '',
             config: req.body.config || {},
             run_count: 0,
             success_count: 0,
             last_run: null,
             next_run: req.body.next_run || null,
             created_at: new Date().toISOString(),
-            created_by: req.body.created_by || 'system'
+            created_by: sanitizeInput(req.body.created_by) || 'system'
         };
         
         await writeJsonFile(`queue/${job.id}.json`, job);
