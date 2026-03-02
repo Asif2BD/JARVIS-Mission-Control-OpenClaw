@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-1.0.4-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.9-brightgreen.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![MissionDeck](https://img.shields.io/badge/platform-missiondeck.ai-blue.svg)](https://missiondeck.ai)
 
@@ -282,6 +282,8 @@ WebSocket server pushes changes to all connected dashboards instantly when any a
 
 ## Security Model
 
+- **XSS Protection:** All dynamic `innerHTML` assignments in the dashboard are sanitized via [DOMPurify](https://github.com/cure53/DOMPurify)
+- **Input Sanitization:** All `req.body` and `req.query` fields in the server are sanitized via a `sanitizeInput()` helper before use
 - Commit validation via pre-commit hooks
 - JSON schema enforcement on all data files
 - Full audit trail in Git history

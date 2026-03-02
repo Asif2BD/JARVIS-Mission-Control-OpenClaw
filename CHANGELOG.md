@@ -1,3 +1,9 @@
+## [v1.0.9] - 2026-03-02
+### Security
+- Fixed 47 XSS vulnerabilities in dashboard/js/app.js — all innerHTML assignments now sanitized via DOMPurify
+- Fixed 14 input injection vulnerabilities in server/index.js — sanitizeInput() helper applied to all req.body/req.query fields
+- DOMPurify CDN added to dashboard/index.html
+
 ## [1.0.8] - 2026-02-27
 
 ### Fixed
