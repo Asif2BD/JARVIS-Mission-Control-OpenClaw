@@ -1,3 +1,26 @@
+## [1.0.11] - 2026-03-03
+
+### Security — HIGH Severity Fixes (PR #46)
+Morpheus Security Counsel audit identified 33 HIGH findings. All patched.
+
+**server/index.js — 14 Injection / Path Traversal fixes**
+- Added `sanitizeId()` helper to validate and sanitize route params before use in file-path templates and log calls
+- Affected routes: tasks CRUD, agents, messages, credentials, schedules
+- Prevents directory traversal attacks via malicious `req.params.id` values
+
+**dashboard/js/app.js — 19 XSS via innerHTML fixes**
+- All static `innerHTML` assignments wrapped with `DOMPurify.sanitize()` for defence-in-depth
+- DOMPurify already loaded via CDN; this closes remaining unguarded assignment paths
+
+### Summary of Security Hardening (v1.0.9 → v1.0.11)
+| Version | Issue | Fixed |
+|---------|-------|-------|
+| v1.0.9 | 47 XSS + 17 injection risks | DOMPurify + sanitizeInput() |
+| v1.0.10 | SSRF via webhook registration | validateWebhookUrl() |
+| v1.0.11 | 33 HIGH: injection + path traversal + XSS | sanitizeId() + DOMPurify defence-in-depth |
+
+**Security status: 0 HIGH, 0 CRITICAL findings remaining.**
+
 ## [1.0.10] - 2026-03-02
 
 ### Security — CRITICAL FIX (PR #45)
