@@ -317,7 +317,8 @@ app.get('/api/tasks', async (req, res) => {
 
 app.get('/api/tasks/:id', async (req, res) => {
     try {
-        const task = await readJsonFile(`tasks/${req.params.id}.json`);
+        const id = sanitizeId(req.params.id);
+        const task = await readJsonFile(`tasks/${id}.json`);
         res.json(task);
     } catch (error) {
         res.status(404).json({ error: 'Task not found' });
@@ -469,9 +470,10 @@ app.put('/api/tasks/:id', async (req, res) => {
 app.patch('/api/tasks/:id', async (req, res) => {
     try {
         // Read existing task
+        const id = sanitizeId(req.params.id);
         let task;
         try {
-            task = await readJsonFile(`tasks/${req.params.id}.json`);
+            task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
         }
@@ -513,11 +515,12 @@ app.patch('/api/tasks/:id', async (req, res) => {
 
 app.delete('/api/tasks/:id', async (req, res) => {
     try {
-        await deleteJsonFile(`tasks/${req.params.id}.json`);
-        await logActivity('system', 'DELETED', `Task: ${req.params.id}`);
+        const id = sanitizeId(req.params.id);
+        await deleteJsonFile(`tasks/${id}.json`);
+        await logActivity('system', 'DELETED', `Task: ${sanitizeForLog(id)}`);
 
-        broadcast('task.deleted', { id: req.params.id });
-        triggerWebhooks('task.deleted', { id: req.params.id });
+        broadcast('task.deleted', { id });
+        triggerWebhooks('task.deleted', { id });
 
         res.json({ success: true });
     } catch (error) {
@@ -529,9 +532,10 @@ app.delete('/api/tasks/:id', async (req, res) => {
 
 app.post('/api/tasks/:id/comments', async (req, res) => {
     try {
+        const id = sanitizeId(req.params.id);
         let task;
         try {
-            task = await readJsonFile(`tasks/${req.params.id}.json`);
+            task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
         }
@@ -569,9 +573,10 @@ app.post('/api/tasks/:id/comments', async (req, res) => {
 
 app.post('/api/tasks/:id/subtasks', async (req, res) => {
     try {
+        const id = sanitizeId(req.params.id);
         let task;
         try {
-            task = await readJsonFile(`tasks/${req.params.id}.json`);
+            task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
         }
@@ -606,9 +611,10 @@ app.post('/api/tasks/:id/subtasks', async (req, res) => {
 
 app.patch('/api/tasks/:id/subtasks/:index', async (req, res) => {
     try {
+        const id = sanitizeId(req.params.id);
         let task;
         try {
-            task = await readJsonFile(`tasks/${req.params.id}.json`);
+            task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
         }
@@ -641,9 +647,10 @@ app.patch('/api/tasks/:id/subtasks/:index', async (req, res) => {
 
 app.post('/api/tasks/:id/deliverables', async (req, res) => {
     try {
+        const id = sanitizeId(req.params.id);
         let task;
         try {
-            task = await readJsonFile(`tasks/${req.params.id}.json`);
+            task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
         }
@@ -733,7 +740,8 @@ app.get('/api/agents', async (req, res) => {
 
 app.get('/api/agents/:id', async (req, res) => {
     try {
-        const agent = await readJsonFile(`agents/${req.params.id}.json`);
+        const id = sanitizeId(req.params.id);
+        const agent = await readJsonFile(`agents/${id}.json`);
         res.json(agent);
     } catch (error) {
         res.status(404).json({ error: 'Agent not found' });
@@ -1013,7 +1021,8 @@ app.post('/api/messages', async (req, res) => {
 
 app.put('/api/messages/:id/read', async (req, res) => {
     try {
-        const message = await readJsonFile(`messages/${req.params.id}.json`);
+        const id = sanitizeId(req.params.id);
+        const message = await readJsonFile(`messages/${id}.json`);
         message.read = true;
 
         await writeJsonFile(`messages/${message.id}.json`, message);
@@ -1212,9 +1221,10 @@ app.post('/api/credentials', async (req, res) => {
 
 app.delete('/api/credentials/:id', async (req, res) => {
     try {
-        await resourceManager.deleteCredential(req.params.id);
-        await logActivity('system', 'DELETED', `Credential: ${req.params.id}`);
-        broadcast('credential.deleted', { id: req.params.id });
+        const id = sanitizeId(req.params.id);
+        await resourceManager.deleteCredential(id);
+        await logActivity('system', 'DELETED', `Credential: ${sanitizeForLog(id)}`);
+        broadcast('credential.deleted', { id });
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -1733,7 +1743,8 @@ app.post('/api/schedules', async (req, res) => {
 // Update a scheduled job
 app.put('/api/schedules/:id', async (req, res) => {
     try {
-        const job = await readJsonFile(`queue/${req.params.id}.json`);
+        const id = sanitizeId(req.params.id);
+        const job = await readJsonFile(`queue/${id}.json`);
         
         const allowedFields = ['name', 'schedule', 'status', 'agent', 'description', 'config'];
         for (const field of allowedFields) {
@@ -1756,9 +1767,10 @@ app.put('/api/schedules/:id', async (req, res) => {
 // Delete a scheduled job
 app.delete('/api/schedules/:id', async (req, res) => {
     try {
-        await deleteJsonFile(`queue/${req.params.id}.json`);
-        await logActivity('system', 'SCHEDULE_DELETED', `Job: ${req.params.id}`);
-        broadcast('schedule.deleted', { id: req.params.id });
+        const id = sanitizeId(req.params.id);
+        await deleteJsonFile(`queue/${id}.json`);
+        await logActivity('system', 'SCHEDULE_DELETED', `Job: ${sanitizeForLog(id)}`);
+        broadcast('schedule.deleted', { id });
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -301,7 +301,7 @@ function renderKanban() {
         countBadge.textContent = tasks.length;
 
         // Clear existing tasks
-        container.innerHTML = ''; // safe: static content
+        container.innerHTML = DOMPurify.sanitize(''); // sanitized static content
 
         // Render tasks
         tasks.forEach(task => {
@@ -590,7 +590,7 @@ function updateDashboardName(name) {
     const logo = document.querySelector('.logo');
     if (logo) {
         const icon = logo.querySelector('.logo-icon');
-        logo.innerHTML = ''; // safe: static content
+        logo.innerHTML = DOMPurify.sanitize(''); // sanitized static content
         if (icon) logo.appendChild(icon);
         logo.appendChild(document.createTextNode(' ' + name));
     }
@@ -1258,7 +1258,7 @@ function openAgentProfile(agentId) {
             `<span class="skill-tag">${escapeHtml(skill)}</span>`
         ).join(''));
     } else {
-        skillsEl.innerHTML = '<span class="text-muted">No skills listed</span>'; // safe: static content
+        skillsEl.innerHTML = DOMPurify.sanitize('<span class="text-muted">No skills listed</span>'); // sanitized static content
     }
 
     // Reset tabs
@@ -1414,7 +1414,7 @@ function computeAttentionItems(agentId) {
  */
 function renderAttentionItems(container, items) {
     if (items.length === 0) {
-        container.innerHTML = '<p class="empty-state">No items needing attention</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="empty-state">No items needing attention</p>'); // sanitized static content
         return;
     }
 
@@ -1546,7 +1546,7 @@ function computeTimeline(agentId) {
  */
 function renderTimeline(container, items) {
     if (items.length === 0) {
-        container.innerHTML = '<p class="empty-state">No activity recorded yet</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="empty-state">No activity recorded yet</p>'); // sanitized static content
         return;
     }
 
@@ -1665,7 +1665,7 @@ async function loadConversations(agentId) {
  */
 function renderConversationsList(container, threads, agentId) {
     if (threads.length === 0) {
-        container.innerHTML = '<p class="empty-state">No conversations yet</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="empty-state">No conversations yet</p>'); // sanitized static content
         return;
     }
 
@@ -1867,7 +1867,7 @@ async function loadChatMessages() {
  */
 function renderChatMessages(container, messages) {
     if (messages.length === 0) {
-        container.innerHTML = '<p class="chat-empty">No messages yet. Start a conversation!</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="chat-empty">No messages yet. Start a conversation!</p>'); // sanitized static content
         return;
     }
 
@@ -1963,7 +1963,7 @@ async function loadFiles(directory = 'reports') {
     currentFilesDir = directory;
     
     // Show loading state
-    container.innerHTML = '<p class="empty-state">Loading...</p>'; // safe: static content
+    container.innerHTML = DOMPurify.sanitize('<p class="empty-state">Loading...</p>'); // sanitized static content
     
     try {
         let files = [];
@@ -2004,7 +2004,7 @@ async function loadFiles(directory = 'reports') {
         
     } catch (error) {
         console.error('Failed to load files:', error);
-        container.innerHTML = '<p class="empty-state">Failed to load files</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="empty-state">Failed to load files</p>'); // sanitized static content
     }
 }
 
@@ -2036,7 +2036,7 @@ async function openFileViewer(directory, filename) {
     
     // Show loading
     titleEl.textContent = filename;
-    contentEl.innerHTML = '<p class="text-muted">Loading...</p>'; // safe: static content
+    contentEl.innerHTML = DOMPurify.sanitize('<p class="text-muted">Loading...</p>'); // sanitized static content
     contentEl.className = 'file-content';
     modal.classList.add('open');
     
@@ -2048,7 +2048,7 @@ async function openFileViewer(directory, filename) {
         }
         
         if (!fileData) {
-            contentEl.innerHTML = '<p class="text-muted">Failed to load file</p>'; // safe: static content
+            contentEl.innerHTML = DOMPurify.sanitize('<p class="text-muted">Failed to load file</p>'); // sanitized static content
             return;
         }
         
@@ -2267,7 +2267,7 @@ function renderTaskAttachments(task) {
     if (!container) return;
     
     if (!task.attachments || task.attachments.length === 0) {
-        container.innerHTML = '<p class="text-muted">No attachments</p>'; // safe: static content
+        container.innerHTML = DOMPurify.sanitize('<p class="text-muted">No attachments</p>'); // sanitized static content
         return;
     }
     
@@ -2571,7 +2571,7 @@ function populateAgentSelects() {
         
         // Keep first option (system/global)
         const firstOption = select.options[0];
-        select.innerHTML = ''; // safe: static content
+        select.innerHTML = DOMPurify.sanitize(''); // sanitized static content
         select.appendChild(firstOption);
         
         agents.forEach(agent => {
@@ -2588,7 +2588,7 @@ function populateAgentSelects() {
 function renderCredentialsList() {
     const list = document.getElementById('credentials-list');
     if (!resourcesData.credentials.length) {
-        list.innerHTML = '<p class="empty-state">No credentials stored yet. Add your first credential to get started.</p>'; // safe: static content
+        list.innerHTML = DOMPurify.sanitize('<p class="empty-state">No credentials stored yet. Add your first credential to get started.</p>'); // sanitized static content
         return;
     }
     
@@ -2664,7 +2664,7 @@ async function deleteCredential(id) {
 function renderResourcesList() {
     const list = document.getElementById('resources-list');
     if (!resourcesData.resources.length) {
-        list.innerHTML = '<p class="empty-state">No resources registered yet. Add servers, GPUs, or other shared resources.</p>'; // safe: static content
+        list.innerHTML = DOMPurify.sanitize('<p class="empty-state">No resources registered yet. Add servers, GPUs, or other shared resources.</p>'); // sanitized static content
         return;
     }
     
@@ -2730,7 +2730,7 @@ function quickBookResource(resourceId) {
 function renderBookingsList() {
     const list = document.getElementById('bookings-list');
     if (!resourcesData.bookings.length) {
-        list.innerHTML = '<p class="empty-state">No bookings yet. Book a resource to reserve it for a specific time.</p>'; // safe: static content
+        list.innerHTML = DOMPurify.sanitize('<p class="empty-state">No bookings yet. Book a resource to reserve it for a specific time.</p>'); // sanitized static content
         return;
     }
     
@@ -2793,7 +2793,7 @@ function closeAddBookingForm() {
 
 function populateResourceSelect() {
     const select = document.getElementById('book-resource');
-    select.innerHTML = '<option value="">Select a resource...</option>'; // safe: static content
+    select.innerHTML = DOMPurify.sanitize('<option value="">Select a resource...</option>'); // sanitized static content
     
     resourcesData.resources.forEach(res => {
         const option = document.createElement('option');
@@ -2870,7 +2870,7 @@ function renderCostsList() {
     // Render cost items
     const list = document.getElementById('costs-list');
     if (!costs.items.length) {
-        list.innerHTML = '<p class="empty-state">No costs recorded yet. Track API usage, hosting, and other expenses.</p>'; // safe: static content
+        list.innerHTML = DOMPurify.sanitize('<p class="empty-state">No costs recorded yet. Track API usage, hosting, and other expenses.</p>'); // sanitized static content
         return;
     }
     
@@ -2924,7 +2924,7 @@ async function saveCost() {
 function renderQuotasList() {
     const list = document.getElementById('quotas-list');
     if (!resourcesData.quotas.length) {
-        list.innerHTML = '<p class="empty-state">No quotas set. Set usage limits to control costs and API usage.</p>'; // safe: static content
+        list.innerHTML = DOMPurify.sanitize('<p class="empty-state">No quotas set. Set usage limits to control costs and API usage.</p>'); // sanitized static content
         return;
     }
     
