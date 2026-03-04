@@ -19,6 +19,7 @@ const http = require('http');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
+const claudeSessions = require('./claude-sessions');
 
 // Input sanitization helper
 function sanitizeInput(val) {
@@ -1832,6 +1833,69 @@ app.get('/api/metrics', async (req, res) => {
 });
 
 // ============================================
+// Claude Code Session Routes (v1.2.0)
+// ============================================
+
+/**
+ * GET /api/claude/sessions
+ * List all discovered Claude Code sessions.
+ * Query params:
+ *   ?active=1   — only return active sessions (last message < 30min ago)
+ *   ?project=   — filter by project path substring
+ *   ?scan=1     — force an immediate rescan before responding
+ */
+app.get('/api/claude/sessions', async (req, res) => {
+    try {
+        if (req.query.scan === '1') {
+            await claudeSessions.scanSessions();
+        }
+        const { sessions, lastScan, claudeHome, projectsDir } = claudeSessions.getCachedSessions();
+
+        let filtered = sessions;
+
+        if (req.query.active === '1') {
+            filtered = filtered.filter(s => s.active);
+        }
+
+        if (req.query.project) {
+            const q = req.query.project.toLowerCase();
+            filtered = filtered.filter(s => s.project && s.project.toLowerCase().includes(q));
+        }
+
+        res.json({
+            sessions: filtered,
+            total: filtered.length,
+            totalAll: sessions.length,
+            activeCount: sessions.filter(s => s.active).length,
+            lastScan,
+            claudeHome,
+            projectsDir,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/claude/sessions
+ * Trigger a manual rescan of Claude Code sessions.
+ */
+app.post('/api/claude/sessions', async (req, res) => {
+    try {
+        const sessions = await claudeSessions.scanSessions();
+        res.json({
+            ok: true,
+            message: 'Scan complete',
+            total: sessions.length,
+            activeCount: sessions.filter(s => s.active).length,
+            lastScan: new Date().toISOString(),
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
 // Serve dashboard static files (MUST be before catch-all route)
 app.use(express.static(DASHBOARD_DIR));
 
@@ -1874,6 +1938,9 @@ server.listen(PORT, () => {
             });
         }
     }
+
+    // Start Claude Code session scanner
+    claudeSessions.startScanner();
 
     const mdLine = process.env.MISSIONDECK_API_KEY
         ? `║   MissionDeck:  https://missiondeck.ai/workspace/${process.env.MISSIONDECK_SLUG || '???'}    ║`
