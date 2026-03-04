@@ -213,7 +213,7 @@ const MissionControlAPI = {
     // --- Releases ---
 
     async checkForUpdate() {
-        return this.request('/releases/check');
+        return this.request('/update/check');
     },
 
     // --- Messages ---

@@ -2609,6 +2609,69 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
 });
 
+// =====================================
+// UPDATE CHECK ENDPOINT (v1.11.0)
+// =====================================
+
+/**
+ * GET /api/update/check
+ * Checks npm registry for latest version of jarvis-mission-control
+ * and compares with current package version.
+ */
+app.get('/api/update/check', async (req, res) => {
+    try {
+        const currentVersion = require('../package.json').version;
+        const registryUrl = 'https://registry.npmjs.org/jarvis-mission-control/latest';
+
+        const response = await fetch(registryUrl, {
+            signal: AbortSignal.timeout(5000),
+        });
+
+        if (!response.ok) {
+            return res.json({
+                current: currentVersion,
+                latest: null,
+                updateAvailable: false,
+                error: `Registry responded with ${response.status}`,
+            });
+        }
+
+        const data = await response.json();
+        const latest = data.version || null;
+
+        const updateAvailable = latest ? latest !== currentVersion && compareVersions(latest, currentVersion) > 0 : false;
+
+        res.json({
+            current: currentVersion,
+            latest,
+            updateAvailable,
+            downloadUrl: latest ? `https://www.npmjs.com/package/jarvis-mission-control/v/${latest}` : null,
+        });
+    } catch (err) {
+        logger.warn({ err: err.message }, 'Update check failed');
+        const currentVersion = require('../package.json').version;
+        res.json({
+            current: currentVersion,
+            latest: null,
+            updateAvailable: false,
+            error: err.message,
+        });
+    }
+});
+
+/**
+ * Simple semver comparison: returns 1 if a > b, -1 if a < b, 0 if equal.
+ */
+function compareVersions(a, b) {
+    const pa = a.split('.').map(Number);
+    const pb = b.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+        if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+        if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+    }
+    return 0;
+}
+
 // START SERVER
 // =====================================
 
