@@ -22,6 +22,7 @@ const Tokens = require('csrf');
 
 const rateLimit = require('express-rate-limit');
 const logger = require('./logger');
+const basicAuth = require('./middleware/basic-auth');
 const webhookDelivery = require('./webhook-delivery');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
@@ -45,6 +46,14 @@ const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+// ============================================
+// BASIC AUTH PROTECTION (security/zion-lockdown)
+// Set MC_AUTH_PASS env var to enable.
+// MC_AUTH_USER defaults to "architect".
+// Localhost requests bypass auth (agent access).
+// ============================================
+app.use(basicAuth);
 
 // =====================================
 // CSRF PROTECTION (v1.6.0)
@@ -2760,6 +2769,11 @@ app.put('/api/agents/soul/:agentId', async (req, res) => {
 
 // =====================================
 // Serve dashboard static files (MUST be before catch-all route)
+// Add X-Robots-Tag to ALL responses — blocks all crawlers even if they bypass robots.txt
+app.use((req, res, next) => {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+    next();
+});
 app.use(express.static(DASHBOARD_DIR));
 
 // Fallback to dashboard for SPA routing (MUST be last)
