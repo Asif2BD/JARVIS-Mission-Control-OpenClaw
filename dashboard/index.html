@@ -38,7 +38,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v1.17.0</span>
+            <span class="version">v1.18.0</span>
         </div>
         <div class="header-right">
             <div class="metrics">
@@ -136,129 +136,155 @@
     <main class="main-content">
         <!-- Sidebar (LEFT) - Command Panel -->
         <aside class="sidebar">
-            <!-- Humans Section -->
-            <div class="sidebar-section">
-                <div class="sidebar-header">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Human Operators
-                    </h2>
-                    <p class="sidebar-subtitle" id="humans-subtitle">0 online</p>
+
+            <!-- ▼ TEAM GROUP (v1.18.0) -->
+            <div class="sidebar-group" id="sgroup-team" data-group="team">
+                <div class="sidebar-group-header" onclick="toggleSidebarGroup('team')" title="Toggle TEAM section">
+                    <span class="sgroup-chevron" id="sgroup-chevron-team">▼</span>
+                    <span class="sgroup-label">Team</span>
                 </div>
-                <div class="humans-list" id="humans-list">
-                    <!-- Humans will be populated by JavaScript -->
+                <div class="sidebar-group-body" id="sgroup-body-team">
+                    <!-- Humans Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                Human Operators
+                            </h2>
+                            <p class="sidebar-subtitle" id="humans-subtitle">0 online</p>
+                        </div>
+                        <div class="humans-list" id="humans-list">
+                            <!-- Humans will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <!-- AI Agents Section -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                    <circle cx="12" cy="5" r="2"></circle>
+                                    <path d="M12 7v4"></path>
+                                    <line x1="8" y1="16" x2="8" y2="16"></line>
+                                    <line x1="16" y1="16" x2="16" y2="16"></line>
+                                </svg>
+                                AI Agents
+                            </h2>
+                            <p class="sidebar-subtitle" id="agents-subtitle">0 agents online</p>
+                        </div>
+                        <div class="agents-list" id="agents-list">
+                            <!-- Agents will be populated by JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- AI Agents Section -->
-            <div class="sidebar-section">
-                <div class="sidebar-header">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-                            <circle cx="12" cy="5" r="2"></circle>
-                            <path d="M12 7v4"></path>
-                            <line x1="8" y1="16" x2="8" y2="16"></line>
-                            <line x1="16" y1="16" x2="16" y2="16"></line>
-                        </svg>
-                        AI Agents
-                    </h2>
-                    <p class="sidebar-subtitle" id="agents-subtitle">0 agents online</p>
+            <!-- ▼ INTELLIGENCE GROUP (v1.18.0) -->
+            <div class="sidebar-group" id="sgroup-intelligence" data-group="intelligence">
+                <div class="sidebar-group-header" onclick="toggleSidebarGroup('intelligence')" title="Toggle INTELLIGENCE section">
+                    <span class="sgroup-chevron" id="sgroup-chevron-intelligence">▼</span>
+                    <span class="sgroup-label">Intelligence</span>
                 </div>
-                <div class="agents-list" id="agents-list">
-                    <!-- Agents will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Claude Sessions Section (v1.2.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openClaudeSessions()" title="View Claude Code Sessions">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                            <path d="M8 21h8m-4-4v4"></path>
-                        </svg>
-                        Claude Sessions
-                    </h2>
-                    <p class="sidebar-subtitle" id="claude-sessions-subtitle">Loading…</p>
-                </div>
-            </div>
-
-            <!-- CLI Integration Section (v1.3.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openCliPanel()" title="OpenClaw CLI Commands">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="4 17 10 11 4 5"></polyline>
-                            <line x1="12" y1="19" x2="20" y2="19"></line>
-                        </svg>
-                        CLI Console
-                    </h2>
-                    <p class="sidebar-subtitle">Run OpenClaw commands</p>
-                </div>
-            </div>
-
-            <!-- GitHub Issues Section (v1.4.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openGithubPanel()" title="GitHub Issues Sync">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                        </svg>
-                        GitHub Issues
-                    </h2>
-                    <p class="sidebar-subtitle" id="github-issues-subtitle">Click to sync</p>
+                <div class="sidebar-group-body" id="sgroup-body-intelligence">
+                    <!-- Claude Sessions Section (v1.2.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openClaudeSessions()" title="View Claude Code Sessions">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                                    <path d="M8 21h8m-4-4v4"></path>
+                                </svg>
+                                Claude Sessions
+                            </h2>
+                            <p class="sidebar-subtitle" id="claude-sessions-subtitle">Loading…</p>
+                        </div>
+                    </div>
+                    <!-- CLI Connections Section (v1.3.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openCliConnections()" title="View Live CLI Connections">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                                    <path d="M7 9l5 5 5-5"></path>
+                                </svg>
+                                CLI Connections
+                                <span id="cli-connections-badge" style="display:none; background:var(--accent-primary,#4f8ef7); color:#fff; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-weight:600;"></span>
+                            </h2>
+                            <p class="sidebar-subtitle" id="cli-connections-subtitle">Loading…</p>
+                        </div>
+                    </div>
+                    <!-- GitHub Issues Section (v1.4.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openGithubPanel()" title="GitHub Issues Sync">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                </svg>
+                                GitHub Issues
+                            </h2>
+                            <p class="sidebar-subtitle" id="github-issues-subtitle">Click to sync</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- CLI Connections Section (v1.3.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openCliConnections()" title="View Live CLI Connections">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
-                            <path d="M7 9l5 5 5-5"></path>
-                        </svg>
-                        CLI Connections
-                        <span id="cli-connections-badge" style="display:none; background:var(--accent-primary,#4f8ef7); color:#fff; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-weight:600;"></span>
-                    </h2>
-                    <p class="sidebar-subtitle" id="cli-connections-subtitle">Loading…</p>
+            <!-- ▼ SYSTEM GROUP (collapsed by default) (v1.18.0) -->
+            <div class="sidebar-group" id="sgroup-system" data-group="system">
+                <div class="sidebar-group-header" onclick="toggleSidebarGroup('system')" title="Toggle SYSTEM section">
+                    <span class="sgroup-chevron" id="sgroup-chevron-system">▶</span>
+                    <span class="sgroup-label">System</span>
+                </div>
+                <div class="sidebar-group-body collapsed" id="sgroup-body-system">
+                    <!-- Webhooks Section (v1.9.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openWebhooksPanel()" title="View Webhook Status">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                                </svg>
+                                Webhooks
+                                <span id="webhooks-open-badge" style="display:none; background:#e53e3e; color:#fff; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-weight:600;" title="Open circuits">🔴</span>
+                            </h2>
+                            <p class="sidebar-subtitle" id="webhooks-subtitle">Loading…</p>
+                        </div>
+                        <div id="webhooks-list" style="padding:0 12px 8px;"></div>
+                    </div>
+                    <!-- Agent Files Section (v1.8.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openSoulPanel()" title="Edit Agent Soul Files">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                                Agent Files
+                            </h2>
+                            <p class="sidebar-subtitle" id="soul-agents-subtitle">SOUL / MEMORY / IDENTITY</p>
+                        </div>
+                    </div>
+                    <!-- CLI Integration Section (v1.3.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openCliPanel()" title="OpenClaw CLI Commands">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="4 17 10 11 4 5"></polyline>
+                                    <line x1="12" y1="19" x2="20" y2="19"></line>
+                                </svg>
+                                CLI Console
+                            </h2>
+                            <p class="sidebar-subtitle">Run OpenClaw commands</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- Webhooks Section (v1.9.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openWebhooksPanel()" title="View Webhook Status">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                            <line x1="6" y1="1" x2="6" y2="4"></line>
-                            <line x1="10" y1="1" x2="10" y2="4"></line>
-                            <line x1="14" y1="1" x2="14" y2="4"></line>
-                        </svg>
-                        Webhooks
-                        <span id="webhooks-open-badge" style="display:none; background:#e53e3e; color:#fff; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-weight:600;" title="Open circuits">🔴</span>
-                    </h2>
-                    <p class="sidebar-subtitle" id="webhooks-subtitle">Loading…</p>
-                </div>
-                <div id="webhooks-list" style="padding:0 12px 8px;"></div>
-            </div>
-            <!-- Agent Files Section (v1.8.0) -->
-            <div class="sidebar-section">
-                <div class="sidebar-header" style="cursor:pointer;" onclick="openSoulPanel()" title="Edit Agent Soul Files">
-                    <h2 class="sidebar-title">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                        Agent Files
-                    </h2>
-                    <p class="sidebar-subtitle" id="soul-agents-subtitle">SOUL / MEMORY / IDENTITY</p>
-                </div>
-            </div>
+
         </aside>
 
         <!-- Kanban Board -->

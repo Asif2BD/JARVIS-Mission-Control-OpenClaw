@@ -5632,3 +5632,54 @@ body::after {
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     font-style: italic;
 }
+
+/* ============================================
+   SIDEBAR ORGANIZATION (v1.18.0)
+   Collapsible group headers with localStorage
+   ============================================ */
+
+.sidebar-group {
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.sidebar-group-header:hover {
+    background: rgba(0, 255, 65, 0.04);
+}
+
+.sgroup-chevron {
+    font-size: 9px;
+    color: rgba(0, 255, 65, 0.4);
+    transition: transform 0.25s ease;
+    font-family: monospace;
+    flex-shrink: 0;
+    width: 10px;
+    display: inline-block;
+}
+
+.sgroup-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: rgba(0, 255, 65, 0.5);
+    text-transform: uppercase;
+    font-family: 'Orbitron', monospace;
+}
+
+.sidebar-group-body {
+    overflow: hidden;
+    max-height: 2000px;
+    transition: max-height 0.35s ease;
+}
+
+.sidebar-group-body.collapsed {
+    max-height: 0;
+}

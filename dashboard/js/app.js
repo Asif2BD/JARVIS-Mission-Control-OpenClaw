@@ -3,6 +3,44 @@
  * Local file-based system with real-time updates via WebSocket
  */
 
+// ── Sidebar Group Toggle (v1.18.0) ─────────────────────────────────────────
+
+function toggleSidebarGroup(groupId) {
+    const body    = document.getElementById(`sgroup-body-${groupId}`);
+    const chevron = document.getElementById(`sgroup-chevron-${groupId}`);
+    if (!body) return;
+
+    const isCollapsed = body.classList.contains('collapsed');
+    if (isCollapsed) {
+        body.classList.remove('collapsed');
+        if (chevron) chevron.textContent = '▼';
+        localStorage.setItem(`sgroup-${groupId}`, 'open');
+    } else {
+        body.classList.add('collapsed');
+        if (chevron) chevron.textContent = '▶';
+        localStorage.setItem(`sgroup-${groupId}`, 'collapsed');
+    }
+}
+
+// Restore sidebar group states from localStorage on load
+(function restoreSidebarGroups() {
+    // Defaults: team=open, intelligence=open, system=collapsed
+    const defaults = { team: 'open', intelligence: 'open', system: 'collapsed' };
+    for (const [groupId, def] of Object.entries(defaults)) {
+        const saved = localStorage.getItem(`sgroup-${groupId}`) || def;
+        const body    = document.getElementById(`sgroup-body-${groupId}`);
+        const chevron = document.getElementById(`sgroup-chevron-${groupId}`);
+        if (!body) continue;
+        if (saved === 'collapsed') {
+            body.classList.add('collapsed');
+            if (chevron) chevron.textContent = '▶';
+        } else {
+            body.classList.remove('collapsed');
+            if (chevron) chevron.textContent = '▼';
+        }
+    }
+})();
+
 // State
 let selectedTask = null;
 let currentTheme = 'dark';
