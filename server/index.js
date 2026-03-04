@@ -16,8 +16,11 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const path = require('path');
 const http = require('http');
+
 const cookieParser = require('cookie-parser');
 const Tokens = require('csrf');
+
+const rateLimit = require('express-rate-limit');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
@@ -41,9 +44,9 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// ============================================
+// =====================================
 // CSRF PROTECTION (v1.6.0)
-// ============================================
+// =====================================
 
 const csrfTokens = new Tokens();
 
@@ -90,6 +93,53 @@ function csrfProtection(req, res, next) {
 
 app.use(csrfProtection);
 
+// =====================================
+// RATE LIMITING (v1.7.0)
+// =====================================
+
+/**
+ * General API rate limiter: 100 requests per minute per IP.
+ * Applied to all /api/* routes.
+ */
+const generalLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100,
+    standardHeaders: 'draft-7', // Retry-After + RateLimit-* headers (RFC standard)
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.', code: 'RATE_LIMIT_EXCEEDED' },
+    handler: (req, res, next, options) => {
+        res.setHeader('Retry-After', Math.ceil(options.windowMs / 1000));
+        res.status(429).json(options.message);
+    },
+    skip: (req) => {
+        // Skip rate limiting for WebSocket upgrade requests
+        return req.headers.upgrade === 'websocket';
+    },
+});
+
+/**
+ * Strict rate limiter: 10 requests per minute per IP.
+ * Applied to auth-sensitive routes.
+ */
+const strictLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'Too many requests on this endpoint, please try again later.', code: 'RATE_LIMIT_STRICT' },
+    handler: (req, res, next, options) => {
+        res.setHeader('Retry-After', Math.ceil(options.windowMs / 1000));
+        res.status(429).json(options.message);
+    },
+});
+
+// Apply general limiter to all /api/* routes
+app.use('/api', generalLimiter);
+
+// Apply strict limiter to credential and auth-sensitive routes
+app.use('/api/credentials', strictLimiter);
+app.use('/api/github/config', strictLimiter);
+
 // Security middleware: sanitize named route parameters
 // app.param() runs *after* route matching so req.params is populated — unlike app.use() which is a no-op here
 ['id', 'taskId', 'agentId', 'humanId', 'threadId', 'index', 'itemId', 'type'].forEach(name => {
@@ -109,9 +159,9 @@ const wss = new WebSocketServer({ server, path: '/ws' });
 // Webhook subscriptions
 const webhooks = new Map();
 
-// ============================================
+// =====================================
 // SECURITY UTILITIES
-// ============================================
+// =====================================
 
 /**
  * Sanitize an ID parameter to prevent path traversal attacks
@@ -141,9 +191,9 @@ function isPathSafe(filePath, baseDir) {
     return resolvedPath.startsWith(resolvedBase + path.sep) || resolvedPath === resolvedBase;
 }
 
-// ============================================
+// =====================================
 // UTILITY FUNCTIONS
-// ============================================
+// =====================================
 
 /**
  * Read all JSON files from a directory
@@ -233,9 +283,9 @@ async function logActivity(actor, action, description) {
     broadcast('log', { timestamp, actor: safeActor, action: safeAction, description: safeDescription });
 }
 
-// ============================================
+// =====================================
 // WEBSOCKET - Real-time Updates
-// ============================================
+// =====================================
 
 const wsClients = new Set();
 
@@ -270,9 +320,9 @@ function broadcast(type, data) {
     });
 }
 
-// ============================================
+// =====================================
 // WEBHOOKS - Agent Notifications
-// ============================================
+// =====================================
 
 /**
  * Register a webhook
@@ -302,9 +352,9 @@ async function triggerWebhooks(event, data) {
     }
 }
 
-// ============================================
+// =====================================
 // FILE WATCHER - Detect External Changes
-// ============================================
+// =====================================
 
 const watcher = chokidar.watch(MISSION_CONTROL_DIR, {
     ignored: /(^|[\/\\])\../, // ignore dotfiles
@@ -352,9 +402,9 @@ async function handleFileChange(action, filePath) {
     triggerWebhooks(`${entityType}.${action}`, { file: fileName, data });
 }
 
-// ============================================
+// =====================================
 // REST API ROUTES
-// ============================================
+// =====================================
 
 // Serve dashboard static files
 
@@ -1247,9 +1297,9 @@ app.get('/api/agents/:id/timeline', async (req, res) => {
     }
 });
 
-// ============================================
+// =====================================
 // RESOURCE MANAGEMENT
-// ============================================
+// =====================================
 
 // Initialize Resource Manager
 const resourceManager = new ResourceManager(MISSION_CONTROL_DIR);
@@ -1475,9 +1525,9 @@ app.get('/api/quotas/check', async (req, res) => {
     }
 });
 
-// ============================================
+// =====================================
 // QUALITY CONTROL & REVIEW SYSTEM
-// ============================================
+// =====================================
 
 // --- REVIEWS ---
 
@@ -1885,9 +1935,9 @@ app.get('/api/metrics', async (req, res) => {
     }
 });
 
-// ============================================
+// =====================================
 // Claude Code Session Routes (v1.2.0)
-// ============================================
+// =====================================
 
 /**
  * GET /api/claude/sessions
@@ -1948,9 +1998,9 @@ app.post('/api/claude/sessions', async (req, res) => {
     }
 });
 
-// ============================================
+// =====================================
 // CLI INTEGRATION (v1.3.0)
-// ============================================
+// =====================================
 
 const { execFile } = require('child_process');
 
@@ -1998,9 +2048,9 @@ app.post('/api/cli/run', (req, res) => {
     });
 });
 
-// ============================================
+// =====================================
 // CSRF TOKEN ENDPOINT (v1.6.0)
-// ============================================
+// =====================================
 
 /**
  * GET /api/csrf-token
@@ -2024,9 +2074,9 @@ app.get('/api/csrf-token', (req, res) => {
     res.json({ token, expires: new Date(Date.now() + 3600_000).toISOString() });
 });
 
-// ============================================
+// =====================================
 // CLI CONNECTIONS API (v1.3.0)
-// ============================================
+// =====================================
 
 /**
  * POST /api/connect
@@ -2084,9 +2134,9 @@ app.post('/api/connect/:id/heartbeat', (req, res) => {
     res.json({ ok: true, lastHeartbeat: conn.lastHeartbeat });
 });
 
-// ============================================
+// =====================================
 // GITHUB ISSUES SYNC (v1.4.0)
-// ============================================
+// =====================================
 
 /**
  * GET /api/github/issues
@@ -2230,9 +2280,9 @@ function getGithubConfig() {
     return { token, repo };
 }
 
-// ============================================
+// =====================================
 // AGENT SOUL WORKSPACE SYNC (v1.5.0)
-// ============================================
+// =====================================
 
 const AGENTS_WORKSPACE_DIR = process.env.AGENTS_DIR || '/root/.openclaw/workspace/agents';
 const SOUL_FILES = ['SOUL.md', 'MEMORY.md', 'IDENTITY.md'];
@@ -2344,7 +2394,7 @@ app.put('/api/agents/soul/:agentId', async (req, res) => {
     res.json({ ok: true, agentId, filename, size, timestamp: new Date().toISOString() });
 });
 
-// ============================================
+// =====================================
 // Serve dashboard static files (MUST be before catch-all route)
 app.use(express.static(DASHBOARD_DIR));
 
@@ -2354,7 +2404,7 @@ app.get('*', (req, res) => {
 });
 
 // START SERVER
-// ============================================
+// =====================================
 
 server.listen(PORT, () => {
     // Load .missiondeck env file if present and not already set
