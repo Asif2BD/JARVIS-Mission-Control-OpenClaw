@@ -5768,3 +5768,83 @@ body::after {
     border-color: rgba(255, 204, 0, 0.3);
     color: #ffcc00;
 }
+
+/* ============================================
+   MATRIX THEME POLISH (v2.0.0)
+   Scanlines, glow pulse, rain accent, typewriter
+   ============================================ */
+
+/* 1. Scanline overlay — subtle CRT effect */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* 2. Glow pulse on active/busy agents */
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 4px #00ff41; }
+    50%       { box-shadow: 0 0 12px #00ff41, 0 0 20px rgba(0, 255, 65, 0.3); }
+}
+
+.agent-status-active {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Apply pulse to status dot when agent is active/busy */
+.entity-status-dot.status-active,
+.entity-status-dot.status-busy,
+.agent-dot.active,
+.agent-dot.busy {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 3. Matrix rain header accent — animated gradient line under header */
+.header {
+    position: relative;
+}
+
+.header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ff41, #00d4ff, #00ff41, transparent);
+    background-size: 200% 100%;
+    animation: matrix-scan 3s linear infinite;
+    opacity: 0.7;
+}
+
+@keyframes matrix-scan {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 4. Typewriter blinking cursor on version badge */
+.version::after {
+    content: '|';
+    display: inline-block;
+    margin-left: 2px;
+    color: var(--neon-cyan);
+    animation: blink-cursor 1s step-end infinite;
+    font-weight: 300;
+}
+
+@keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+/* 5. Task card hover glow */
+.task-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.1);
+}
