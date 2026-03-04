@@ -675,9 +675,22 @@ app.patch('/api/tasks/:id', async (req, res) => {
         }
 
         // Apply partial updates (only allowed fields)
-        const allowedFields = ['status', 'assignee', 'priority', 'title', 'description', 'labels', 'subtasks', 'deliverables'];
+        const allowedFields = ['status', 'assignee', 'priority', 'title', 'description', 'labels', 'subtasks', 'deliverables', 'review_required'];
         const updates = req.body;
         const changes = [];
+
+        // Quality Review Gate (v1.12.0):
+        // Block moving to DONE if review_required is true and a pending review exists
+        if (updates.status === 'DONE' && task.review_required === true) {
+            const pendingReview = (task.reviews || []).find(r => r.status === 'pending');
+            if (pendingReview) {
+                return res.status(400).json({
+                    error: 'Review required before completion',
+                    code: 'REVIEW_REQUIRED',
+                    review_id: pendingReview.id,
+                });
+            }
+        }
 
         for (const field of allowedFields) {
             if (updates[field] !== undefined && updates[field] !== task[field]) {
@@ -764,6 +777,154 @@ app.post('/api/tasks/:id/comments', async (req, res) => {
         triggerWebhooks('task.comment', { task_id: task.id, comment });
 
         res.status(201).json(comment);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- TASK QUALITY REVIEW GATES (v1.12.0) ---
+
+/**
+ * POST /api/tasks/:id/request-review
+ * Flag a task as needing review. Creates a pending review entry.
+ * Body: { reviewer?, notes? }
+ */
+app.post('/api/tasks/:id/request-review', async (req, res) => {
+    try {
+        const id = sanitizeId(req.params.id);
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { reviewer, notes } = req.body;
+
+        const reviewEntry = {
+            id: `review-${Date.now()}`,
+            status: 'pending',
+            requested_at: new Date().toISOString(),
+            requested_by: req.headers['x-agent-id'] || 'system',
+            reviewer: reviewer || null,
+            notes: notes || null,
+            result: null,
+            result_at: null,
+            result_by: null,
+            result_notes: null,
+        };
+
+        task.review_required = true;
+        task.reviews = task.reviews || [];
+        task.reviews.push(reviewEntry);
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(reviewEntry.requested_by, 'REVIEW_REQUESTED', `Task ${task.id}: review requested`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.review_requested', { task_id: task.id, review: reviewEntry });
+
+        res.status(201).json({ task, review: reviewEntry });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/tasks/:id/approve-review
+ * Approve the pending review. Marks task as approved for completion.
+ * Body: { reviewer, notes? }
+ */
+app.post('/api/tasks/:id/approve-review', async (req, res) => {
+    try {
+        const id = sanitizeId(req.params.id);
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { reviewer, notes } = req.body;
+        if (!reviewer) {
+            return res.status(400).json({ error: 'reviewer is required' });
+        }
+
+        const pendingReview = (task.reviews || []).find(r => r.status === 'pending');
+        if (!pendingReview) {
+            return res.status(400).json({ error: 'No pending review found' });
+        }
+
+        pendingReview.status = 'approved';
+        pendingReview.result = 'approved';
+        pendingReview.result_at = new Date().toISOString();
+        pendingReview.result_by = reviewer;
+        pendingReview.result_notes = notes || null;
+
+        // Clear review_required gate so task can move to DONE
+        task.review_required = false;
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(reviewer, 'REVIEW_APPROVED', `Task ${task.id}: approved by ${reviewer}`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.review_approved', { task_id: task.id, review: pendingReview });
+
+        res.json({ task, review: pendingReview });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/tasks/:id/reject-review
+ * Reject the pending review. Moves task back to IN_PROGRESS.
+ * Body: { reviewer, notes?, reason }
+ */
+app.post('/api/tasks/:id/reject-review', async (req, res) => {
+    try {
+        const id = sanitizeId(req.params.id);
+        let task;
+        try {
+            task = await readJsonFile(`tasks/${id}.json`);
+        } catch (error) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        const { reviewer, notes, reason } = req.body;
+        if (!reviewer) {
+            return res.status(400).json({ error: 'reviewer is required' });
+        }
+        if (!reason) {
+            return res.status(400).json({ error: 'reason is required' });
+        }
+
+        const pendingReview = (task.reviews || []).find(r => r.status === 'pending');
+        if (!pendingReview) {
+            return res.status(400).json({ error: 'No pending review found' });
+        }
+
+        pendingReview.status = 'rejected';
+        pendingReview.result = 'rejected';
+        pendingReview.result_at = new Date().toISOString();
+        pendingReview.result_by = reviewer;
+        pendingReview.result_notes = notes || null;
+        pendingReview.reason = reason;
+
+        // Move task back to IN_PROGRESS
+        task.status = 'IN_PROGRESS';
+        task.review_required = true; // still requires review
+        task.updated_at = new Date().toISOString();
+
+        await writeJsonFile(`tasks/${task.id}.json`, task);
+        await logActivity(reviewer, 'REVIEW_REJECTED', `Task ${task.id}: rejected by ${reviewer} — ${reason}`);
+
+        broadcast('task.updated', task);
+        triggerWebhooks('task.review_rejected', { task_id: task.id, review: pendingReview });
+
+        res.json({ task, review: pendingReview });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

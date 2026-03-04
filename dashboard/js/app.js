@@ -308,6 +308,49 @@ function renderKanban() {
             container.appendChild(createTaskCard(task));
         });
     });
+
+    // v1.12.0 — Highlight REVIEW column when tasks are waiting for review
+    highlightReviewColumn();
+}
+
+/**
+ * Highlight the REVIEW column header when there are tasks with pending reviews.
+ */
+function highlightReviewColumn() {
+    const allTasks = window.missionControlData.getTasks ? window.missionControlData.getTasks() : [];
+    const hasPendingReviews = allTasks.some(t =>
+        t.review_required && (t.reviews || []).some(r => r.status === 'pending')
+    );
+
+    const reviewColumn = document.querySelector('.kanban-column[data-status="REVIEW"]');
+    if (!reviewColumn) return;
+
+    const header = reviewColumn.querySelector('.column-header');
+    if (hasPendingReviews) {
+        if (header) {
+            header.style.borderBottom = '2px solid #f6ad55';
+            header.style.background = 'rgba(246, 173, 85, 0.08)';
+        }
+        // Add badge if not already there
+        let reviewBadge = reviewColumn.querySelector('.review-pending-badge');
+        if (!reviewBadge) {
+            const titleWrapper = reviewColumn.querySelector('.column-title-wrapper');
+            if (titleWrapper) {
+                reviewBadge = document.createElement('span');
+                reviewBadge.className = 'review-pending-badge';
+                reviewBadge.style.cssText = 'background:#f6ad55; color:#1a202c; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; font-weight:700;';
+                reviewBadge.textContent = '⏳ Pending';
+                titleWrapper.appendChild(reviewBadge);
+            }
+        }
+    } else {
+        if (header) {
+            header.style.borderBottom = '';
+            header.style.background = '';
+        }
+        const badge = reviewColumn.querySelector('.review-pending-badge');
+        if (badge) badge.remove();
+    }
 }
 
 /**
@@ -332,10 +375,17 @@ function createTaskCard(task) {
         window.missionControlData.getAgent(task.assignee) : null;
     const assigneeName = assignee ? assignee.name : null;
 
+    // Check for pending review (v1.12.0)
+    const pendingReview = task.review_required && (task.reviews || []).find(r => r.status === 'pending');
+
     card.innerHTML = DOMPurify.sanitize(`
         <div class="task-card-content">
-            <div class="task-title">${escapeHtml(task.title)}</div>
+            <div class="task-title">
+                ${escapeHtml(task.title)}
+                ${task.review_required ? `<span title="Review required" style="margin-left:6px; font-size:13px;">🔍</span>` : ''}
+            </div>
             <div class="task-id">${task.id}</div>
+            ${pendingReview ? `<div style="font-size:10px; color:#f6ad55; margin-top:3px;">⏳ Review pending</div>` : ''}
             ${assigneeName ? `
                 <div class="task-assignee">
                     <span class="task-assignee-dot"></span>
@@ -674,11 +724,150 @@ function openTaskModal(task) {
         `).join('') :
         '<p class="text-muted">No comments yet</p>');
 
+    // Review Gates (v1.12.0)
+    renderTaskReviews(task);
+
     // Update URL with task ID
     history.pushState({ taskId: task.id }, '', `#${task.id}`);
 
     // Show modal
     modal.classList.add('open');
+}
+
+/**
+ * Render review status section in the task modal (v1.12.0)
+ */
+function renderTaskReviews(task) {
+    // Find or create review section
+    let reviewSection = document.getElementById('modal-review-section');
+    if (!reviewSection) {
+        const modalBody = document.querySelector('#task-modal .modal-body');
+        if (!modalBody) return;
+        reviewSection = document.createElement('div');
+        reviewSection.id = 'modal-review-section';
+        reviewSection.className = 'task-field';
+        modalBody.appendChild(reviewSection);
+    }
+
+    if (!task.review_required && (!task.reviews || task.reviews.length === 0)) {
+        reviewSection.style.display = 'none';
+        return;
+    }
+
+    reviewSection.style.display = '';
+
+    const reviews = task.reviews || [];
+    const pendingReview = reviews.find(r => r.status === 'pending');
+
+    let html = `<label>🔍 Review Gates</label>`;
+
+    if (reviews.length === 0) {
+        html += `<p style="font-size:12px; color:#aaa;">No reviews yet.</p>`;
+    } else {
+        html += reviews.map(r => {
+            const statusIcon = r.status === 'pending' ? '⏳' : r.status === 'approved' ? '✅' : '❌';
+            return `<div style="font-size:12px; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
+                ${statusIcon} <strong>${r.status.toUpperCase()}</strong>
+                ${r.result_by ? ` by ${escapeHtml(r.result_by)}` : ''}
+                ${r.result_notes ? ` — ${escapeHtml(r.result_notes)}` : ''}
+                ${r.reason ? ` — Reason: ${escapeHtml(r.reason)}` : ''}
+                <span style="color:#666; float:right; font-size:10px;">${formatDate(r.requested_at)}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // Approve/Reject buttons when review pending
+    if (pendingReview) {
+        html += `
+            <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                <button onclick="approveTaskReview('${task.id}')" style="background:#38a169; color:#fff; border:none; border-radius:4px; padding:5px 14px; font-size:12px; cursor:pointer; font-weight:600;">✅ Approve</button>
+                <button onclick="rejectTaskReview('${task.id}')" style="background:#e53e3e; color:#fff; border:none; border-radius:4px; padding:5px 14px; font-size:12px; cursor:pointer; font-weight:600;">❌ Reject</button>
+            </div>
+        `;
+    } else {
+        html += `
+            <div style="margin-top:10px;">
+                <button onclick="requestTaskReview('${task.id}')" style="background:#4f8ef7; color:#fff; border:none; border-radius:4px; padding:5px 14px; font-size:12px; cursor:pointer;">🔍 Request Review</button>
+            </div>
+        `;
+    }
+
+    reviewSection.innerHTML = DOMPurify.sanitize(html);
+}
+
+/**
+ * Request review for a task (v1.12.0)
+ */
+async function requestTaskReview(taskId) {
+    const reviewer = prompt('Reviewer name (optional):');
+    try {
+        await api.request(`/tasks/${taskId}/request-review`, {
+            method: 'POST',
+            body: JSON.stringify({ reviewer: reviewer || undefined })
+        });
+        await refreshTaskInModal(taskId);
+    } catch (err) {
+        alert('Failed to request review: ' + err.message);
+    }
+}
+
+/**
+ * Approve review for a task (v1.12.0)
+ */
+async function approveTaskReview(taskId) {
+    const reviewer = prompt('Your name (reviewer):');
+    if (!reviewer) return;
+    const notes = prompt('Notes (optional):');
+    try {
+        await api.request(`/tasks/${taskId}/approve-review`, {
+            method: 'POST',
+            body: JSON.stringify({ reviewer, notes: notes || undefined })
+        });
+        await refreshTaskInModal(taskId);
+    } catch (err) {
+        alert('Failed to approve review: ' + err.message);
+    }
+}
+
+/**
+ * Reject review for a task (v1.12.0)
+ */
+async function rejectTaskReview(taskId) {
+    const reviewer = prompt('Your name (reviewer):');
+    if (!reviewer) return;
+    const reason = prompt('Rejection reason (required):');
+    if (!reason) return;
+    const notes = prompt('Additional notes (optional):');
+    try {
+        await api.request(`/tasks/${taskId}/reject-review`, {
+            method: 'POST',
+            body: JSON.stringify({ reviewer, reason, notes: notes || undefined })
+        });
+        await refreshTaskInModal(taskId);
+    } catch (err) {
+        alert('Failed to reject review: ' + err.message);
+    }
+}
+
+/**
+ * Refresh the task modal with latest data (v1.12.0)
+ */
+async function refreshTaskInModal(taskId) {
+    try {
+        const task = await api.getTask(taskId);
+        if (task) {
+            openTaskModal(task);
+            // Also update the card in the board
+            const cards = document.querySelectorAll(`.task-card[data-task-id="${taskId}"]`);
+            cards.forEach(card => {
+                const parent = card.parentElement;
+                const newCard = createTaskCard(task);
+                parent.replaceChild(newCard, card);
+            });
+        }
+    } catch (err) {
+        console.warn('Failed to refresh task:', err);
+    }
 }
 
 /**
