@@ -20,6 +20,7 @@ const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
 const claudeSessions = require('./claude-sessions');
+const cliConnections = require('./cli-connections');
 
 // Input sanitization helper
 function sanitizeInput(val) {
@@ -1893,6 +1894,116 @@ app.post('/api/claude/sessions', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// ============================================
+// CLI INTEGRATION (v1.3.0)
+// ============================================
+
+const { execFile } = require('child_process');
+
+// Whitelist of safe commands that can be triggered from the dashboard
+const CLI_COMMAND_WHITELIST = {
+    'openclaw:status':         { cmd: 'openclaw', args: ['status'] },
+    'openclaw:gateway:status': { cmd: 'openclaw', args: ['gateway', 'status'] },
+    'openclaw:gateway:start':  { cmd: 'openclaw', args: ['gateway', 'start'] },
+    'openclaw:gateway:stop':   { cmd: 'openclaw', args: ['gateway', 'stop'] },
+    'system:uptime':           { cmd: 'uptime',   args: [] },
+    'system:df':               { cmd: 'df',       args: ['-h', '--output=source,size,used,avail,pcent,target', '-x', 'tmpfs', '-x', 'devtmpfs'] },
+    'system:free':             { cmd: 'free',     args: ['-h'] },
+    'node:version':            { cmd: 'node',     args: ['--version'] },
+    'jarvis:version':          { cmd: 'node',     args: [path.join(__dirname, '..', 'scripts', 'jarvis.js'), '--version'] },
+};
+
+app.get('/api/cli/commands', (req, res) => {
+    const commands = Object.keys(CLI_COMMAND_WHITELIST).map(key => ({
+        id: key,
+        label: key.replace(/:/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    }));
+    res.json({ commands });
+});
+
+app.post('/api/cli/run', (req, res) => {
+    const { command } = req.body || {};
+    if (!command || typeof command !== 'string') {
+        return res.status(400).json({ error: 'command is required' });
+    }
+    const entry = CLI_COMMAND_WHITELIST[command];
+    if (!entry) {
+        return res.status(403).json({ error: `Command not whitelisted: ${command}` });
+    }
+    const startTime = Date.now();
+    execFile(entry.cmd, entry.args, { timeout: 15000, maxBuffer: 1024 * 512 }, (err, stdout, stderr) => {
+        const elapsed = Date.now() - startTime;
+        res.json({
+            command,
+            exitCode: err ? (err.code || 1) : 0,
+            stdout: stdout || '',
+            stderr: stderr || '',
+            elapsed,
+            timestamp: new Date().toISOString(),
+        });
+    });
+});
+
+// ============================================
+// CLI CONNECTIONS API (v1.3.0)
+// ============================================
+
+/**
+ * POST /api/connect
+ * Register a CLI tool and get back a connection ID.
+ * Body: { name, version, cwd, token? }
+ */
+app.post('/api/connect', (req, res) => {
+    const { name, version, cwd, token } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'name is required' });
+    const conn = cliConnections.registerConnection({ name, version, cwd, token });
+    res.status(201).json({
+        ok: true,
+        id: conn.id,
+        message: `Registered ${conn.name} v${conn.version}`,
+        connectedAt: conn.connectedAt,
+    });
+});
+
+/**
+ * GET /api/connect
+ * List all CLI connections (active = last heartbeat < 5min).
+ */
+app.get('/api/connect', (req, res) => {
+    const list = cliConnections.listConnections();
+    res.json({
+        connections: list,
+        total: list.length,
+        activeCount: cliConnections.getActiveCount(),
+    });
+});
+
+/**
+ * DELETE /api/connect
+ * Disconnect/unregister a CLI session.
+ * Body: { id }
+ */
+app.delete('/api/connect', (req, res) => {
+    const { id } = req.body || {};
+    if (!id) return res.status(400).json({ error: 'id is required' });
+    const removed = cliConnections.disconnect(String(id).replace(/[^a-zA-Z0-9\-]/g, '').slice(0, 64));
+    if (!removed) return res.status(404).json({ error: 'Connection not found' });
+    res.json({ ok: true, message: 'Disconnected' });
+});
+
+/**
+ * POST /api/connect/:id/heartbeat
+ * CLI sends heartbeat + optional token usage.
+ * Body: { inputTokens?, outputTokens?, model? }
+ */
+app.post('/api/connect/:id/heartbeat', (req, res) => {
+    const id = req.params.id;
+    const { inputTokens, outputTokens, model } = req.body || {};
+    const conn = cliConnections.heartbeat(id, { inputTokens, outputTokens, model });
+    if (!conn) return res.status(404).json({ error: 'Connection not found' });
+    res.json({ ok: true, lastHeartbeat: conn.lastHeartbeat });
 });
 
 // ============================================
