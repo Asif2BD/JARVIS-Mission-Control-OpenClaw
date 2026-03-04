@@ -422,6 +422,8 @@ async function triggerWebhooks(event, data) {
         // ----- Update circuit breaker state -----
         if (success) {
             webhook.failures = 0;
+            webhook.successCount = (webhook.successCount || 0) + 1;
+            webhook.lastDelivery = new Date().toISOString();
             webhook.circuitState = 'closed';
             webhook.circuitOpenedAt = null;
         } else {
@@ -1087,6 +1089,24 @@ app.get('/api/webhooks', (req, res) => {
         circuitOpenedAt: data.circuitOpenedAt || null,
     }));
     res.json(list);
+});
+
+/**
+ * GET /api/webhooks/status
+ * Returns per-URL delivery stats: success count, fail count, circuit state.
+ */
+app.get('/api/webhooks/status', (req, res) => {
+    const status = Array.from(webhooks.entries()).map(([id, data]) => ({
+        id,
+        url: data.url,
+        events: data.events,
+        successCount: data.successCount || 0,
+        failCount: data.failures || 0,
+        circuitState: data.circuitState || 'closed',
+        circuitOpenedAt: data.circuitOpenedAt || null,
+        lastDelivery: data.lastDelivery || null,
+    }));
+    res.json({ webhooks: status, total: status.length });
 });
 
 /**
@@ -2011,6 +2031,80 @@ app.delete('/api/schedules/:id', async (req, res) => {
         await logActivity('system', 'SCHEDULE_DELETED', `Job: ${sanitizeForLog(id)}`);
         broadcast('schedule.deleted', { id });
         res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =====================================
+// RELEASES / UPDATE CHECK (v1.10.0)
+// =====================================
+
+// 1-hour cache for release check
+let releaseCheckCache = { data: null, expiresAt: 0 };
+
+/**
+ * GET /api/releases/check
+ * Fetches the latest GitHub release and compares with current version.
+ * Returns { current, latest, updateAvailable, releaseUrl }.
+ * Result cached for 1 hour.
+ */
+app.get('/api/releases/check', async (req, res) => {
+    try {
+        const now = Date.now();
+
+        // Return cached result if still valid
+        if (releaseCheckCache.data && now < releaseCheckCache.expiresAt) {
+            return res.json(releaseCheckCache.data);
+        }
+
+        const pkgPath = path.join(__dirname, '..', 'package.json');
+        const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
+        const current = pkg.version;
+
+        let latest = null;
+        let releaseUrl = null;
+        let updateAvailable = false;
+
+        try {
+            const response = await fetch(
+                'https://api.github.com/repos/Asif2BD/JARVIS-Mission-Control-OpenClaw/releases/latest',
+                {
+                    headers: {
+                        'User-Agent': `JARVIS-Mission-Control/${current}`,
+                        'Accept': 'application/vnd.github+json',
+                    },
+                    signal: AbortSignal.timeout(5000),
+                }
+            );
+
+            if (response.ok) {
+                const release = await response.json();
+                latest = release.tag_name ? release.tag_name.replace(/^v/, '') : null;
+                releaseUrl = release.html_url || null;
+
+                if (latest) {
+                    // Simple semver comparison (major.minor.patch)
+                    const parseVer = v => v.split('.').map(Number);
+                    const [cMaj, cMin, cPat] = parseVer(current);
+                    const [lMaj, lMin, lPat] = parseVer(latest);
+                    updateAvailable = (
+                        lMaj > cMaj ||
+                        (lMaj === cMaj && lMin > cMin) ||
+                        (lMaj === cMaj && lMin === cMin && lPat > cPat)
+                    );
+                }
+            }
+        } catch (fetchErr) {
+            logger.warn({ err: fetchErr.message }, 'Could not fetch latest release from GitHub');
+        }
+
+        const result = { current, latest, updateAvailable, releaseUrl };
+
+        // Cache for 1 hour
+        releaseCheckCache = { data: result, expiresAt: now + 3600_000 };
+
+        res.json(result);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -210,6 +210,12 @@ const MissionControlAPI = {
         });
     },
 
+    // --- Releases ---
+
+    async checkForUpdate() {
+        return this.request('/releases/check');
+    },
+
     // --- Messages ---
 
     async getMessages(agentId) {
