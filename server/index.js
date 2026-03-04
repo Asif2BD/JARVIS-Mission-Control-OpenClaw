@@ -22,7 +22,6 @@ const Tokens = require('csrf');
 
 const rateLimit = require('express-rate-limit');
 const logger = require('./logger');
-const basicAuth = require('./middleware/basic-auth');
 const webhookDelivery = require('./webhook-delivery');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
@@ -47,13 +46,6 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// ============================================
-// BASIC AUTH PROTECTION (security/zion-lockdown)
-// Set MC_AUTH_PASS env var to enable.
-// MC_AUTH_USER defaults to "architect".
-// Localhost requests bypass auth (agent access).
-// ============================================
-app.use(basicAuth);
 
 // =====================================
 // CSRF PROTECTION (v1.6.0)
