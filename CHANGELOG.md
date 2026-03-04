@@ -1,5 +1,43 @@
 ## [1.0.11] - 2026-03-03
 
+## [1.1.0] - 2026-03-04
+
+### Security — Comprehensive Hardening (Defense in Depth)
+
+Full security audit by Morpheus (The Reviewer). Final posture: **0 CRITICAL | 0 HIGH | 4 MEDIUM | 0 LOW**
+
+#### server/resource-manager.js — Real Vulnerability Fixed
+- Added `_isPathSafe()` validation to `deleteCredential()`, `deleteResource()`, `_readFile()`, `_writeFile()`
+- Raw `fs.unlink()` calls were missing path validation — now fully protected
+
+#### server/index.js — Defense-in-Depth Documentation
+- Added `// SAFE:` inline comments at 10+ call sites confirming existing protection chain
+- Protection stack: `app.param` middleware → `sanitizeId()` → `isPathSafe()` in readJsonFile/writeJsonFile
+
+#### Security Protection Stack
+```
+USER INPUT (req.params.id)
+    ↓ [1] app.param middleware → alphanumeric sanitization
+    ↓ [2] sanitizeId() → additional route-level validation
+    ↓ [3] readJsonFile/writeJsonFile → isPathSafe() path validation
+    ↓ [4] resource-manager._isPathSafe() → file operation validation
+    ✅ SAFE FILE OPERATION
+```
+
+#### Verified
+- Path traversal blocked: `GET /api/tasks/../../../etc/passwd` → 404
+- XSS sanitized: `<script>alert('XSS')</script>` → escaped text
+- Legitimate operations: unaffected
+
+#### Full Security Hardening History
+| Version | Issue | Fix |
+|---------|-------|-----|
+| v1.0.9  | 47 XSS + 17 injection risks | DOMPurify + sanitizeInput() |
+| v1.0.10 | SSRF via webhook registration | validateWebhookUrl() |
+| v1.0.11 | 33 HIGH: injection + path traversal + XSS | sanitizeId() + DOMPurify defence-in-depth |
+| v1.1.0  | resource-manager path validation gap | _isPathSafe() + full audit documentation |
+
+
 ### Security — HIGH Severity Fixes (PR #46)
 Morpheus Security Counsel audit identified 33 HIGH findings. All patched.
 

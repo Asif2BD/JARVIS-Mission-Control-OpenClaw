@@ -25,6 +25,16 @@ class ResourceManager {
         this._ensureDirs();
     }
 
+    /**
+     * Validate that a path stays within the allowed directory
+     * Prevents path traversal attacks (e.g., ../../etc/passwd)
+     */
+    _isPathSafe(filePath, baseDir) {
+        const resolvedPath = path.resolve(filePath);
+        const resolvedBase = path.resolve(baseDir);
+        return resolvedPath.startsWith(resolvedBase + path.sep) || resolvedPath === resolvedBase;
+    }
+
     async _ensureDirs() {
         const dirs = [
             this.resourcesDir,
@@ -64,11 +74,19 @@ class ResourceManager {
     }
 
     async _readFile(filePath) {
+        // SAFE: Explicit path traversal protection
+        if (!this._isPathSafe(filePath, this.baseDir)) {
+            throw new Error('Path traversal attempt detected');
+        }
         const content = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(content);
     }
 
     async _writeFile(filePath, data) {
+        // SAFE: Explicit path traversal protection
+        if (!this._isPathSafe(filePath, this.baseDir)) {
+            throw new Error('Path traversal attempt detected');
+        }
         await fs.mkdir(path.dirname(filePath), { recursive: true });
         await fs.writeFile(filePath, JSON.stringify(data, null, 2));
         return data;
@@ -140,6 +158,10 @@ class ResourceManager {
 
     async deleteCredential(id) {
         const filePath = path.join(this.credentialsDir, `${id}.json`);
+        // SAFE: Explicit path traversal protection
+        if (!this._isPathSafe(filePath, this.baseDir)) {
+            throw new Error('Path traversal attempt detected');
+        }
         await fs.unlink(filePath);
         return { success: true, id };
     }
@@ -231,6 +253,10 @@ class ResourceManager {
 
     async deleteResource(id) {
         const filePath = path.join(this.resourcesDir, `${id}.json`);
+        // SAFE: Explicit path traversal protection
+        if (!this._isPathSafe(filePath, this.baseDir)) {
+            throw new Error('Path traversal attempt detected');
+        }
         await fs.unlink(filePath);
         return { success: true, id };
     }

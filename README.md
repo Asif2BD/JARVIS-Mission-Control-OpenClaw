@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-1.0.11-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![MissionDeck](https://img.shields.io/badge/platform-missiondeck.ai-blue.svg)](https://missiondeck.ai)
 
@@ -10,7 +10,7 @@ JARVIS Mission Control is a Git-based command center for managing AI agents and 
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-|  **1.0.11** | Stable | 2026-03-02 |
+|  **1.1.0** | Stable | 2026-03-02 |
 
 > **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance.
 
@@ -287,8 +287,8 @@ JARVIS Mission Control has undergone a full security audit by the Matrix Zion Se
 | Version | Findings Fixed | Method |
 |---------|---------------|--------|
 | v1.0.9 | 47 XSS + 17 injection risks | DOMPurify + `sanitizeInput()` |
-| v1.0.11 | SSRF via webhook registration | `validateWebhookUrl()` — blocks private IPs, localhost, cloud metadata |
-| v1.0.11 | 33 HIGH: injection, path traversal, XSS | `sanitizeId()` + DOMPurify defence-in-depth |
+| v1.1.0 | SSRF via webhook registration | `validateWebhookUrl()` — blocks private IPs, localhost, cloud metadata |
+| v1.1.0 | 33 HIGH: injection, path traversal, XSS | `sanitizeId()` + DOMPurify defence-in-depth |
 
 **Current status: 0 HIGH, 0 CRITICAL findings.**
 

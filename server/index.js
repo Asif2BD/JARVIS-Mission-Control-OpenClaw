@@ -317,6 +317,8 @@ app.get('/api/tasks', async (req, res) => {
 
 app.get('/api/tasks/:id', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware (line 39-45)
+        // SAFE: readJsonFile() validates path with isPathSafe() (line 127-129)
         const id = sanitizeId(req.params.id);
         const task = await readJsonFile(`tasks/${id}.json`);
         res.json(task);
@@ -473,6 +475,8 @@ app.patch('/api/tasks/:id', async (req, res) => {
         const id = sanitizeId(req.params.id);
         let task;
         try {
+            // SAFE: req.params.id sanitized by app.param middleware
+            // SAFE: readJsonFile() validates path with isPathSafe()
             task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
@@ -515,6 +519,8 @@ app.patch('/api/tasks/:id', async (req, res) => {
 
 app.delete('/api/tasks/:id', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware
+        // SAFE: deleteJsonFile() validates path with isPathSafe()
         const id = sanitizeId(req.params.id);
         await deleteJsonFile(`tasks/${id}.json`);
         await logActivity('system', 'DELETED', `Task: ${sanitizeForLog(id)}`);
@@ -535,6 +541,8 @@ app.post('/api/tasks/:id/comments', async (req, res) => {
         const id = sanitizeId(req.params.id);
         let task;
         try {
+            // SAFE: req.params.id sanitized by app.param middleware
+            // SAFE: readJsonFile() validates path with isPathSafe()
             task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
@@ -576,6 +584,8 @@ app.post('/api/tasks/:id/subtasks', async (req, res) => {
         const id = sanitizeId(req.params.id);
         let task;
         try {
+            // SAFE: req.params.id sanitized by app.param middleware
+            // SAFE: readJsonFile() validates path with isPathSafe()
             task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
@@ -614,6 +624,8 @@ app.patch('/api/tasks/:id/subtasks/:index', async (req, res) => {
         const id = sanitizeId(req.params.id);
         let task;
         try {
+            // SAFE: req.params.id sanitized by app.param middleware
+            // SAFE: readJsonFile() validates path with isPathSafe()
             task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
@@ -650,6 +662,8 @@ app.post('/api/tasks/:id/deliverables', async (req, res) => {
         const id = sanitizeId(req.params.id);
         let task;
         try {
+            // SAFE: req.params.id sanitized by app.param middleware
+            // SAFE: readJsonFile() validates path with isPathSafe()
             task = await readJsonFile(`tasks/${id}.json`);
         } catch (error) {
             return res.status(404).json({ error: 'Task not found' });
@@ -740,6 +754,8 @@ app.get('/api/agents', async (req, res) => {
 
 app.get('/api/agents/:id', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware
+        // SAFE: readJsonFile() validates path with isPathSafe()
         const id = sanitizeId(req.params.id);
         const agent = await readJsonFile(`agents/${id}.json`);
         res.json(agent);
@@ -1021,10 +1037,13 @@ app.post('/api/messages', async (req, res) => {
 
 app.put('/api/messages/:id/read', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware
+        // SAFE: readJsonFile() validates path with isPathSafe()
         const id = sanitizeId(req.params.id);
         const message = await readJsonFile(`messages/${id}.json`);
         message.read = true;
 
+        // SAFE: message.id comes from trusted file, writeJsonFile() validates path
         await writeJsonFile(`messages/${message.id}.json`, message);
 
         broadcast('message.updated', message);
@@ -1743,6 +1762,8 @@ app.post('/api/schedules', async (req, res) => {
 // Update a scheduled job
 app.put('/api/schedules/:id', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware
+        // SAFE: readJsonFile() validates path with isPathSafe()
         const id = sanitizeId(req.params.id);
         const job = await readJsonFile(`queue/${id}.json`);
         
@@ -1767,6 +1788,8 @@ app.put('/api/schedules/:id', async (req, res) => {
 // Delete a scheduled job
 app.delete('/api/schedules/:id', async (req, res) => {
     try {
+        // SAFE: req.params.id sanitized by app.param middleware
+        // SAFE: deleteJsonFile() validates path with isPathSafe()
         const id = sanitizeId(req.params.id);
         await deleteJsonFile(`queue/${id}.json`);
         await logActivity('system', 'SCHEDULE_DELETED', `Job: ${sanitizeForLog(id)}`);
