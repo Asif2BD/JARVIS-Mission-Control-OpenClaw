@@ -1,6 +1,6 @@
 # JARVIS Mission Control for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.15.0-brightgreen.svg)](CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![MissionDeck](https://img.shields.io/badge/platform-missiondeck.ai-blue.svg)](https://missiondeck.ai)
 
@@ -10,7 +10,7 @@ JARVIS Mission Control is a Git-based command center for managing AI agents and 
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-|  **1.1.0** | Stable | 2026-03-02 |
+|  **1.15.0** | Stable | 2026-03-04 |
 
 > **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance.
 
@@ -179,6 +179,39 @@ mc status                           # Show connection mode (local / cloud)
 - **Inter-agent messages** — visible conversations between agents
 - **Real-time updates** — WebSocket sync across all clients
 - **GitHub Pages support** — static read-only deploy, zero server
+
+### Security (v1.6.0–1.7.0)
+
+- **CSRF protection** — token-based, smart bypass for API/CLI clients (no cookie = no forging risk)
+- **Rate limiting** — 100 req/min general, 10 req/min on credential/config routes
+- **Input sanitization** — DOMPurify + sanitizeInput on all surfaces
+- **SSRF protection** — webhook URL validation blocks private IPs and metadata endpoints
+
+### Agent Intelligence (v1.2.0–1.5.0)
+
+- **Claude Code sessions** — auto-discovers `~/.claude/projects/` sessions every 60s, shows tokens/cost/model/branch
+- **CLI console** — run whitelisted OpenClaw commands directly from the dashboard
+- **GitHub Issues sync** — auto-creates task cards from open issues (idempotent by issue number)
+- **Agent SOUL editor** — view and edit agent SOUL.md / MEMORY.md / IDENTITY.md in-browser
+
+### Observability & Reliability (v1.9.0–1.14.0)
+
+- **Pino structured logging** — JSON in prod, pretty-print in dev; replaces all console.log
+- **Webhook retry** — SQLite-backed delivery log, exponential backoff (1s→2s→4s→8s→16s), circuit breaker (≥3 failures = open)
+- **Delivery history** — per-webhook slide-out panel with manual retry + circuit reset buttons
+- **Update banner** — notified in dashboard when a newer version is available on npm
+
+### Dashboard Widgets (v1.15.0)
+
+- **Aggregate metrics** in the header: Claude session count, CLI connections, GitHub sync status, webhook health
+- All widgets clickable (open respective panel), color-coded, auto-refresh every 60s
+
+### Test Suite (v1.12.0)
+
+- **51 tests** (Jest) covering CSRF, rate limiting, webhook retry, Claude session parsing, GitHub sync
+- Run: `npm test`
+
+
 
 ### OpenClaw Integration
 
