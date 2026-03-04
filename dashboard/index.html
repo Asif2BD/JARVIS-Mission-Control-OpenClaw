@@ -17,7 +17,7 @@
     <!-- Mobile Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeMobileSidebars()"></div>
 
-    <!-- Update Available Banner (v1.12.0) -->
+    <!-- Update Available Banner (v1.13.0) -->
     <div id="update-banner" style="display:none; background:linear-gradient(90deg,#1a365d,#2b6cb0); color:#bee3f8; padding:8px 20px; font-size:13px; align-items:center; justify-content:space-between; gap:12px;">
         <span id="update-banner-text">🚀 A new version is available!</span>
         <span style="display:flex; gap:8px; align-items:center;">
@@ -38,7 +38,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v1.12.0</span>
+            <span class="version">v1.13.0</span>
         </div>
         <div class="header-right">
             <div class="metrics">
@@ -1189,6 +1189,20 @@
                 <button class="btn btn-secondary" onclick="closeAddQuotaForm()">Cancel</button>
                 <button class="btn btn-primary" onclick="saveQuota()">Set Quota</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Webhook Delivery History Panel (v1.13.0) -->
+    <div class="agent-profile-panel" id="webhook-delivery-panel" style="display:none; width:540px; max-width:95vw;">
+        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#e53e3e; flex-shrink:0;">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.09 12 19.79 19.79 0 0 1 1 3.18 2 2 0 0 1 3 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 5.61 5.61l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span id="webhook-delivery-title" style="font-weight:600; font-size:15px; flex:1;">Delivery History</span>
+            <button class="close-btn profile-close" onclick="closeDeliveryHistory()" aria-label="Close" style="margin-left:auto;">&times;</button>
+        </div>
+        <div class="profile-panel-body" style="padding:0 20px 20px; overflow-y:auto;">
+            <div id="webhook-delivery-body"></div>
         </div>
     </div>
 

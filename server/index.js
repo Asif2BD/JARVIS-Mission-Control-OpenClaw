@@ -22,6 +22,7 @@ const Tokens = require('csrf');
 
 const rateLimit = require('express-rate-limit');
 const logger = require('./logger');
+const webhookDelivery = require('./webhook-delivery');
 const ResourceManager = require('./resource-manager');
 const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
@@ -366,76 +367,31 @@ async function fireWebhook(webhook, event, data) {
 }
 
 /**
- * Trigger webhooks for an event — with retry (exponential backoff) and circuit breaker.
- *
- * Circuit breaker states:
- *  - closed   → normal; failures < 5
- *  - open     → paused for 60s after 5 consecutive failures
- *  - half-open → after 60s, allow ONE test request; success → closed, fail → open again
+ * Trigger webhooks for an event.
+ * Enqueues a persistent delivery record; the webhook-delivery module
+ * handles retry (exponential backoff) and circuit breaker state.
+ * Delivery survives server restarts.
  */
 async function triggerWebhooks(event, data) {
-    const CIRCUIT_OPEN_TIMEOUT_MS = 60 * 1000; // 60s
-    const MAX_CONSECUTIVE_FAILURES = 5;
-    const RETRY_DELAYS_MS = [1000, 2000, 4000]; // 3 retries with exponential backoff
-
     for (const [id, webhook] of webhooks) {
         if (!webhook.events.includes(event) && !webhook.events.includes('*')) continue;
 
-        const now = Date.now();
+        try {
+            // Enqueue persistent delivery, then attempt immediately
+            const delivery = await webhookDelivery.enqueue(id, webhook.url, event, { event, data, timestamp: new Date().toISOString() });
+            const result = await webhookDelivery.attemptDelivery(delivery);
 
-        // ----- Circuit Breaker: check state -----
-        if (webhook.circuitState === 'open') {
-            const elapsed = now - (webhook.circuitOpenedAt || 0);
-            if (elapsed < CIRCUIT_OPEN_TIMEOUT_MS) {
-                logger.warn({ event: 'webhook_circuit_open', webhookId: id }, `Webhook ${id} circuit OPEN — skipping`);
-                continue;
+            if (result.success) {
+                webhook.successCount = (webhook.successCount || 0) + 1;
+                webhook.lastDelivery = new Date().toISOString();
+                logger.info({ event: 'webhook_trigger', webhookId: id }, `Webhook ${id} delivered for ${event}`);
+            } else if (result.circuitOpen) {
+                logger.warn({ event: 'webhook_circuit_open', webhookId: id }, `Webhook ${id} circuit OPEN — delivery queued for retry`);
+            } else {
+                logger.warn({ event: 'webhook_queued_retry', webhookId: id }, `Webhook ${id} failed — queued for retry`);
             }
-            // Transition to half-open: allow one probe request
-            webhook.circuitState = 'half-open';
-            logger.info({ event: 'webhook_circuit_halfopen', webhookId: id }, `Webhook ${id} circuit HALF-OPEN — probing`);
-        }
-
-        const isHalfOpen = webhook.circuitState === 'half-open';
-        let success = false;
-        let lastError = null;
-
-        // ----- Retry loop (max 3 retries; half-open only gets 1 try) -----
-        const attempts = isHalfOpen ? 1 : RETRY_DELAYS_MS.length + 1;
-
-        for (let attempt = 0; attempt < attempts; attempt++) {
-            if (attempt > 0) {
-                const delay = RETRY_DELAYS_MS[attempt - 1];
-                logger.warn({ event: 'webhook_retry', webhookId: id, attempt }, `Webhook ${id} retry #${attempt} after ${delay}ms`);
-                await sleep(delay);
-            }
-            try {
-                await fireWebhook(webhook, event, data);
-                success = true;
-                logger.info({ event: 'webhook_trigger', webhookId: id, attempt }, `Webhook ${id} triggered for ${event} (attempt ${attempt + 1})`);
-                break;
-            } catch (err) {
-                lastError = err;
-                logger.warn({ event: 'webhook_attempt_failed', webhookId: id, attempt, err: err.message }, `Webhook ${id} attempt ${attempt + 1} failed`);
-            }
-        }
-
-        // ----- Update circuit breaker state -----
-        if (success) {
-            webhook.failures = 0;
-            webhook.successCount = (webhook.successCount || 0) + 1;
-            webhook.lastDelivery = new Date().toISOString();
-            webhook.circuitState = 'closed';
-            webhook.circuitOpenedAt = null;
-        } else {
-            webhook.failures = (webhook.failures || 0) + 1;
-            logger.error({ event: 'webhook_error', webhookId: id, failures: webhook.failures, err: lastError && lastError.message }, `Webhook ${id} failed after retries`);
-
-            if (isHalfOpen || webhook.failures >= MAX_CONSECUTIVE_FAILURES) {
-                webhook.circuitState = 'open';
-                webhook.circuitOpenedAt = now;
-                logger.error({ event: 'webhook_circuit_opened', webhookId: id }, `Webhook ${id} circuit OPENED after ${webhook.failures} failures`);
-                broadcast('webhook.circuit_opened', { id, failures: webhook.failures });
-            }
+        } catch (err) {
+            logger.error({ event: 'webhook_enqueue_error', webhookId: id, err: err.message }, `Webhook ${id} enqueue error`);
         }
     }
 }
@@ -1359,18 +1315,59 @@ app.delete('/api/webhooks/:id', (req, res) => {
  * POST /api/webhooks/:id/reset-circuit
  * Manually reset a tripped circuit breaker back to 'closed'.
  */
-app.post('/api/webhooks/:id/reset-circuit', (req, res) => {
+app.post('/api/webhooks/:id/reset-circuit', async (req, res) => {
     const id = req.params.id;
     const webhook = webhooks.get(id);
     if (!webhook) {
         return res.status(404).json({ error: 'Webhook not found' });
     }
-    webhook.failures = 0;
-    webhook.circuitState = 'closed';
-    webhook.circuitOpenedAt = null;
+    await webhookDelivery.resetCircuit(id);
     logger.info({ event: 'webhook_circuit_reset', webhookId: id }, `Webhook ${id} circuit manually reset`);
     broadcast('webhook.circuit_reset', { id });
     res.json({ success: true, id, circuitState: 'closed' });
+});
+
+/**
+ * GET /api/webhooks/:id/deliveries
+ * Delivery history for a webhook (last 50, newest first).
+ * Query: ?limit=N (max 100)
+ */
+app.get('/api/webhooks/:id/deliveries', async (req, res) => {
+    const id = req.params.id;
+    if (!webhooks.has(id)) {
+        return res.status(404).json({ error: 'Webhook not found' });
+    }
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+        const deliveries = await webhookDelivery.listDeliveries(id, limit);
+        const stats = await webhookDelivery.getStats(id);
+        res.json({ deliveries, stats });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * POST /api/webhooks/:id/retry
+ * Manually retry a specific failed delivery.
+ * Body: { deliveryId }
+ */
+app.post('/api/webhooks/:id/retry', async (req, res) => {
+    const id = req.params.id;
+    if (!webhooks.has(id)) {
+        return res.status(404).json({ error: 'Webhook not found' });
+    }
+    const deliveryId = sanitizeInput(req.body.deliveryId);
+    if (!deliveryId) {
+        return res.status(400).json({ error: 'deliveryId required' });
+    }
+    try {
+        const result = await webhookDelivery.retryDelivery(deliveryId);
+        if (result.error) return res.status(400).json(result);
+        res.json({ ok: true, success: result.success, statusCode: result.statusCode, error: result.errorMsg || null });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- MESSAGES ---
@@ -2870,6 +2867,10 @@ server.listen(PORT, () => {
 
     // Start Claude Code session scanner
     claudeSessions.startScanner();
+
+    // Init persistent webhook delivery manager
+    webhookDelivery.init(MISSION_CONTROL_DIR, webhooks)
+        .catch(err => logger.error({ err: err.message }, 'webhook-delivery init error'));
 
     const mdLine = process.env.MISSIONDECK_API_KEY
         ? `║   MissionDeck:  https://missiondeck.ai/workspace/${process.env.MISSIONDECK_SLUG || '???'}    ║`
