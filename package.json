@@ -8,13 +8,22 @@
   "scripts": {
     "jarvis": "node ./scripts/jarvis.js",
     "server": "cd server && node index.js",
-    "install-cli": "bash ./scripts/jarvis-install.sh"
+    "install-cli": "bash ./scripts/jarvis-install.sh",
+    "test": "jest --verbose"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverage": false
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "license": "MIT",
   "devDependencies": {
+    "csrf": "^3.1.0",
     "jest": "^30.2.0"
   }
 }
