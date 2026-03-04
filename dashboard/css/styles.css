@@ -5577,3 +5577,58 @@ body::after {
         display: none;
     }
 }
+
+/* ============================================
+   ENHANCED TASK CARDS (v1.17.0)
+   Priority bars, avatars, status badges
+   ============================================ */
+
+.task-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.task-card:hover {
+    transform: translateY(-1px);
+}
+
+.task-review-badge {
+    margin-left: 6px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.task-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.task-assignee-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+    flex-shrink: 0;
+    cursor: default;
+}
+
+.task-id-short {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    opacity: 0.7;
+    letter-spacing: 0.05em;
+}
+
+.label-more {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-muted) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    font-style: italic;
+}
