@@ -162,6 +162,19 @@
                     <p class="sidebar-subtitle" id="cli-connections-subtitle">Loading…</p>
                 </div>
             </div>
+            <!-- Agent Files Section (v1.8.0) -->
+            <div class="sidebar-section">
+                <div class="sidebar-header" style="cursor:pointer;" onclick="openSoulPanel()" title="Edit Agent Soul Files">
+                    <h2 class="sidebar-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                        Agent Files
+                    </h2>
+                    <p class="sidebar-subtitle" id="soul-agents-subtitle">SOUL / MEMORY / IDENTITY</p>
+                </div>
+            </div>
         </aside>
 
         <!-- Kanban Board -->
@@ -1265,6 +1278,50 @@
         </div>
     </div>
 
+    <!-- Agent Soul Files Panel (v1.8.0) -->
+    <div class="agent-profile-panel" id="soul-panel" style="display:none; width:640px; max-width:95vw;">
+        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#4f8ef7; flex-shrink:0;">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span style="font-weight:600; font-size:15px; flex:1;">Agent Files</span>
+            <button class="close-btn profile-close" onclick="closeSoulPanel()" aria-label="Close" style="margin-left:0;">&times;</button>
+        </div>
+        <div class="profile-panel-body" style="padding:0 20px 20px;">
+            <!-- Agent + File selectors -->
+            <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:160px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">Agent</label>
+                    <select id="soul-agent-select" onchange="loadSoulFiles()" style="width:100%; background:var(--bg-secondary,#161b22); color:var(--text-primary,#e6edf3); border:1px solid var(--border-color,#30363d); border-radius:6px; padding:6px 10px; font-size:13px;">
+                        <option value="">— select agent —</option>
+                    </select>
+                </div>
+                <div style="flex:1; min-width:160px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">File</label>
+                    <select id="soul-file-select" onchange="loadSoulFile()" style="width:100%; background:var(--bg-secondary,#161b22); color:var(--text-primary,#e6edf3); border:1px solid var(--border-color,#30363d); border-radius:6px; padding:6px 10px; font-size:13px;">
+                        <option value="SOUL.md">SOUL.md</option>
+                        <option value="MEMORY.md">MEMORY.md</option>
+                        <option value="IDENTITY.md">IDENTITY.md</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Placeholder / Editor wrapper -->
+            <div id="soul-placeholder" style="padding:24px 0; color:var(--text-muted); text-align:center; font-size:13px;">Select an agent to view and edit its files.</div>
+            <div id="soul-editor-wrapper" style="display:none;">
+                <div id="soul-editor-meta" style="font-size:11px; color:var(--text-muted); margin-bottom:8px;"></div>
+                <textarea id="soul-editor"
+                    style="width:100%; min-height:320px; background:var(--bg-secondary,#161b22); color:var(--text-primary,#e6edf3); border:1px solid var(--border-color,#30363d); border-radius:6px; padding:12px; font-family:monospace; font-size:13px; line-height:1.6; resize:vertical; box-sizing:border-box;"
+                    spellcheck="false"></textarea>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                    <button onclick="saveSoulFile()" style="background:var(--accent-primary,#4f8ef7); color:#fff; border:none; border-radius:6px; padding:7px 18px; font-size:13px; cursor:pointer; font-weight:600;">Save</button>
+                    <button onclick="discardSoulEdit()" style="background:none; border:1px solid var(--border-color,#30363d); color:var(--text-muted); border-radius:6px; padding:7px 18px; font-size:13px; cursor:pointer;">Discard</button>
+                    <span id="soul-save-status" style="font-size:12px; color:var(--text-muted); margin-left:auto;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="./js/api.js"></script>
     <script src="./js/data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
@@ -1273,5 +1330,6 @@
     <script src="./js/cli.js"></script>
     <script src="./js/github-issues.js"></script>
     <script src="./js/cli-connections.js"></script>
+    <script src="./js/soul-files.js"></script>
 </body>
 </html>
