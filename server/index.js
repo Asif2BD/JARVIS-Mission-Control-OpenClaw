@@ -2869,8 +2869,12 @@ server.listen(PORT, () => {
     claudeSessions.startScanner();
 
     // Init persistent webhook delivery manager
-    webhookDelivery.init(MISSION_CONTROL_DIR, webhooks)
-        .catch(err => logger.error({ err: err.message }, 'webhook-delivery init error'));
+    try {
+        webhookDelivery.init(MISSION_CONTROL_DIR, webhooks);
+        webhookDelivery.setBroadcast(broadcast);
+    } catch (err) {
+        logger.error({ err: err.message }, 'webhook-delivery init error');
+    }
 
     const mdLine = process.env.MISSIONDECK_API_KEY
         ? `║   MissionDeck:  https://missiondeck.ai/workspace/${process.env.MISSIONDECK_SLUG || '???'}    ║`

@@ -57,3 +57,6 @@ coverage/
 .mission-control/tasks/*.json
 .mission-control/queue/*.json
 .mission-control/messages/
+.mission-control/*.db
+.mission-control/*.db-shm
+.mission-control/*.db-wal
