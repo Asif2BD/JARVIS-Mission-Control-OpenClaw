@@ -2254,10 +2254,11 @@ body::after {
    ============================================ */
 
 .sidebar-right {
+    /* v2.0.3: removed from layout — Kanban gets full width */
+    display: none !important;
     width: 280px;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
-    display: flex;
     flex-direction: column;
     overflow-y: auto;
     flex-shrink: 0;
@@ -3945,10 +3946,11 @@ body::after {
    ============================================ */
 
 .chat-panel {
+    /* v2.0.3: old floating chat replaced by smart-chat-panel slide-out */
+    display: none !important;
     position: fixed;
     bottom: 0;
-    /* Sit to the left of the right sidebar (280px wide) + a gap */
-    right: calc(280px + 16px); /* right sidebar is 280px wide */
+    right: 0;
     width: 340px;
     height: 420px;
     background: var(--bg-secondary);
@@ -3987,9 +3989,9 @@ body::after {
     opacity: 0.6;
 }
 
-/* Chat Toggle Button (visible when collapsed) */
+/* Chat Toggle Button (v2.0.3: replaced by header button) */
 .chat-toggle-btn {
-    display: none; /* hidden when panel is visible, use for fully collapsed mode */
+    display: none !important;
     position: fixed;
     bottom: var(--spacing-lg);
     right: var(--spacing-xl);
