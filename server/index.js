@@ -329,25 +329,110 @@ function broadcast(type, data) {
  * Register a webhook
  */
 function registerWebhook(id, url, events) {
-    webhooks.set(id, { url, events, registered_at: new Date().toISOString() });
+    const existing = webhooks.get(id) || {};
+    webhooks.set(id, {
+        url,
+        events,
+        registered_at: existing.registered_at || new Date().toISOString(),
+        // Circuit breaker state (preserve if re-registering)
+        failures: existing.failures || 0,
+        circuitState: existing.circuitState || 'closed',
+        circuitOpenedAt: existing.circuitOpenedAt || null,
+    });
     logger.info({ event: 'webhook_register' }, `Webhook registered: ${id} -> ${url} for events: ${events.join(', ')}`);
 }
 
 /**
- * Trigger webhooks for an event
+ * Sleep helper for retry backoff
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Fire a single webhook HTTP request (no retry logic).
+ * Returns true on success (2xx), throws on failure.
+ */
+async function fireWebhook(webhook, event, data) {
+    const response = await fetch(webhook.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event, data, timestamp: new Date().toISOString() })
+    });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+    return true;
+}
+
+/**
+ * Trigger webhooks for an event — with retry (exponential backoff) and circuit breaker.
+ *
+ * Circuit breaker states:
+ *  - closed   → normal; failures < 5
+ *  - open     → paused for 60s after 5 consecutive failures
+ *  - half-open → after 60s, allow ONE test request; success → closed, fail → open again
  */
 async function triggerWebhooks(event, data) {
+    const CIRCUIT_OPEN_TIMEOUT_MS = 60 * 1000; // 60s
+    const MAX_CONSECUTIVE_FAILURES = 5;
+    const RETRY_DELAYS_MS = [1000, 2000, 4000]; // 3 retries with exponential backoff
+
     for (const [id, webhook] of webhooks) {
-        if (webhook.events.includes(event) || webhook.events.includes('*')) {
+        if (!webhook.events.includes(event) && !webhook.events.includes('*')) continue;
+
+        const now = Date.now();
+
+        // ----- Circuit Breaker: check state -----
+        if (webhook.circuitState === 'open') {
+            const elapsed = now - (webhook.circuitOpenedAt || 0);
+            if (elapsed < CIRCUIT_OPEN_TIMEOUT_MS) {
+                logger.warn({ event: 'webhook_circuit_open', webhookId: id }, `Webhook ${id} circuit OPEN — skipping`);
+                continue;
+            }
+            // Transition to half-open: allow one probe request
+            webhook.circuitState = 'half-open';
+            logger.info({ event: 'webhook_circuit_halfopen', webhookId: id }, `Webhook ${id} circuit HALF-OPEN — probing`);
+        }
+
+        const isHalfOpen = webhook.circuitState === 'half-open';
+        let success = false;
+        let lastError = null;
+
+        // ----- Retry loop (max 3 retries; half-open only gets 1 try) -----
+        const attempts = isHalfOpen ? 1 : RETRY_DELAYS_MS.length + 1;
+
+        for (let attempt = 0; attempt < attempts; attempt++) {
+            if (attempt > 0) {
+                const delay = RETRY_DELAYS_MS[attempt - 1];
+                logger.warn({ event: 'webhook_retry', webhookId: id, attempt }, `Webhook ${id} retry #${attempt} after ${delay}ms`);
+                await sleep(delay);
+            }
             try {
-                const response = await fetch(webhook.url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event, data, timestamp: new Date().toISOString() })
-                });
-                logger.info({ event: 'webhook_trigger', webhookId: id }, `Webhook ${id} triggered for ${event}: ${response.status}`);
-            } catch (error) {
-                logger.error({ event: 'webhook_error', webhookId: id, err: error.message }, `Webhook ${id} failed`);
+                await fireWebhook(webhook, event, data);
+                success = true;
+                logger.info({ event: 'webhook_trigger', webhookId: id, attempt }, `Webhook ${id} triggered for ${event} (attempt ${attempt + 1})`);
+                break;
+            } catch (err) {
+                lastError = err;
+                logger.warn({ event: 'webhook_attempt_failed', webhookId: id, attempt, err: err.message }, `Webhook ${id} attempt ${attempt + 1} failed`);
+            }
+        }
+
+        // ----- Update circuit breaker state -----
+        if (success) {
+            webhook.failures = 0;
+            webhook.circuitState = 'closed';
+            webhook.circuitOpenedAt = null;
+        } else {
+            webhook.failures = (webhook.failures || 0) + 1;
+            logger.error({ event: 'webhook_error', webhookId: id, failures: webhook.failures, err: lastError && lastError.message }, `Webhook ${id} failed after retries`);
+
+            if (isHalfOpen || webhook.failures >= MAX_CONSECUTIVE_FAILURES) {
+                webhook.circuitState = 'open';
+                webhook.circuitOpenedAt = now;
+                logger.error({ event: 'webhook_circuit_opened', webhookId: id }, `Webhook ${id} circuit OPENED after ${webhook.failures} failures`);
+                broadcast('webhook.circuit_opened', { id, failures: webhook.failures });
             }
         }
     }
@@ -992,7 +1077,15 @@ app.put('/api/state', async (req, res) => {
 // --- WEBHOOKS ---
 
 app.get('/api/webhooks', (req, res) => {
-    const list = Array.from(webhooks.entries()).map(([id, data]) => ({ id, ...data }));
+    const list = Array.from(webhooks.entries()).map(([id, data]) => ({
+        id,
+        url: data.url,
+        events: data.events,
+        registered_at: data.registered_at,
+        failures: data.failures || 0,
+        circuitState: data.circuitState || 'closed',
+        circuitOpenedAt: data.circuitOpenedAt || null,
+    }));
     res.json(list);
 });
 
@@ -1079,6 +1172,24 @@ app.post('/api/webhooks', (req, res) => {
 app.delete('/api/webhooks/:id', (req, res) => {
     webhooks.delete(req.params.id);
     res.json({ success: true });
+});
+
+/**
+ * POST /api/webhooks/:id/reset-circuit
+ * Manually reset a tripped circuit breaker back to 'closed'.
+ */
+app.post('/api/webhooks/:id/reset-circuit', (req, res) => {
+    const id = req.params.id;
+    const webhook = webhooks.get(id);
+    if (!webhook) {
+        return res.status(404).json({ error: 'Webhook not found' });
+    }
+    webhook.failures = 0;
+    webhook.circuitState = 'closed';
+    webhook.circuitOpenedAt = null;
+    logger.info({ event: 'webhook_circuit_reset', webhookId: id }, `Webhook ${id} circuit manually reset`);
+    broadcast('webhook.circuit_reset', { id });
+    res.json({ success: true, id, circuitState: 'closed' });
 });
 
 // --- MESSAGES ---

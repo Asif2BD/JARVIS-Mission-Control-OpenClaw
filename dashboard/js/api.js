@@ -204,6 +204,12 @@ const MissionControlAPI = {
         });
     },
 
+    async resetWebhookCircuit(id) {
+        return this.request(`/webhooks/${id}/reset-circuit`, {
+            method: 'POST'
+        });
+    },
+
     // --- Messages ---
 
     async getMessages(agentId) {
