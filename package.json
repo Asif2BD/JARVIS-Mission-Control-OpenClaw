@@ -1,6 +1,6 @@
 {
   "name": "jarvis-mission-control",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "JARVIS Mission Control — agent task management system with CLI",
   "bin": {
     "jarvis": "./scripts/jarvis.js"

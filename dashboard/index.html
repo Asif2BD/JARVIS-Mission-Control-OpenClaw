@@ -29,7 +29,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v1.8.0</span>
+            <span class="version">v1.9.0</span>
         </div>
         <div class="header-right">
             <div class="metrics">
@@ -161,6 +161,24 @@
                     </h2>
                     <p class="sidebar-subtitle" id="cli-connections-subtitle">Loading…</p>
                 </div>
+            </div>
+            <!-- Webhooks Section (v1.9.0) -->
+            <div class="sidebar-section">
+                <div class="sidebar-header" style="cursor:pointer;" onclick="openWebhooksPanel()" title="View Webhook Status">
+                    <h2 class="sidebar-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                            <line x1="6" y1="1" x2="6" y2="4"></line>
+                            <line x1="10" y1="1" x2="10" y2="4"></line>
+                            <line x1="14" y1="1" x2="14" y2="4"></line>
+                        </svg>
+                        Webhooks
+                        <span id="webhooks-open-badge" style="display:none; background:#e53e3e; color:#fff; border-radius:9px; font-size:10px; padding:1px 6px; margin-left:6px; vertical-align:middle; font-weight:600;" title="Open circuits">🔴</span>
+                    </h2>
+                    <p class="sidebar-subtitle" id="webhooks-subtitle">Loading…</p>
+                </div>
+                <div id="webhooks-list" style="padding:0 12px 8px;"></div>
             </div>
             <!-- Agent Files Section (v1.8.0) -->
             <div class="sidebar-section">
@@ -1331,5 +1349,6 @@
     <script src="./js/github-issues.js"></script>
     <script src="./js/cli-connections.js"></script>
     <script src="./js/soul-files.js"></script>
+    <script src="./js/webhooks.js"></script>
 </body>
 </html>

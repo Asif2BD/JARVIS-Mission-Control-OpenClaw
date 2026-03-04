@@ -2557,7 +2557,7 @@ server.listen(PORT, () => {
         ? `║   MissionDeck:  https://missiondeck.ai/workspace/${process.env.MISSIONDECK_SLUG || '???'}    ║`
         : '║   MissionDeck:  Not connected (run scripts/connect-missiondeck.sh)  ║';
 
-    console.log(`
+    logger.info({ event: 'server_start', port: PORT, dataDir: MISSION_CONTROL_DIR }, `
 ╔═══════════════════════════════════════════════════════════════╗
 ║           JARVIS MISSION CONTROL - SERVER                     ║
 ╠═══════════════════════════════════════════════════════════════╣
