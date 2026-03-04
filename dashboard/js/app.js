@@ -81,9 +81,16 @@ async function init() {
     // Setup real-time message listeners
     setupMessageListeners();
 
-    // Show instructions on first visit
+    // Show instructions only on first visit AND only if server is NOT reachable yet.
+    // If we're already connected (server running), never show it.
+    // The panel is auto-hidden once dismissed — stored in localStorage permanently.
     if (!localStorage.getItem('mc-instructions-seen')) {
-        showInstructions();
+        // Delay check — if we connect within 2s, don't show it at all
+        setTimeout(() => {
+            if (!localStorage.getItem('mc-instructions-seen') && !api.isConnected()) {
+                showInstructions();
+            }
+        }, 2000);
     }
 
     console.log('Dashboard initialized');
@@ -216,10 +223,9 @@ function initTheme() {
     if (savedTheme) {
         currentTheme = savedTheme;
     } else {
-        // Check system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-            currentTheme = 'light';
-        }
+        // Always default to dark — JARVIS MC is a dark-first app.
+        // Do NOT follow system light preference unless user explicitly chose it.
+        currentTheme = 'dark';
     }
 
     if (savedColorTheme) {
