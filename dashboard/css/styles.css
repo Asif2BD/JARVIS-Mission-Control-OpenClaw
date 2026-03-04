@@ -5683,3 +5683,88 @@ body::after {
 .sidebar-group-body.collapsed {
     max-height: 0;
 }
+
+/* ============================================
+   PANEL HEADER REDESIGN (v1.19.0)
+   Gradient headers with icon, text, stat pills
+   ============================================ */
+
+.panel-header-gradient {
+    background: linear-gradient(135deg, rgba(0, 255, 65, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.panel-header-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 65, 0.08);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    border-radius: 8px;
+}
+
+.panel-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.panel-header-text h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Orbitron', monospace;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-header-text p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Share Tech Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-header-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.stat-pill {
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 11px;
+    color: #00ff41;
+    font-family: 'Share Tech Mono', monospace;
+    white-space: nowrap;
+}
+
+.stat-pill.error {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: rgba(255, 68, 68, 0.3);
+    color: #ff4444;
+}
+
+.stat-pill.warning {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: rgba(255, 204, 0, 0.3);
+    color: #ffcc00;
+}

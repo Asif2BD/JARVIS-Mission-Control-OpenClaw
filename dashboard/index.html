@@ -38,7 +38,7 @@
                 <span class="logo-icon">J</span>
                 JARVIS Mission Control
             </h1>
-            <span class="version">v1.18.0</span>
+            <span class="version">v1.19.0</span>
         </div>
         <div class="header-right">
             <div class="metrics">
@@ -1277,12 +1277,16 @@
 
     <!-- Webhook Delivery History Panel (v1.15.0) -->
     <div class="agent-profile-panel" id="webhook-delivery-panel" style="display:none; width:540px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#e53e3e; flex-shrink:0;">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.09 12 19.79 19.79 0 0 1 1 3.18 2 2 0 0 1 3 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 5.61 5.61l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <span id="webhook-delivery-title" style="font-weight:600; font-size:15px; flex:1;">Delivery History</span>
-            <button class="close-btn profile-close" onclick="closeDeliveryHistory()" aria-label="Close" style="margin-left:auto;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">🔔</div>
+            <div class="panel-header-text">
+                <h3 id="webhook-delivery-title">Delivery History</h3>
+                <p>Webhook delivery events &amp; circuit status</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill" id="webhook-delivery-pill">—</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeDeliveryHistory()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px; overflow-y:auto;">
             <div id="webhook-delivery-body"></div>
@@ -1291,13 +1295,16 @@
 
     <!-- Claude Sessions Panel (v1.2.0) -->
     <div class="agent-profile-panel" id="claude-sessions-panel" style="display:none; width:520px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#7c3aed; flex-shrink:0;">
-                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                <path d="M8 21h8m-4-4v4"></path>
-            </svg>
-            <span style="font-weight:600; font-size:15px; flex:1;">Claude Code Sessions</span>
-            <button class="close-btn profile-close" onclick="closeClaudeSessions()" aria-label="Close" style="margin-left:auto;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">🖥</div>
+            <div class="panel-header-text">
+                <h3>Claude Sessions</h3>
+                <p>Auto-discovered from ~/.claude/projects/</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill" id="claude-panel-pill">Loading…</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeClaudeSessions()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px;">
             <div id="claude-sessions-meta" style="font-size:12px; color:var(--text-muted); margin-bottom:14px; display:flex; gap:16px; flex-wrap:wrap;"></div>
@@ -1307,12 +1314,16 @@
 
     <!-- GitHub Issues Panel (v1.4.0) -->
     <div class="agent-profile-panel" id="github-panel" style="display:none; width:620px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316; flex-shrink:0;">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-            </svg>
-            <span style="font-weight:600; font-size:15px; flex:1;">GitHub Issues Sync</span>
-            <button class="close-btn profile-close" onclick="closeGithubPanel()" aria-label="Close" style="margin-left:auto;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">🐙</div>
+            <div class="panel-header-text">
+                <h3>GitHub Issues Sync</h3>
+                <p>Import and sync issues as task cards</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill" id="github-panel-pill">Configure repo</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeGithubPanel()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px;">
             <!-- Config Section -->
@@ -1348,13 +1359,16 @@
 
     <!-- CLI Console Panel (v1.3.0) -->
     <div class="agent-profile-panel" id="cli-panel" style="display:none; width:600px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#22c55e; flex-shrink:0;">
-                <polyline points="4 17 10 11 4 5"></polyline>
-                <line x1="12" y1="19" x2="20" y2="19"></line>
-            </svg>
-            <span style="font-weight:600; font-size:15px; flex:1;">CLI Console</span>
-            <button class="close-btn profile-close" onclick="closeCliPanel()" aria-label="Close" style="margin-left:auto;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">💻</div>
+            <div class="panel-header-text">
+                <h3>CLI Console</h3>
+                <p>Run whitelisted OpenClaw &amp; system commands</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill">Interactive</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeCliPanel()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px;">
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Run whitelisted OpenClaw &amp; system commands safely from the dashboard.</p>
@@ -1387,14 +1401,17 @@
 
     <!-- CLI Connections Panel (v1.3.0) -->
     <div class="agent-profile-panel" id="cli-connections-panel" style="display:none; width:580px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#4f8ef7; flex-shrink:0;">
-                <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
-                <path d="M7 9l5 5 5-5"></path>
-            </svg>
-            <span style="font-weight:600; font-size:15px; flex:1;">CLI Connections</span>
-            <button onclick="refreshCliConnectionsPanel()" style="font-size:11px; background:none; border:1px solid var(--border-color,#30363d); border-radius:4px; color:var(--text-muted); cursor:pointer; padding:3px 10px; margin-right:8px;">Refresh</button>
-            <button class="close-btn profile-close" onclick="closeCliConnections()" aria-label="Close" style="margin-left:0;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">⚡</div>
+            <div class="panel-header-text">
+                <h3>CLI Connections</h3>
+                <p>Live OpenClaw CLI tool connections</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill" id="cli-conn-panel-pill">Loading…</span>
+                <button onclick="refreshCliConnectionsPanel()" style="font-size:11px; background:none; border:1px solid rgba(0,255,65,0.3); border-radius:4px; color:rgba(0,255,65,0.7); cursor:pointer; padding:2px 8px; margin-left:6px;">Refresh</button>
+            </div>
+            <button class="close-btn profile-close" onclick="closeCliConnections()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px;">
             <div id="cli-connections-meta" style="font-size:12px; color:var(--text-muted); margin-bottom:14px;"></div>
@@ -1404,13 +1421,16 @@
 
     <!-- Agent Soul Files Panel (v1.8.0) -->
     <div class="agent-profile-panel" id="soul-panel" style="display:none; width:640px; max-width:95vw;">
-        <div class="profile-panel-header" style="display:flex; align-items:center; gap:10px; padding:16px 20px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#4f8ef7; flex-shrink:0;">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-            <span style="font-weight:600; font-size:15px; flex:1;">Agent Files</span>
-            <button class="close-btn profile-close" onclick="closeSoulPanel()" aria-label="Close" style="margin-left:0;">&times;</button>
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">📄</div>
+            <div class="panel-header-text">
+                <h3>Agent Files</h3>
+                <p>View and edit SOUL / MEMORY / IDENTITY files</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill">File Editor</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeSoulPanel()" aria-label="Close">&times;</button>
         </div>
         <div class="profile-panel-body" style="padding:0 20px 20px;">
             <!-- Agent + File selectors -->
