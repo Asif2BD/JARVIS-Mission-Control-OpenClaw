@@ -354,14 +354,50 @@ function highlightReviewColumn() {
 }
 
 /**
- * Create a task card element
+ * Get assignee avatar color and initial for enhanced task cards (v1.17.0)
+ */
+function _getAssigneeAvatar(name) {
+    if (!name) return { initial: '?', color: '#555' };
+    const lower = name.toLowerCase();
+    const colors = {
+        tank:      '#00ff41',
+        oracle:    '#4488ff',
+        morpheus:  '#ff4400',
+        shuri:     '#ff44aa',
+        keymaker:  '#ffcc00',
+    };
+    for (const [key, color] of Object.entries(colors)) {
+        if (lower.includes(key)) return { initial: name.charAt(0).toUpperCase(), color };
+    }
+    return { initial: name.charAt(0).toUpperCase(), color: '#888' };
+}
+
+/**
+ * Get priority bar color for enhanced task cards (v1.17.0)
+ */
+function _getPriorityColor(priority) {
+    const map = {
+        critical: '#ff4444',
+        high:     '#ff8800',
+        medium:   '#ffcc00',
+        low:      '#00cc44',
+    };
+    return map[priority] || '#555';
+}
+
+/**
+ * Create a task card element (v1.17.0 — Enhanced)
  */
 function createTaskCard(task) {
     const card = document.createElement('div');
     card.className = `task-card priority-${task.priority}`;
     card.dataset.taskId = task.id;
     card.dataset.assignee = task.assignee || '';
-    
+
+    // Priority color bar (left border)
+    const priorityColor = _getPriorityColor(task.priority);
+    card.style.borderLeft = `3px solid ${priorityColor}`;
+
     // Use addEventListener instead of onclick property for better reliability
     card.addEventListener('click', (e) => {
         // Only open modal if not dragging
@@ -370,35 +406,45 @@ function createTaskCard(task) {
         }
     });
 
-    // Get assignee name
+    // Get assignee info
     const assignee = task.assignee ?
         window.missionControlData.getAgent(task.assignee) : null;
     const assigneeName = assignee ? assignee.name : null;
+    const avatar = assigneeName ? _getAssigneeAvatar(assigneeName) : null;
 
     // Check for pending review (v1.12.0)
     const pendingReview = task.review_required && (task.reviews || []).find(r => r.status === 'pending');
+
+    // Labels: show first 2, rest as "+N more"
+    const labels = task.labels || [];
+    const shownLabels = labels.slice(0, 2);
+    const extraCount = labels.length - shownLabels.length;
+    const labelsHtml = labels.length > 0 ? `
+        <div class="task-labels">
+            ${shownLabels.map(l => `<span class="label">${escapeHtml(l)}</span>`).join('')}
+            ${extraCount > 0 ? `<span class="label label-more">+${extraCount} more</span>` : ''}
+        </div>
+    ` : '';
+
+    // Shortened task ID (last 8 chars)
+    const shortId = task.id ? task.id.slice(-8) : '';
 
     card.innerHTML = DOMPurify.sanitize(`
         <div class="task-card-content">
             <div class="task-title">
                 ${escapeHtml(task.title)}
-                ${task.review_required ? `<span title="Review required" style="margin-left:6px; font-size:13px;">🔍</span>` : ''}
+                ${task.review_required ? `<span class="task-review-badge" title="Review required">🔍</span>` : ''}
             </div>
-            <div class="task-id">${task.id}</div>
-            ${pendingReview ? `<div style="font-size:10px; color:#f6ad55; margin-top:3px;">⏳ Review pending</div>` : ''}
-            ${assigneeName ? `
-                <div class="task-assignee">
-                    <span class="task-assignee-dot"></span>
-                    ${escapeHtml(assigneeName)}
-                </div>
-            ` : ''}
-            ${task.labels && task.labels.length > 0 ? `
-                <div class="task-labels">
-                    ${task.labels.map(label => `
-                        <span class="label">${escapeHtml(label)}</span>
-                    `).join('')}
-                </div>
-            ` : ''}
+            ${pendingReview ? `<div style="font-size:10px; color:#f6ad55; margin-top:2px;">⏳ Review pending</div>` : ''}
+            ${labelsHtml}
+            <div class="task-card-footer">
+                ${avatar ? `
+                    <span class="task-assignee-avatar" style="background:${avatar.color}20; border:1px solid ${avatar.color}; color:${avatar.color};" title="${escapeHtml(assigneeName)}">
+                        ${avatar.initial}
+                    </span>
+                ` : `<span></span>`}
+                <span class="task-id-short">${escapeHtml(shortId)}</span>
+            </div>
         </div>
     `);
 
