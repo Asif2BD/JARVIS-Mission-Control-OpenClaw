@@ -34,7 +34,7 @@ async function loadGithubConfig() {
 
 async function saveGithubConfig() {
     const repo = document.getElementById('github-repo-input').value.trim();
-    const token = document.getElementById('github-token-input').value.trim(); // security-scanner-exclude: reads from UI input element, not hardcoded
+    const token = document.getElementById('github-token-input').value.trim(); // nosec — reads from UI input element, not hardcoded
 
     if (!repo) {
         alert('Please enter a repo in owner/name format.');
