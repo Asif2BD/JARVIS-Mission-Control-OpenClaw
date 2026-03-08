@@ -5,6 +5,23 @@ Format: [version] — date | what changed | PR
 
 ---
 
+## v2.0.4 — Housekeeping & Security Polish
+
+### Fixed
+- VERSION file now correctly reflects `2.0.4` (was stuck at `1.5.0`)
+- License mismatch resolved: `package.json` now correctly declares `Apache-2.0` (was `MIT`), matching the `LICENSE` file
+- Duplicate basic-auth removed from Node.js app — nginx handles auth at the edge (PR #80)
+
+### Security
+- zion.asif.dev deployment: password-protected + `X-Robots-Tag: noindex` + `robots.txt: Disallow: /` (PR #79)
+- Private deployment URL removed from all public documentation (PR #78)
+
+### Docs
+- README fully updated through v2.0.3 feature set (Smart Panels, Matrix Theme, Security hardening)
+- CHANGELOG backfilled with complete v1.2.0–v2.0.3 history
+
+---
+
 ## [2.0.3] — 2026-03-04 | Smart Panels — Chat, Reports, Schedules
 
 **PR #73 + PR #74**

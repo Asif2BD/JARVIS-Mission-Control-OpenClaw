@@ -10,7 +10,7 @@ JARVIS Mission Control is a Git-based command center for managing AI agents and 
 
 | Current Version | Status | Last Updated |
 |-----------------|--------|--------------|
-|  **2.0.3** | Stable | 2026-03-04 |
+|  **2.0.4** | Stable | 2026-03-05 |
 
 > **This is a TEMPLATE repository.** Fork or clone it to create your own Mission Control instance.
 

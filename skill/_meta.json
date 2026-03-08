@@ -1,7 +1,7 @@
 {
   "name": "Free Mission Control for OpenClaw AI Agents",
   "slug": "jarvis-mission-control",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "JARVIS Mission Control v2 — a free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard. Self-host from GitHub or connect to MissionDeck.ai.",
   "author": "Asif2BD",
   "tags": [
