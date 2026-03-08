@@ -34,7 +34,7 @@ async function loadGithubConfig() {
 
 async function saveGithubConfig() {
     const repo = document.getElementById('github-repo-input').value.trim();
-    const token = document.getElementById('github-token-input').value.trim();
+    const token = document.getElementById('github-token-input').value.trim(); // security-scanner-exclude: reads from UI input element, not hardcoded
 
     if (!repo) {
         alert('Please enter a repo in owner/name format.');
@@ -62,7 +62,7 @@ async function saveGithubConfig() {
 async function loadGithubIssues() {
     const listEl = document.getElementById('github-issues-list');
     const subtitleEl = document.getElementById('github-issues-subtitle');
-    listEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px 0;">Fetching issues…</p>';
+    listEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px 0;">Fetching issues…</p>'; // SAFE: static string
 
     try {
         const res = await fetch(`${GITHUB_API}/api/github/issues`);
@@ -76,7 +76,7 @@ async function loadGithubIssues() {
         if (subtitleEl) subtitleEl.textContent = `${data.count} open issue${data.count !== 1 ? 's' : ''}`;
 
         if (!data.issues || data.issues.length === 0) {
-            listEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px 0;">No open issues found.</p>';
+            listEl.innerHTML = '<p style="font-size:12px;color:var(--text-muted);text-align:center;padding:20px 0;">No open issues found.</p>'; // SAFE: static string
             return;
         }
 

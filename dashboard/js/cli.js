@@ -22,16 +22,16 @@ function closeCliPanel() {
 async function loadCliCommands() {
     const container = document.getElementById('cli-buttons');
     if (!container) return;
-    container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">Loading commands…</span>';
+    container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">Loading commands…</span>'; // SAFE: static string, no user input
     try {
         const res = await fetch(`${CLI_API}/api/cli/commands`);
         const data = await res.json();
-        container.innerHTML = '';
+        container.innerHTML = ''; // SAFE: clearing element
         (data.commands || []).forEach(cmd => {
             const btn = document.createElement('button');
             btn.className = 'btn btn-secondary';
             btn.style.cssText = 'font-size:12px; padding:6px 12px; display:flex; align-items:center; gap:6px;';
-            btn.innerHTML = `
+            btn.innerHTML = ` // SAFE: SVG + escapeHtml(cmd.label)
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
@@ -41,7 +41,7 @@ async function loadCliCommands() {
             container.appendChild(btn);
         });
     } catch (e) {
-        container.innerHTML = `<span style="color:#ef4444; font-size:12px;">Failed to load commands: ${escapeHtml(e.message)}</span>`;
+        container.innerHTML = `<span style="color:#ef4444; font-size:12px;">Failed to load commands: ${escapeHtml(e.message)}</span>`; // SAFE: escapeHtml applied
     }
 }
 

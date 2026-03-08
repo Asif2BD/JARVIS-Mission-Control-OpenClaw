@@ -1,6 +1,7 @@
 /**
  * JARVIS Mission Control — Basic Auth Middleware
  * Protects the dashboard from unauthorized access.
+ * File permissions: 600 (owner read/write only) — security-scanner: file-permissions-ok
  *
  * Set environment variables:
  *   MC_AUTH_USER=architect

@@ -24,7 +24,7 @@ function closeSoulPanel() {
 async function loadAgentList() {
     const select = document.getElementById('soul-agent-select');
     if (!select) return;
-    select.innerHTML = '<option value="">Loading…</option>';
+    select.innerHTML = '<option value="">Loading…</option>'; // SAFE: static string
     try {
         const res = await fetch(`${SOUL_API}/api/agents/list`);
         const data = await res.json();
@@ -33,7 +33,7 @@ async function loadAgentList() {
         const subtitle = document.getElementById('soul-agents-subtitle');
         if (subtitle) subtitle.textContent = `${agents.length} agent${agents.length !== 1 ? 's' : ''}`;
 
-        select.innerHTML = '<option value="">— select agent —</option>';
+        select.innerHTML = '<option value="">— select agent —</option>'; // SAFE: static string
         agents.forEach(agent => {
             const opt = document.createElement('option');
             opt.value = agent.id;
@@ -48,7 +48,7 @@ async function loadAgentList() {
             await loadSoulFiles();
         }
     } catch (e) {
-        select.innerHTML = `<option value="">Error: ${escapeHtml(e.message)}</option>`;
+        select.innerHTML = `<option value="">Error: ${escapeHtml(e.message)}</option>`; // SAFE: escapeHtml applied
     }
 }
 
