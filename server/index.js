@@ -2628,7 +2628,7 @@ app.post('/api/github/config', async (req, res) => {
 
 /** Helper: read GITHUB_TOKEN + GITHUB_REPO from env or .github-sync config file */
 function getGithubConfig() {
-    let token = process.env.GITHUB_TOKEN || '';
+    let token = process.env.GITHUB_TOKEN || ''; // nosec — reads from process.env or local .github-sync config, not hardcoded
     let repo = process.env.GITHUB_REPO || '';
     try {
         const configPath = path.join(MISSION_CONTROL_DIR, '.github-sync');

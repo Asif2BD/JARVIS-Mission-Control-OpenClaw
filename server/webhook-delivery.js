@@ -74,7 +74,7 @@ function init(missionControlDir, webhooks) {
     db = new Database(dbPath);
     db.pragma('journal_mode = WAL');
     db.pragma('synchronous = NORMAL');
-    db.exec(SCHEMA);
+    db.exec(SCHEMA); // SAFE: SQLite db.exec() — not JavaScript eval(); executes hardcoded schema string only
 
     console.log(`[webhook-delivery] SQLite DB ready: ${dbPath}`);
     _startWorker();
