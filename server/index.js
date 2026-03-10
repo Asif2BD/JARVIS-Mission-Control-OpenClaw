@@ -42,6 +42,10 @@ const DASHBOARD_DIR = path.join(__dirname, '..', 'dashboard');
 
 // Initialize Express
 const app = express();
+
+// Trust proxy (nginx) for correct IP detection and rate limiting
+app.set('trust proxy', 1);
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
