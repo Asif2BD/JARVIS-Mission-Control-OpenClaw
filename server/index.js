@@ -28,6 +28,7 @@ const ReviewManager = require('./review-manager');
 const telegramBridge = require('./telegram-bridge');
 const claudeSessions = require('./claude-sessions');
 const cliConnections = require('./cli-connections');
+const openclawSessions = require('./openclaw-sessions');
 
 // Input sanitization helper
 function sanitizeInput(val) {
@@ -2368,6 +2369,82 @@ app.post('/api/claude/sessions', async (req, res) => {
 });
 
 // =====================================
+// OPENCLAW SESSIONS API (v2.1.0)
+// =====================================
+
+/**
+ * GET /api/openclaw/sessions
+ * List all discovered OpenClaw gateway sessions across all agents.
+ * Query params:
+ *   ?active=1   — only return active sessions
+ *   ?agent=     — filter by agent name
+ *   ?scan=1     — force an immediate rescan before responding
+ */
+app.get('/api/openclaw/sessions', async (req, res) => {
+    try {
+        if (req.query.scan === '1') {
+            await openclawSessions.scanSessions();
+        }
+        const { sessions, agents, lastScan, openclawHome } = openclawSessions.getCachedSessions();
+
+        let filtered = sessions;
+
+        if (req.query.active === '1') {
+            filtered = filtered.filter(s => s.active);
+        }
+
+        if (req.query.agent) {
+            const agentFilter = req.query.agent.toLowerCase();
+            filtered = filtered.filter(s => s.agent && s.agent.toLowerCase() === agentFilter);
+        }
+
+        res.json({
+            sessions: filtered,
+            total: filtered.length,
+            totalAll: sessions.length,
+            activeCount: sessions.filter(s => s.active).length,
+            agents,
+            lastScan,
+            openclawHome,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/openclaw/sessions
+ * Trigger a manual rescan of OpenClaw sessions.
+ */
+app.post('/api/openclaw/sessions', async (req, res) => {
+    try {
+        const sessions = await openclawSessions.scanSessions();
+        res.json({
+            ok: true,
+            message: 'Scan complete',
+            total: sessions.length,
+            activeCount: sessions.filter(s => s.active).length,
+            lastScan: new Date().toISOString(),
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/openclaw/stats
+ * Get summary statistics for OpenClaw sessions.
+ */
+app.get('/api/openclaw/stats', (req, res) => {
+    try {
+        const stats = openclawSessions.getStats();
+        res.json(stats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// =====================================
 // CLI INTEGRATION (v1.3.0)
 // =====================================
 
@@ -2877,6 +2954,9 @@ server.listen(PORT, () => {
 
     // Start Claude Code session scanner
     claudeSessions.startScanner();
+
+    // Start OpenClaw session scanner
+    openclawSessions.startScanner();
 
     // Init persistent webhook delivery manager
     try {

@@ -205,6 +205,19 @@
                     <span class="sgroup-label">Intelligence</span>
                 </div>
                 <div class="sidebar-group-body" id="sgroup-body-intelligence">
+                    <!-- OpenClaw Sessions Section (v2.1.0) -->
+                    <div class="sidebar-section">
+                        <div class="sidebar-header" style="cursor:pointer;" onclick="openOpenclawSessions()" title="View OpenClaw Gateway Sessions">
+                            <h2 class="sidebar-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M12 6v6l4 2"></path>
+                                </svg>
+                                OpenClaw Sessions
+                            </h2>
+                            <p class="sidebar-subtitle" id="openclaw-sessions-subtitle">Loading…</p>
+                        </div>
+                    </div>
                     <!-- Claude Sessions Section (v1.2.0) -->
                     <div class="sidebar-section">
                         <div class="sidebar-header" style="cursor:pointer;" onclick="openClaudeSessions()" title="View Claude Code Sessions">
@@ -1354,6 +1367,25 @@
         </div>
     </div>
 
+    <!-- OpenClaw Sessions Panel (v2.1.0) -->
+    <div class="agent-profile-panel" id="openclaw-sessions-panel" style="display:none; width:580px; max-width:95vw;">
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">🌐</div>
+            <div class="panel-header-text">
+                <h3>OpenClaw Sessions</h3>
+                <p>Gateway sessions across all agents</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="stat-pill" id="openclaw-panel-pill">Loading…</span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeOpenclawSessions()" aria-label="Close">&times;</button>
+        </div>
+        <div class="profile-panel-body" style="padding:0 20px 20px;">
+            <div id="openclaw-sessions-meta" style="font-size:12px; color:var(--text-muted); margin-bottom:14px; display:flex; gap:16px; flex-wrap:wrap;"></div>
+            <div id="openclaw-sessions-list" style="max-height:500px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
     <!-- Claude Sessions Panel (v1.2.0) -->
     <div class="agent-profile-panel" id="claude-sessions-panel" style="display:none; width:520px; max-width:95vw;">
         <div class="panel-header-gradient">
@@ -1533,6 +1565,7 @@
     <script src="./js/app.js"></script>
     <script src="./js/dashboard-widgets.js"></script>
     <script src="./js/claude-sessions.js"></script>
+    <script src="./js/openclaw-sessions.js"></script>
     <script src="./js/cli.js"></script>
     <script src="./js/github-issues.js"></script>
     <script src="./js/cli-connections.js"></script>
