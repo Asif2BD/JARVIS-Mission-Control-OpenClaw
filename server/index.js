@@ -198,27 +198,53 @@ function isPathSafe(filePath, baseDir) {
 // UTILITY FUNCTIONS
 // =====================================
 
+// =====================================
+// IN-MEMORY CACHE (v1.13.0 perf fix)
+// =====================================
+const directoryCache = new Map();
+
 /**
- * Read all JSON files from a directory
+ * Invalidate cache for a directory (called by chokidar watcher)
+ */
+function invalidateCache(dirPath) {
+    directoryCache.delete(dirPath);
+    logger.debug({ event: 'cache_invalidate', dir: dirPath }, `Cache invalidated: ${dirPath}`);
+}
+
+/**
+ * Read all JSON files from a directory (parallelized + cached)
  */
 async function readJsonDirectory(dirPath) {
+    // Check cache first
+    if (directoryCache.has(dirPath)) {
+        return directoryCache.get(dirPath);
+    }
+
     try {
         const fullPath = path.join(MISSION_CONTROL_DIR, dirPath);
         const files = await fs.readdir(fullPath);
-        const items = [];
 
-        for (const file of files) {
-            if (file.endsWith('.json')) {
-                try {
-                    const content = await fs.readFile(path.join(fullPath, file), 'utf-8');
-                    items.push(JSON.parse(content));
-                } catch (e) {
-                    logger.error({ file, err: e.message }, 'Error reading data file');
-                }
-            }
-        }
+        // Parallel reads with Promise.all
+        const items = await Promise.all(
+            files
+                .filter(f => f.endsWith('.json'))
+                .map(async (file) => {
+                    try {
+                        const content = await fs.readFile(path.join(fullPath, file), 'utf-8');
+                        return JSON.parse(content);
+                    } catch (e) {
+                        logger.error({ file, err: e.message }, 'Error reading data file');
+                        return null;
+                    }
+                })
+        );
 
-        return items;
+        const result = items.filter(Boolean);
+        
+        // Cache the result
+        directoryCache.set(dirPath, result);
+        
+        return result;
     } catch (error) {
         if (error.code === 'ENOENT') {
             return [];
@@ -429,6 +455,9 @@ async function handleFileChange(action, filePath) {
 
     const entityType = parts[0]; // tasks, agents, humans, queue
     const fileName = parts[parts.length - 1];
+
+    // Invalidate cache for this directory (v1.13.0 perf fix)
+    invalidateCache(entityType);
 
     let data = null;
     if (action !== 'deleted') {
