@@ -60,3 +60,4 @@ coverage/
 .mission-control/*.db
 .mission-control/*.db-shm
 .mission-control/*.db-wal
+JARVIS-DEV.md
