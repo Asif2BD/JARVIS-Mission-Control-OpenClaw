@@ -5,6 +5,17 @@ Format: [version] — date | what changed | PR
 
 ---
 
+## [2.0.4] — 2026-03-14 | Performance: Parallel File Reads + Cache
+
+**PR #106 — Fixes #105**
+
+### Fixed
+- ⚡ **/api/tasks timeout (6500ms → <3ms)** — `readJsonDirectory()` now parallelized with `Promise.all`
+- 🗄️ **In-memory directoryCache** — Map-based cache auto-invalidates via chokidar file watcher
+- Response times: cold ~3ms, cached ~2ms
+
+---
+
 ## [2.0.3] — 2026-03-04 | Smart Panels — Chat, Reports, Schedules
 
 **PR #73 + PR #74**
