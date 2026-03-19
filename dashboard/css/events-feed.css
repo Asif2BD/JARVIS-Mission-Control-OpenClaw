@@ -1,0 +1,283 @@
+/**
+ * Events Feed Styles — JARVIS Mission Control v2.0.0
+ */
+
+/* ── Top Metrics Bar ─────────────────────────────────────────────────────── */
+
+.top-metrics-bar {
+  display: flex;
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, rgba(0, 255, 65, 0.05) 0%, rgba(0, 100, 255, 0.05) 100%);
+  border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.top-metric {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  min-width: 100px;
+}
+
+.top-metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-primary, #00ff41);
+  font-family: 'Orbitron', 'Share Tech Mono', monospace;
+}
+
+.top-metric-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.metric-secondary {
+  font-size: 12px;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+/* Budget progress bar */
+.budget-progress-container {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.budget-progress-bar {
+  height: 100%;
+  background: var(--accent-primary, #00ff41);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.budget-progress-bar.warning {
+  background: #f59e0b;
+}
+
+.budget-progress-bar.danger {
+  background: #ef4444;
+}
+
+/* ── Event Feed Panel ────────────────────────────────────────────────────── */
+
+#event-feed-panel {
+  width: 480px;
+  max-width: 95vw;
+}
+
+.event-feed-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-feed-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.event-feed-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ws-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.ws-status.disconnected {
+  background: #ef4444;
+  animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Filter dropdown */
+.event-filter-select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ── Event List ──────────────────────────────────────────────────────────── */
+
+.event-feed-list {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.event-item {
+  display: grid;
+  grid-template-columns: 70px 80px 24px 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+
+.event-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.event-item:first-child {
+  animation: event-flash 0.5s ease;
+}
+
+@keyframes event-flash {
+  0% { 
+    background: rgba(0, 255, 65, 0.2);
+    border-color: rgba(0, 255, 65, 0.3);
+  }
+  100% { 
+    background: rgba(255, 255, 255, 0.02);
+    border-color: transparent;
+  }
+}
+
+.event-time {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted, rgba(255, 255, 255, 0.5));
+}
+
+.event-agent {
+  font-weight: 600;
+  color: var(--accent-secondary, #4f8ef7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-icon {
+  font-size: 14px;
+  text-align: center;
+}
+
+.event-summary {
+  color: var(--text-primary, #e2e8f0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-cost {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Event type colors */
+.event-item[data-type="error"] {
+  border-left: 3px solid #ef4444;
+}
+
+.event-item[data-type="approval"] {
+  border-left: 3px solid #22c55e;
+}
+
+.event-item[data-type="cron"] {
+  border-left: 3px solid #8b5cf6;
+}
+
+/* Empty state */
+.event-feed-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.event-feed-empty-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.event-feed-empty p {
+  margin: 4px 0;
+}
+
+/* ── Event Feed Button in Header ─────────────────────────────────────────── */
+
+.event-feed-btn {
+  position: relative;
+}
+
+.event-feed-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .top-metrics-bar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .top-metric {
+    padding: 6px 12px;
+    min-width: 80px;
+  }
+  
+  .top-metric-value {
+    font-size: 16px;
+  }
+  
+  .event-item {
+    grid-template-columns: 60px 60px 20px 1fr;
+    font-size: 11px;
+  }
+  
+  .event-cost {
+    display: none;
+  }
+}

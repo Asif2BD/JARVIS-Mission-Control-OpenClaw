@@ -12,6 +12,7 @@
     <!-- Matrix-style fonts: Orbitron, Rajdhani, Share Tech Mono -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/events-feed.css">
     <link rel="stylesheet" href="./css/themes.css">
     <link rel="stylesheet" href="./css/mobile.css">
 </head>
@@ -92,6 +93,33 @@
             </button>
         </div>
     </header>
+
+    <!-- Top Metrics Bar (v2.0.0) -->
+    <div class="top-metrics-bar" id="top-metrics-bar">
+        <div class="top-metric">
+            <span class="top-metric-value" id="metric-today-cost">$0.00</span>
+            <span class="top-metric-label">Today's Cost</span>
+        </div>
+        <div class="top-metric">
+            <span class="top-metric-value" id="metric-month-cost">$0.00</span>
+            <span class="top-metric-label">Monthly Spend</span>
+            <div class="budget-progress-container">
+                <div class="budget-progress-bar" id="budget-progress" style="width: 0%"></div>
+            </div>
+        </div>
+        <div class="top-metric">
+            <span class="top-metric-value" id="metric-tasks-completed">0</span>
+            <span class="top-metric-label">Tasks Today</span>
+        </div>
+        <div class="top-metric">
+            <span class="top-metric-value" id="metric-active-agents">0</span>
+            <span class="top-metric-label">Active Agents</span>
+        </div>
+        <button class="btn btn-secondary event-feed-btn" onclick="openEventFeedPanel()" title="Live Event Feed">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            Live Feed
+        </button>
+    </div>
 
     <!-- Feature Widget Cards (v1.16.0) -->
     <div class="metrics-cards" id="feature-metrics">
@@ -1559,6 +1587,45 @@
         </div>
     </div>
 
+    <!-- Live Event Feed Panel (v2.0.0) -->
+    <div class="agent-profile-panel" id="event-feed-panel" style="display:none; width:500px; max-width:95vw; flex-direction:column;">
+        <div class="panel-header-gradient">
+            <div class="panel-header-icon">📊</div>
+            <div class="panel-header-text">
+                <h3>Live Event Feed</h3>
+                <p>Real-time agent activity</p>
+            </div>
+            <div class="panel-header-stats">
+                <span class="ws-status connected" id="event-feed-ws-status" title="Real-time updates active"></span>
+            </div>
+            <button class="close-btn profile-close" onclick="closeEventFeedPanel()" aria-label="Close">&times;</button>
+        </div>
+        <div class="event-feed-header">
+            <span class="event-feed-title">Events</span>
+            <div class="event-feed-controls">
+                <select class="event-filter-select" onchange="setEventFilter('agent', this.value)" title="Filter by agent">
+                    <option value="">All Agents</option>
+                </select>
+                <select class="event-filter-select" onchange="setEventFilter('type', this.value)" title="Filter by type">
+                    <option value="">All Types</option>
+                    <option value="chat">💬 Chat</option>
+                    <option value="tool">🔧 Tool</option>
+                    <option value="search">🔍 Search</option>
+                    <option value="email">📧 Email</option>
+                    <option value="cron">⏰ Cron</option>
+                    <option value="error">⚠️ Error</option>
+                </select>
+                <button id="event-feed-pause-btn" onclick="toggleEventFeedPause()" class="btn btn-secondary" style="font-size:11px; padding:4px 8px;" title="Pause auto-scroll">⏸ Pause</button>
+            </div>
+        </div>
+        <div class="event-feed-list" id="event-feed-list">
+            <div class="event-feed-empty">
+                <span class="event-feed-empty-icon">📭</span>
+                <p>Loading events...</p>
+            </div>
+        </div>
+    </div>
+
     <script src="./js/api.js"></script>
     <script src="./js/data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
@@ -1573,6 +1640,7 @@
     <script src="./js/webhooks.js"></script>
     <script src="./js/update-banner.js"></script>
     <script src="./js/smart-panels.js"></script>
+    <script src="./js/events-feed.js"></script>
     <script>
     // Stubs for removed floating chat — prevent old JS from throwing
     function toggleChatPanel() { openChatPanel(); }
