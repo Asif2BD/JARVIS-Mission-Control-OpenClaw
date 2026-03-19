@@ -2880,11 +2880,6 @@ app.use((req, res, next) => {
 });
 app.use(express.static(DASHBOARD_DIR));
 
-// Fallback to dashboard for SPA routing (MUST be last)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
-});
-
 // =====================================
 // EVENT FEED API (v2.0.0)
 // =====================================
@@ -3045,6 +3040,13 @@ function compareVersions(a, b) {
     }
     return 0;
 }
+
+// =====================================
+// SPA FALLBACK (MUST BE LAST ROUTE)
+// =====================================
+app.get('*', (req, res) => {
+    res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
+});
 
 // START SERVER
 // =====================================

@@ -46,13 +46,7 @@ class EventLogger extends EventEmitter {
       VALUES (datetime('now'), ?, ?, ?, ?, ?)
     `);
 
-    this.queryStmt = this.db.prepare(`
-      SELECT * FROM events
-      WHERE (?1 IS NULL OR agent = ?1)
-        AND (?2 IS NULL OR type = ?2)
-      ORDER BY timestamp DESC
-      LIMIT ?3
-    `);
+    // Note: dynamic query built in query() method for better NULL handling
 
     // Cleanup old events (keep 30 days)
     this.db.exec(`
@@ -113,7 +107,24 @@ class EventLogger extends EventEmitter {
    * @param {number} [filters.limit=50] - Max results
    */
   query({ agent = null, type = null, limit = 50 } = {}) {
-    const rows = this.queryStmt.all(agent, type, Math.min(limit, 500));
+    // Build dynamic query for better NULL handling
+    const conditions = [];
+    const params = [];
+    
+    if (agent) {
+      conditions.push('agent = ?');
+      params.push(agent);
+    }
+    if (type) {
+      conditions.push('type = ?');
+      params.push(type);
+    }
+    
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const sql = `SELECT * FROM events ${whereClause} ORDER BY timestamp DESC LIMIT ?`;
+    params.push(Math.min(limit, 500));
+    
+    const rows = this.db.prepare(sql).all(...params);
     
     return rows.map(row => ({
       ...row,
