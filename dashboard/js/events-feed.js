@@ -240,15 +240,24 @@ function openEventFeedPanel() {
   const panel = document.getElementById('event-feed-panel');
   if (panel) {
     panel.style.display = 'flex';
+    // Need to add .open class for slide-in animation (CSS uses transform)
+    requestAnimationFrame(() => {
+      panel.classList.add('open');
+    });
     loadInitialEvents();
-    connectEventFeedWs();
     refreshTopMetrics();
   }
 }
 
 function closeEventFeedPanel() {
   const panel = document.getElementById('event-feed-panel');
-  if (panel) panel.style.display = 'none';
+  if (panel) {
+    panel.classList.remove('open');
+    // Wait for transition to complete before hiding
+    setTimeout(() => {
+      panel.style.display = 'none';
+    }, 300);
+  }
 }
 
 // ── Initialize ─────────────────────────────────────────────────────────────
