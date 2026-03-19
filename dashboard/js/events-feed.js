@@ -62,7 +62,7 @@ async function refreshTopMetrics() {
     
     if (todayCostEl) {
       const todayCost = costs.totals?.todayCost || stats.totalCost || 0;
-      todayCostEl.textContent = `$${todayCost.toFixed(2)}`;
+      todayCostEl.textContent = `$${todayCost.toFixed(0)}`;
     }
     
     if (monthCostEl) {

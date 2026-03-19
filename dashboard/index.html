@@ -61,9 +61,17 @@
                     <span class="metric-value" id="active-agents">0</span>
                     <span class="metric-label">Agents</span>
                 </div>
+                <div class="metric" title="Today's API costs">
+                    <span class="metric-value" id="metric-today-cost" style="color: #f59e0b;">$0</span>
+                    <span class="metric-label">Cost</span>
+                </div>
                 <!-- Widget chips removed in v1.16.0 — replaced by feature-metrics cards below -->
             </div>
             <!-- Smart panel buttons (v2.0.4) -->
+            <button class="btn btn-secondary" onclick="openEventFeedPanel()" title="Live Event Feed" style="position:relative;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                Feed
+            </button>
             <button class="btn btn-secondary" onclick="openChatPanel()" title="Team Chat" id="chat-panel-btn" style="position:relative;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 Chat
@@ -93,33 +101,6 @@
             </button>
         </div>
     </header>
-
-    <!-- Top Metrics Bar (v2.0.0) -->
-    <div class="top-metrics-bar" id="top-metrics-bar">
-        <div class="top-metric">
-            <span class="top-metric-value" id="metric-today-cost">$0.00</span>
-            <span class="top-metric-label">Today's Cost</span>
-        </div>
-        <div class="top-metric">
-            <span class="top-metric-value" id="metric-month-cost">$0.00</span>
-            <span class="top-metric-label">Monthly Spend</span>
-            <div class="budget-progress-container">
-                <div class="budget-progress-bar" id="budget-progress" style="width: 0%"></div>
-            </div>
-        </div>
-        <div class="top-metric">
-            <span class="top-metric-value" id="metric-tasks-completed">0</span>
-            <span class="top-metric-label">Tasks Today</span>
-        </div>
-        <div class="top-metric">
-            <span class="top-metric-value" id="metric-active-agents">0</span>
-            <span class="top-metric-label">Active Agents</span>
-        </div>
-        <button class="btn btn-secondary event-feed-btn" onclick="openEventFeedPanel()" title="Live Event Feed">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-            Live Feed
-        </button>
-    </div>
 
     <!-- Feature Widget Cards (v1.16.0) -->
     <div class="metrics-cards" id="feature-metrics">
