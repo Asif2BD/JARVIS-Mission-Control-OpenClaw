@@ -29,6 +29,8 @@ const telegramBridge = require('./telegram-bridge');
 const claudeSessions = require('./claude-sessions');
 const cliConnections = require('./cli-connections');
 const openclawSessions = require('./openclaw-sessions');
+const { getEventLogger } = require('./lib/event-logger');
+const { getCostTracker } = require('./lib/cost-tracker');
 
 // Input sanitization helper
 function sanitizeInput(val) {
@@ -2881,6 +2883,104 @@ app.use(express.static(DASHBOARD_DIR));
 // Fallback to dashboard for SPA routing (MUST be last)
 app.get('*', (req, res) => {
     res.sendFile(path.join(DASHBOARD_DIR, 'index.html'));
+});
+
+// =====================================
+// EVENT FEED API (v2.0.0)
+// =====================================
+
+const eventLogger = getEventLogger();
+
+// Wire up WebSocket broadcast for real-time events
+eventLogger.on('event', (event) => {
+  const message = JSON.stringify({ type: 'event', payload: event });
+  wss.clients.forEach(client => {
+    if (client.readyState === 1) { // WebSocket.OPEN
+      client.send(message);
+    }
+  });
+});
+
+/**
+ * GET /api/events
+ * Query events with optional filters
+ */
+app.get('/api/events', (req, res) => {
+  try {
+    const { agent, type, limit = 50 } = req.query;
+    const events = eventLogger.query({
+      agent: agent || null,
+      type: type || null,
+      limit: parseInt(limit, 10) || 50
+    });
+    res.json({ events });
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to query events');
+    res.status(500).json({ error: 'Failed to query events' });
+  }
+});
+
+/**
+ * GET /api/events/stats
+ * Get today's event statistics
+ */
+app.get('/api/events/stats', (req, res) => {
+  try {
+    const stats = eventLogger.getTodayStats();
+    res.json(stats);
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to get event stats');
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+/**
+ * POST /api/events
+ * Log a new event (internal use)
+ */
+app.post('/api/events', (req, res) => {
+  try {
+    const { agent, type, summary, cost, metadata } = req.body;
+    const event = eventLogger.log({ agent, type, summary, cost, metadata });
+    res.status(201).json(event);
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to log event');
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// =====================================
+// COST TRACKING API (v2.0.0)
+// =====================================
+
+const costTracker = getCostTracker();
+
+/**
+ * GET /api/costs
+ * Get all agent costs (today + month)
+ */
+app.get('/api/costs', async (req, res) => {
+  try {
+    const costs = await costTracker.getCosts();
+    res.json(costs);
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to get costs');
+    res.status(500).json({ error: 'Failed to get costs' });
+  }
+});
+
+/**
+ * GET /api/costs/:agent
+ * Get costs for a specific agent
+ */
+app.get('/api/costs/:agentId', async (req, res) => {
+  try {
+    const agentCosts = await costTracker.getAgentCosts(req.params.agentId);
+    res.json(agentCosts);
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to get agent costs');
+    res.status(500).json({ error: 'Failed to get agent costs' });
+  }
 });
 
 // =====================================
