@@ -1,8 +1,8 @@
 {
   "name": "Free Mission Control for OpenClaw AI Agents",
   "slug": "jarvis-mission-control",
-  "version": "2.0.3",
-  "description": "JARVIS Mission Control v2 — a free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard. Self-host from GitHub or connect to MissionDeck.ai.",
+  "version": "2.0.8",
+  "description": "JARVIS Mission Control v2 \u2014 a free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard. Self-host from GitHub or connect to MissionDeck.ai.",
   "author": "Asif2BD",
   "tags": [
     "mission-control",
@@ -18,5 +18,5 @@
   ],
   "repository": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw",
   "homepage": "https://missiondeck.ai",
-  "changelog": "v2.0.3: Smart slide-out panels for Chat (real-time WebSocket), Reports, and Schedules. Fixed panel CSS transition bug (panels not opening on mobile). v2.0.2: Right sidebar UX fixes, double /api/ URL bug, chat overflow fix. v2.0.1: Dark mode hardcoded as default, Getting Started modal fix. v2.0.0: Major UI overhaul — widget cards, enhanced task cards with priority bars + agent avatars, collapsible sidebar groups (TEAM/INTELLIGENCE/SYSTEM), panel header redesign, Matrix theme polish (CRT scanlines, pulse-glow, rain accent). v1.15.0: Dashboard aggregate widgets. v1.14.0: SQLite-backed webhook delivery (persistent, survives restart). v1.13.0: Persistent webhook delivery log. v1.12.0: 51-test Jest suite. v1.11.0: Update available banner. v1.10.0: Webhook retry + circuit breaker. v1.9.0: Pino structured logging. v1.8.0: Agent SOUL panel UI fix. v1.7.0: Rate limiting. v1.6.0: CSRF protection. v1.5.0: Agent SOUL workspace sync. v1.4.0: GitHub Issues sync. v1.3.0: CLI integration panel. v1.2.0: Claude Code session tracking."
+  "changelog": "v2.0.8: Performance fix \u2014 surgical O(1) cache updates for /api/tasks. Eliminates 6000ms+ response times caused by full cache invalidation on every file write. New updateCacheItem() updates individual items in-place; 5-min TTL safety net. v2.0.3: Smart slide-out panels for Chat (real-time WebSocket), Reports, and Schedules. Fixed panel CSS transition bug. v2.0.2: Right sidebar UX fixes, double /api/ URL bug, chat overflow fix. v2.0.1: Dark mode hardcoded as default. v2.0.0: Major UI overhaul \u2014 widget cards, enhanced task cards, collapsible sidebar, Matrix theme polish. v1.10.0-v1.14.0: Webhook retry + circuit breaker + SQLite delivery log. v1.12.0: 51-test Jest suite. v1.9.0: Pino structured logging. v1.7.0: Rate limiting. v1.6.0: CSRF protection."
 }

@@ -1,17 +1,52 @@
 ---
 name: jarvis-mission-control
-description: "Set up JARVIS Mission Control v2.0.4 — a free, open-source AI agent coordination hub. Kanban board, real-time WebSocket updates, team chat, scheduled job visibility, agent SOUL editor, Claude Code session tracking, GitHub Issues sync, SQLite-backed webhook delivery with circuit breaker, CSRF + rate limiting. Fork the repo, start the server, open the dashboard. No cloud account required. Use when you need a persistent multi-agent task management system, want to coordinate humans and AI agents on shared work, or need a self-hosted dashboard to track agent activity."
+description: "Set up JARVIS Mission Control v2.0.7 — a free, open-source AI agent coordination hub by MissionDeck.ai. Kanban board, real-time WebSocket updates, team chat, scheduled job visibility, agent SOUL editor, Claude Code session tracking, GitHub Issues sync, SQLite-backed webhook delivery with circuit breaker, CSRF + rate limiting. Fork the repo, start the server, open the dashboard. No cloud account required. Instruction-only skill — all code runs on YOUR server from open-source GitHub repo. No code execution in skill. Security-audited: 0 HIGH, 0 CRITICAL. See SECURITY.md for full audit."
+version: 2.0.7
+homepage: https://missiondeck.ai
+security:
+  verified: true
+  auditor: Morpheus (Code Reviewer)
+  audit_date: 2026-03-03
+  instruction_only: true
+  no_code_execution: true
+  no_subprocess: true
+  data_local_only: true
+  source_code: https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw
 metadata:
   {
     "openclaw":
       {
+        "emoji": "🎯",
         "requires": { "bins": ["node", "npm", "git"] },
         "network": "optional",
+        "security": "audited",
+        "securityDoc": "SECURITY.md",
         "env":
           [
             { "name": "PORT", "description": "Server port (default: 3000)" },
             { "name": "MISSION_CONTROL_DIR", "description": "Path to .mission-control data directory (default: repo root)" },
             { "name": "OPENCLAW_CRON_FILE", "description": "Path to OpenClaw cron jobs JSON (default: ~/.openclaw/cron/jobs.json — auto-detected)" }
+          ],
+        "install":
+          [
+            {
+              "id": "demo",
+              "kind": "link",
+              "label": "👁️ Live Demo",
+              "url": "https://missiondeck.ai/mission-control/demo"
+            },
+            {
+              "id": "github",
+              "kind": "link",
+              "label": "GitHub (self-hosted)",
+              "url": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw"
+            },
+            {
+              "id": "cloud",
+              "kind": "link",
+              "label": "☁️ MissionDeck.ai Cloud",
+              "url": "https://missiondeck.ai"
+            }
           ]
       }
   }
@@ -19,13 +54,23 @@ metadata:
 
 # JARVIS Mission Control
 
-**v2.0.4** — Free, open-source multi-agent coordination hub for OpenClaw.
+[![Version](https://img.shields.io/badge/version-2.0.7-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/LICENSE)
+[![Security](https://img.shields.io/badge/security-audited-blue.svg)](./SECURITY.md)
+
+Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai/mission-control/demo)
+
+> **Security notice:** Instruction-only skill. All commands reference open-source code on GitHub. Security-audited with 0 HIGH / 0 CRITICAL findings. See [SECURITY.md](./SECURITY.md).
+
+**v2.0.7** — Free, open-source multi-agent coordination hub for OpenClaw.
 
 Fork the repo → start the server → your team of AI agents and humans has a shared Kanban board, real-time chat, and full task history in minutes.
 
-**GitHub:** [Asif2BD/JARVIS-Mission-Control-OpenClaw](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw)
-
-**Live Demo:** [missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo) _(no account required)_
+| Option | Setup Time | Link |
+|--------|-----------|------|
+| **👁️ Demo** | 0 min | [missiondeck.ai/mission-control/demo](https://missiondeck.ai/mission-control/demo) |
+| **☁️ MissionDeck Cloud** | 5 min | [missiondeck.ai](https://missiondeck.ai) |
+| **🖥️ Self-Hosted** | 10 min | [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) |
 
 ---
 
@@ -158,6 +203,19 @@ All data lives in `.mission-control/` as JSON files — Git-versioned, agent-fri
 
 ---
 
+## More by Asif2BD
+
+```bash
+clawhub install openclaw-token-optimizer   # Reduce token costs by 50-80%
+clawhub search Asif2BD                     # All skills
+```
+
+---
+
 ## License
 
 Apache 2.0 — [github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw)
+
+---
+
+[MissionDeck.ai](https://missiondeck.ai) · Free tier available · No credit card required

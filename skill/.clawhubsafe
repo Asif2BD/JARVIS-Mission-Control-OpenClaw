@@ -1,8 +1,39 @@
-8160005e7c07763c9352b8f6f8e1cb50b9d38d96806eeef0baaa33f544edb790  SECURITY.md
-7df0c5e5a03b675e8b181c5d6cfd7c491166d3e80f57510ae5b9177df6a7db86  SKILL.md
-28c5334d3eec66179ee38cf6ac6be30703bbbc9a79a4846d1931e1bc7e614823  _meta.json
+# ClawHub Safety Attestation
+# Skill: jarvis-mission-control
+# Version: 2.0.8
+# Publisher: ProSkillsMD / Matrix Zion
+# Date: 2026-04-03
+
+## SHA256 Checksums (verify with: sha256sum <file>)
+
+cb0862d69b1886d4732793ce3f92ca70dcc7955535d9e11b9841efbee0d32e45  SKILL.md
+f636983b346552cc33265ee012875dbd4c9e1bd48b854c6d93d4a471eb3a0353  _meta.json
+092226f618865ec2d41e508af6cdfcd9e02af61a1069e00f7918a2f2ef3811b0  SECURITY.md
 cc61dd76c09da95f7724a8f8c58d2111d06a0cf0b74e5f7d70d0c51a8c0d4131  references/1-setup.md
 53e8cdb310a1b96e5e20b287282ac9d000f844eb6c2e122fc263017e95abc514  references/2-missiondeck-connect.md
 fc021c1d05612f4e232e1bcce7cbd17fc976955eba44be3b01da99d6251eb957  references/3-mc-cli.md
 035d8f00a1671f6c2762bba42f367a6b0d4d988ec448d9577f0a2adcbc14f4d8  references/4-data-population.md
-# manifest-hash: ec499f4d245ff668a16783ebae44e8aedfe5060a4d7700b55b5817ff02f9d0e6
+
+## Security Attestation
+This is a documentation-only skill package. All files are Markdown/JSON.
+No executable code, shell scripts, or binary payloads are included.
+All referenced server code is open-source and publicly auditable on GitHub.
+
+## What This Skill Does (and Does NOT Do)
+- Documents how to install and configure JARVIS Mission Control from GitHub
+- Does NOT collect credentials or transmit any data
+- Does NOT execute code automatically
+- Does NOT include real tokens (all examples use placeholders like YOUR_TOKEN_HERE)
+- Makes no network calls at install time
+
+## Verification Instructions
+```bash
+sha256sum SKILL.md _meta.json SECURITY.md \
+  references/1-setup.md references/2-missiondeck-connect.md \
+  references/3-mc-cli.md references/4-data-population.md
+# Compare against entries above
+```
+
+## Maintainer
+ProSkillsMD — https://proskills.md
+MissionDeck.ai — https://missiondeck.ai

@@ -35,7 +35,7 @@ metadata:
 
 # JARVIS Mission Control v2 for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-2.0.3-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.8-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/LICENSE)
 
 Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai/mission-control/demo)
@@ -162,7 +162,7 @@ Dashboard shows a dismissable banner when a newer version is available on npm.
 
 ## 📨 Telegram → MC Auto-Routing
 
-When a Telegram message mentions an agent bot (`@TankMatrixZ_Bot fix login`), JARVIS MC automatically creates a task card — no manual logging.
+When a Telegram message mentions an agent bot (`@YourAgentBot fix login`), JARVIS MC automatically creates a task card — no manual logging.
 
 ```json
 // .mission-control/config/agents.json

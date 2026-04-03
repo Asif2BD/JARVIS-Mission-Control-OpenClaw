@@ -5,6 +5,18 @@ Format: [version] — date | what changed | PR
 
 ---
 
+## [2.0.8] — 2026-04-03 | Performance: Surgical Cache Updates for /api/tasks
+
+**PR #143 — Closes #141**
+
+### Fixed
+- ⚡ **/api/tasks slow response (6781ms)** — full cache invalidation on every file write caused O(n) re-reads
+- 🗄️ **Surgical O(1) cache updates** — new `updateCacheItem()` adds/updates/removes single items in-place
+- 🛡️ **5-minute TTL** on all cache entries as safety net for missed fs events
+- `invalidateCache()` now only fires as fallback when JSON parsing fails (partial write edge case)
+
+---
+
 ## [2.0.4] — 2026-03-14 | Performance: Parallel File Reads + Cache
 
 **PR #106 — Fixes #105**
