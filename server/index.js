@@ -206,16 +206,81 @@ function isPathSafe(filePath, baseDir) {
 // =====================================
 
 // =====================================
-// IN-MEMORY CACHE (v1.13.0 perf fix)
+// IN-MEMORY CACHE (v1.14.0 perf fix - incremental updates)
 // =====================================
 const directoryCache = new Map();
+const itemCache = new Map(); // Per-file cache: "tasks/task-123.json" -> data
 
 /**
- * Invalidate cache for a directory (called by chokidar watcher)
+ * Update cache incrementally for a single file (avoids full directory re-read)
+ */
+async function updateCacheItem(dirPath, fileName, action) {
+    const fileKey = `${dirPath}/${fileName}`;
+    
+    if (action === 'deleted') {
+        itemCache.delete(fileKey);
+        // Update directory cache if it exists
+        if (directoryCache.has(dirPath)) {
+            const items = directoryCache.get(dirPath);
+            const id = fileName.replace('.json', '');
+            const filtered = items.filter(item => item.id !== id);
+            directoryCache.set(dirPath, filtered);
+        }
+        logger.debug({ event: 'cache_item_delete', file: fileKey }, `Cache item deleted: ${fileKey}`);
+    } else {
+        // Read and update single file
+        try {
+            const fullPath = path.join(MISSION_CONTROL_DIR, fileKey);
+            const content = await fs.readFile(fullPath, 'utf-8');
+            const data = JSON.parse(content);
+            itemCache.set(fileKey, data);
+            
+            // Update directory cache if it exists
+            if (directoryCache.has(dirPath)) {
+                const items = directoryCache.get(dirPath);
+                const existingIdx = items.findIndex(item => item.id === data.id);
+                if (existingIdx >= 0) {
+                    items[existingIdx] = data;
+                } else {
+                    items.push(data);
+                }
+                directoryCache.set(dirPath, items);
+            }
+            logger.debug({ event: 'cache_item_update', file: fileKey }, `Cache item updated: ${fileKey}`);
+        } catch (e) {
+            logger.error({ file: fileKey, err: e.message }, 'Error updating cache item');
+            // Fall back to full invalidation
+            directoryCache.delete(dirPath);
+        }
+    }
+}
+
+/**
+ * Invalidate cache for a directory (called by chokidar watcher) - legacy fallback
  */
 function invalidateCache(dirPath) {
     directoryCache.delete(dirPath);
     logger.debug({ event: 'cache_invalidate', dir: dirPath }, `Cache invalidated: ${dirPath}`);
+}
+
+/**
+ * Warm cache on startup by pre-loading common directories
+ */
+async function warmCache() {
+    const startTime = Date.now();
+    const dirs = ['tasks', 'agents', 'humans', 'queue'];
+    
+    await Promise.all(dirs.map(async (dir) => {
+        try {
+            await readJsonDirectory(dir);
+            logger.debug({ event: 'cache_warm', dir }, `Cache warmed: ${dir}`);
+        } catch (e) {
+            // Directory might not exist yet
+        }
+    }));
+    
+    const elapsed = Date.now() - startTime;
+    logger.info({ event: 'cache_warmed', elapsed, dirs }, `Cache warmed in ${elapsed}ms`);
 }
 
 /**
@@ -463,8 +528,8 @@ async function handleFileChange(action, filePath) {
     const entityType = parts[0]; // tasks, agents, humans, queue
     const fileName = parts[parts.length - 1];
 
-    // Invalidate cache for this directory (v1.13.0 perf fix)
-    invalidateCache(entityType);
+    // Incremental cache update (v1.14.0 perf fix - avoids full re-read)
+    await updateCacheItem(entityType, fileName, action);
 
     let data = null;
     if (action !== 'deleted') {
@@ -3088,6 +3153,9 @@ server.listen(PORT, () => {
 
     // Start OpenClaw session scanner
     openclawSessions.startScanner();
+
+    // Warm cache on startup (v1.14.0 perf fix)
+    warmCache();
 
     // Init persistent webhook delivery manager
     try {
