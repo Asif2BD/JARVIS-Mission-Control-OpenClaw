@@ -8,7 +8,7 @@ This skill was previously flagged with the following ClawHub notice:
 
 > "This is an instruction-only skill whose requirements and instructions match its stated purpose, but follow-up actions (git clone / npm install / running scripts or connecting to the cloud) require the user to audit external code and protect any API keys before executing."
 
-**ClawHub correctly identified this as an instruction-only skill.** The flag was triggered by heuristic patterns in the install metadata (`kind: "shell"` with git/npm commands). Version 1.0.4 removes all shell execution patterns from the metadata. No commands in this skill execute automatically.
+**ClawHub correctly identified this as an instruction-only skill.** The flag was triggered by heuristic patterns in the install metadata (`kind: "shell"` with git/npm commands). Version 2.0.8 removes all shell execution patterns from the metadata. No commands in this skill execute automatically.
 
 ---
 
@@ -18,7 +18,7 @@ This skill was previously flagged with the following ClawHub notice:
 
 **Previous version:** These appeared in `metadata.openclaw.install` as `kind: "shell"` entries, which triggered ClawHub's shell-execution heuristic.
 
-**Current version (1.0.4+):** Shell install blocks removed. Replaced with `kind: "link"` entries pointing to the public GitHub repo. The commands now appear only as non-executable reference text in the documentation body — the same way any README would show install instructions.
+**Current version (2.0.8+):** Shell install blocks removed. Replaced with `kind: "link"` entries pointing to the public GitHub repo. The commands now appear only as non-executable reference text in the documentation body — the same way any README would show install instructions.
 
 **Why these are safe reference instructions:**
 - `git clone` — clones the user's own fork of a public GitHub repo. No hidden URLs.
@@ -29,7 +29,7 @@ This skill was previously flagged with the following ClawHub notice:
 
 **Previous version:** Appeared in metadata as a shell command.
 
-**Current version (1.0.4+):** Removed from metadata. The reference docs (`references/2-missiondeck-connect.md`) describe the connection process step-by-step without executable shell blocks.
+**Current version (2.0.8+):** Removed from metadata. The reference docs (`references/2-missiondeck-connect.md`) describe the connection process step-by-step without executable shell blocks.
 
 **Why the script is safe:** `connect-missiondeck.sh` is in the user's own fork, not bundled with this skill. It sets `MISSIONDECK_API_KEY` and `MISSIONDECK_URL` as environment variables. Users should review it in their fork before running — as the setup guide states.
 
@@ -77,5 +77,5 @@ Compare output against `.clawhubsafe` entries (excluding the last line, which is
 All referenced server code is open source and publicly auditable:
 
 - **GitHub:** `https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw`
-- **License:** MIT
+- **License:** Apache 2.0
 - **Key files to audit:** `server/index.js`, `package.json`, `mc/mc.js`, `scripts/`
