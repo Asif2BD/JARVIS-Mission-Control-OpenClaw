@@ -1,7 +1,7 @@
 ---
 name: jarvis-mission-control
-description: "Set up JARVIS Mission Control v2.0.7 — a free, open-source AI agent coordination hub by MissionDeck.ai. Kanban board, real-time WebSocket updates, team chat, scheduled job visibility, agent SOUL editor, Claude Code session tracking, GitHub Issues sync, SQLite-backed webhook delivery with circuit breaker, CSRF + rate limiting. Fork the repo, start the server, open the dashboard. No cloud account required. Instruction-only skill — all code runs on YOUR server from open-source GitHub repo. No code execution in skill. Security-audited: 0 HIGH, 0 CRITICAL. See SECURITY.md for full audit."
-version: 2.0.7
+description: "Set up JARVIS Mission Control v2.1.0 — a free, open-source AI agent coordination hub by MissionDeck.ai. Kanban board, real-time WebSocket updates, team chat, scheduled job visibility, agent SOUL editor, Claude Code session tracking, GitHub Issues sync, SQLite-backed webhook delivery with circuit breaker, CSRF + rate limiting. Fork the repo, start the server, open the dashboard. No cloud account required. Instruction-only skill — all code runs on YOUR server from open-source GitHub repo. No code execution in skill. Security-audited: 0 HIGH, 0 CRITICAL. See SECURITY.md for full audit."
+version: 2.1.0
 homepage: https://missiondeck.ai
 security:
   verified: true
@@ -54,7 +54,7 @@ metadata:
 
 # JARVIS Mission Control
 
-[![Version](https://img.shields.io/badge/version-2.0.7-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/LICENSE)
 [![Security](https://img.shields.io/badge/security-audited-blue.svg)](./SECURITY.md)
 
@@ -62,7 +62,7 @@ Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com
 
 > **Security notice:** Instruction-only skill. All commands reference open-source code on GitHub. Security-audited with 0 HIGH / 0 CRITICAL findings. See [SECURITY.md](./SECURITY.md).
 
-**v2.0.7** — Free, open-source multi-agent coordination hub for OpenClaw.
+**v2.1.0** — Free, open-source multi-agent coordination hub for OpenClaw.
 
 Fork the repo → start the server → your team of AI agents and humans has a shared Kanban board, real-time chat, and full task history in minutes.
 
@@ -182,6 +182,9 @@ All data lives in `.mission-control/` as JSON files — Git-versioned, agent-fri
 
 | Version | Highlights |
 |---------|-----------|
+| 2.1.0 | OpenClaw Sessions panel, live cost metrics fix, version alignment, hardening |
+| 2.0.8 | Surgical O(1) cache updates for /api/tasks |
+| 2.0.4 | Parallel file reads + in-memory cache |
 | 2.0.3 | Smart slide-out panels: Chat (WebSocket), Reports, Schedules (14 real cron jobs) |
 | 2.0.2 | Dark mode default, modal fix, files API bug fix |
 | 2.0.0 | Matrix theme — neon green/cyan, glowing borders, terminal typography |
