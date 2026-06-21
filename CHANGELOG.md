@@ -5,6 +5,27 @@ Format: [version] — date | what changed | PR
 
 ---
 
+## [2.1.0] — 2026-06-21 | OpenClaw Sessions, Cost Metrics Fix & Hardening
+
+### Added
+- 🛰️ **OpenClaw Sessions panel** — live view of active OpenClaw agent sessions (server `openclaw-sessions.js` + dashboard panel), previously shipped in code but never versioned/documented
+
+### Fixed
+- 💸 **Dashboard cost metrics were always blank** — a legacy `GET /api/costs` (ResourceManager) was registered first and shadowed the cost-tracker route the dashboard reads. The bare `GET /api/costs` now serves the cost-tracker (`{ totals: { todayCost, monthCost } }`); the filtered ResourceManager summary moved to `GET /api/costs/summary` (no functionality lost)
+- 🔢 **Version drift across the repo** — `VERSION`, root + server `package.json`, dashboard badge, `SKILL.md`, `CLAUDE.md` header, and `connect-missiondeck.sh` were all reporting different versions; everything is now aligned to `2.1.0`
+- 🏷️ **Hardcoded `User-Agent: JARVIS-Mission-Control/1.4.0`** in GitHub API calls now reads the live version from `package.json`
+
+### Security / Hardening
+- 🛡️ **Request body size limit** — `express.json({ limit: '5mb' })` to prevent memory-exhaustion DoS
+- 🛡️ **File download stream errors** — `GET /api/files/:path` now handles mid-transfer stream errors and cleans up on client disconnect instead of hanging the socket
+- 🛡️ **RFC 5987 `Content-Disposition`** — download filenames are now URL-encoded so quotes/UTF-8 can't break out of the header
+- ✅ **Task title validation** — `POST /api/tasks` rejects empty/non-string titles with `400` to prevent corrupt cards
+
+### Removed
+- 🧹 **Dead code** — deleted unused `server/file_routes_patch.js` (an orphaned, never-imported duplicate of the file routes)
+
+---
+
 ## [2.0.8] — 2026-04-03 | Performance: Surgical Cache Updates for /api/tasks
 
 **PR #143 — Closes #141**

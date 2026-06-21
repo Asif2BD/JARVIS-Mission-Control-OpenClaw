@@ -32,6 +32,9 @@ const openclawSessions = require('./openclaw-sessions');
 const { getEventLogger } = require('./lib/event-logger');
 const { getCostTracker } = require('./lib/cost-tracker');
 
+// Single source of truth for the app version (used in User-Agent headers, /api/update/check, etc.)
+const APP_VERSION = require('../package.json').version;
+
 // Input sanitization helper
 function sanitizeInput(val) {
   if (typeof val !== 'string') return val;
@@ -50,7 +53,8 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+// Cap request bodies to prevent memory-exhaustion DoS (SOUL editor allows up to ~500KB content)
+app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
 
 
@@ -557,6 +561,11 @@ app.post('/api/tasks', async (req, res) => {
     try {
         const task = req.body;
 
+        // Validate required fields — reject empty/non-string titles to prevent data corruption
+        if (!task || typeof task.title !== 'string' || task.title.trim() === '') {
+            return res.status(400).json({ error: 'Task title is required and must be a non-empty string' });
+        }
+
         // Sanitize user-supplied ID before using in file path (HIGH-1: path traversal)
         if (task.id) task.id = sanitizeId(task.id);
 
@@ -658,14 +667,25 @@ app.get('/api/files/:path(*)', async (req, res) => {
         const contentType = contentTypes[ext] || 'application/octet-stream';
         res.setHeader('Content-Type', contentType);
         
-        // Check if download is requested
+        // Check if download is requested. Encode the filename (RFC 5987) so quotes/UTF-8
+        // in the name can't break out of the header value.
         const disposition = req.query.download === 'true' ? 'attachment' : 'inline';
-        res.setHeader('Content-Disposition', `${disposition}; filename="${path.basename(filePath)}"`);
-        
-        // Stream the file
+        const safeName = encodeURIComponent(path.basename(filePath));
+        res.setHeader('Content-Disposition', `${disposition}; filename*=UTF-8''${safeName}`);
+
+        // Stream the file, handling mid-transfer errors so the socket doesn't hang
         const fileStream = fsSync.createReadStream(fullPath);
+        fileStream.on('error', (streamErr) => {
+            logger.error({ err: streamErr.message, file: filePath }, 'File stream error');
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Failed to read file' });
+            } else {
+                res.destroy(streamErr);
+            }
+        });
+        res.on('close', () => fileStream.destroy());
         fileStream.pipe(res);
-        
+
     } catch (error) {
         if (error.code === 'ENOENT') {
             res.status(404).json({ error: 'File not found' });
@@ -1805,7 +1825,9 @@ app.delete('/api/bookings/:id', async (req, res) => {
 
 // --- COSTS ---
 
-app.get('/api/costs', async (req, res) => {
+// Filtered ResourceManager cost summary. Lives at /api/costs/summary so it no longer
+// shadows the bare GET /api/costs (served by the cost-tracker the dashboard consumes).
+app.get('/api/costs/summary', async (req, res) => {
     try {
         const filters = {
             agent_id: req.query.agent_id,
@@ -2666,7 +2688,7 @@ app.get('/api/github/issues', async (req, res) => {
         const { token, repo } = getGithubConfig();
         if (!repo) return res.status(400).json({ error: 'GITHUB_REPO not configured. Set env var or create .github-sync file.' });
 
-        const headers = { 'User-Agent': 'JARVIS-Mission-Control/1.4.0', 'Accept': 'application/vnd.github+json' };
+        const headers = { 'User-Agent': `JARVIS-Mission-Control/${APP_VERSION}`, 'Accept': 'application/vnd.github+json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const url = `https://api.github.com/repos/${repo}/issues?state=open&per_page=50`;
@@ -2694,7 +2716,7 @@ app.post('/api/github/sync', async (req, res) => {
         const { token, repo } = getGithubConfig();
         if (!repo) return res.status(400).json({ error: 'GITHUB_REPO not configured.' });
 
-        const headers = { 'User-Agent': 'JARVIS-Mission-Control/1.4.0', 'Accept': 'application/vnd.github+json' };
+        const headers = { 'User-Agent': `JARVIS-Mission-Control/${APP_VERSION}`, 'Accept': 'application/vnd.github+json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const url = `https://api.github.com/repos/${repo}/issues?state=open&per_page=50`;
