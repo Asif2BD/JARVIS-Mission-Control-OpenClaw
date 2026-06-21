@@ -175,7 +175,7 @@ By end of day:
 - [ ] Top bar shows today's cost and active agent count
 - [ ] Live event feed shows activity in real-time
 - [ ] Events persist in SQLite
-- [ ] Deployed and accessible at zion.asif.dev
+- [ ] Deployed and accessible at your-private-host.example
 
 ---
 
