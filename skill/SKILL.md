@@ -1,6 +1,7 @@
 ---
 name: free-mission-control
-description: JARVIS Mission Control v2 — free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard.
+description: JARVIS Mission Control v2.1.0 — free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, OpenClaw Sessions, live cost metrics, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard.
+version: 2.1.0
 homepage: https://missiondeck.ai
 metadata:
   {
@@ -33,9 +34,9 @@ metadata:
   }
 ---
 
-# JARVIS Mission Control v2 for OpenClaw
+# JARVIS Mission Control v2.1 for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-2.0.8-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/LICENSE)
 
 Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai/mission-control/demo)
@@ -49,6 +50,23 @@ Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com
 ```bash
 clawhub install jarvis-mission-control
 ```
+
+---
+
+## 🎯 What's New in v2.1
+
+### OpenClaw Sessions Panel
+Live view of active OpenClaw agent sessions from the dashboard, backed by the server `openclaw-sessions.js` integration.
+
+### Cost Metrics Fix
+Dashboard top metrics now read the intended cost-tracker endpoint at `GET /api/costs`; the filtered ResourceManager summary remains available at `GET /api/costs/summary`.
+
+### Release Hardening
+- Request JSON bodies capped at 5 MB to reduce memory-exhaustion risk
+- File download streaming now handles mid-transfer errors and client disconnects
+- `Content-Disposition` filenames are RFC 5987 encoded
+- `POST /api/tasks` rejects empty/non-string task titles
+- GitHub API `User-Agent` now follows the live package version
 
 ---
 
