@@ -383,7 +383,8 @@ const MissionControlAPI = {
             if (value) params.append(key, value);
         });
         const query = params.toString() ? `?${params.toString()}` : '';
-        return this.request(`/costs${query}`);
+        // Filtered ResourceManager summary lives at /costs/summary; bare /costs is the cost-tracker feed
+        return this.request(`/costs/summary${query}`);
     },
 
     async recordCost(cost) {
