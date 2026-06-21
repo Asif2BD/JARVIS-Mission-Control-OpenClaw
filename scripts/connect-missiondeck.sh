@@ -145,7 +145,7 @@ for f in glob.glob('$TASKS_DIR/*.json'):
     try:
         tasks.append(json.load(open(f)))
     except: pass
-print(json.dumps({'tasks': tasks, 'agents': [], 'deleted_ids': [], 'client_version': '1.0.4'}))
+print(json.dumps({'tasks': tasks, 'agents': [], 'deleted_ids': [], 'client_version': '2.1.0'}))
 ")
 
     SYNC_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \

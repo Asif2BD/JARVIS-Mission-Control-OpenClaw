@@ -39,6 +39,9 @@ dist/
 build/
 out/
 
+# Large analysis/report PDFs — not part of the template, keep them out of the repo
+dashboard/*.pdf
+
 # Test coverage
 coverage/
 .nyc_output/
