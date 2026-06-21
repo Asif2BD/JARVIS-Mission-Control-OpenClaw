@@ -30,7 +30,7 @@ Full security audit completed by Morpheus (AI Security Reviewer):
 
 **Final Score: 0 CRITICAL · 0 HIGH**
 
-See: `SECURITY-VALIDATION-2026-03-03.md` for full audit report.
+See: `docs/archive/SECURITY-VALIDATION-2026-03-03.md` for the point-in-time audit report.
 
 ## Security Features (Production-Hardened)
 
