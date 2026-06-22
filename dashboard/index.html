@@ -15,6 +15,20 @@
     <link rel="stylesheet" href="./css/events-feed.css">
     <link rel="stylesheet" href="./css/themes.css">
     <link rel="stylesheet" href="./css/mobile.css">
+    <link rel="stylesheet" href="./css/jarvis-hud.css">
+    <!-- JARVIS no-flash init: apply HUD mode + default arc-reactor theme before first paint -->
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem('jarvis-mode') !== 'off') {
+            document.documentElement.classList.add('jarvis-mode');
+          }
+          if (!localStorage.getItem('mc-color-theme')) {
+            document.documentElement.setAttribute('data-color-theme', 'jarvis');
+          }
+        } catch (e) {}
+      })();
+    </script>
 </head>
 <body>
     <!-- Mobile Sidebar Overlay -->
@@ -1622,6 +1636,9 @@
     <script src="./js/update-banner.js"></script>
     <script src="./js/smart-panels.js"></script>
     <script src="./js/events-feed.js"></script>
+    <!-- JARVIS experience — voice engine + cinematic HUD (load last) -->
+    <script src="./js/jarvis-voice.js"></script>
+    <script src="./js/jarvis-hud.js"></script>
     <script>
     // Stubs for removed floating chat — prevent old JS from throwing
     function toggleChatPanel() { openChatPanel(); }
