@@ -1,0 +1,344 @@
+/* ============================================================
+   JARVIS HUD — Iron Man-style cinematic layer
+   Additive overlay on top of the existing dashboard. Everything
+   cinematic is scoped to html.jarvis-mode so it can be toggled off.
+   The color palette rides on data-color-theme="jarvis".
+   ============================================================ */
+
+:root {
+    --jarvis-cyan: #00d4ff;
+    --jarvis-cyan-soft: rgba(0, 212, 255, 0.55);
+    --jarvis-gold: #ffc640;
+    --jarvis-gold-soft: rgba(255, 198, 64, 0.6);
+    --jarvis-ink: #03070f;
+    --jarvis-glow: 0 0 12px rgba(0, 212, 255, 0.55), 0 0 28px rgba(0, 212, 255, 0.25);
+    --jarvis-glow-gold: 0 0 12px rgba(255, 198, 64, 0.55), 0 0 26px rgba(255, 198, 64, 0.22);
+}
+
+/* ----------------------------------------------------------------
+   1. ARC REACTOR (reusable) — concentric rotating rings + core
+   ---------------------------------------------------------------- */
+.arc-reactor {
+    position: relative;
+    width: var(--reactor-size, 34px);
+    height: var(--reactor-size, 34px);
+    border-radius: 50%;
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    color: var(--jarvis-cyan);
+}
+.arc-reactor::before,
+.arc-reactor::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+}
+.arc-reactor::before {
+    inset: 0;
+    border-style: solid;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    box-shadow: var(--jarvis-glow);
+    animation: jarvis-spin 4s linear infinite;
+}
+.arc-reactor::after {
+    inset: 22%;
+    border-style: dashed;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    opacity: 0.8;
+    animation: jarvis-spin 6s linear infinite reverse;
+}
+.arc-reactor .reactor-core {
+    width: 34%;
+    height: 34%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, var(--jarvis-cyan) 55%, transparent 100%);
+    box-shadow: var(--jarvis-glow);
+    animation: jarvis-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes jarvis-spin { to { transform: rotate(360deg); } }
+@keyframes jarvis-pulse {
+    0%, 100% { opacity: 0.65; transform: scale(0.9); }
+    50%      { opacity: 1;    transform: scale(1.1); }
+}
+
+/* Header logo becomes a small arc reactor in JARVIS mode */
+html.jarvis-mode .logo-icon {
+    --reactor-size: 30px;
+    background: transparent !important;
+    color: var(--jarvis-cyan);
+    box-shadow: none !important;
+    position: relative;
+}
+html.jarvis-mode .logo-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--jarvis-cyan);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    box-shadow: var(--jarvis-glow);
+    animation: jarvis-spin 4s linear infinite;
+}
+
+/* ----------------------------------------------------------------
+   2. AMBIENT HUD CHROME — corner reticles, scan line, grid vignette
+   pointer-events:none so it never blocks the UI.
+   ---------------------------------------------------------------- */
+#jarvis-hud-chrome {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    display: none;
+}
+html.jarvis-mode #jarvis-hud-chrome { display: block; }
+
+#jarvis-hud-chrome .hud-corner {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--jarvis-cyan-soft);
+    opacity: 0.5;
+    filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.4));
+}
+#jarvis-hud-chrome .hud-corner.tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+#jarvis-hud-chrome .hud-corner.tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+#jarvis-hud-chrome .hud-corner.bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+#jarvis-hud-chrome .hud-corner.br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+#jarvis-hud-chrome .hud-scanline {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 140px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.06) 50%, transparent 100%);
+    animation: jarvis-scan 7s linear infinite;
+}
+@keyframes jarvis-scan {
+    0%   { transform: translateY(-160px); }
+    100% { transform: translateY(100vh); }
+}
+
+#jarvis-hud-chrome .hud-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(ellipse at center, transparent 35%, #000 100%);
+    -webkit-mask-image: radial-gradient(ellipse at center, transparent 35%, #000 100%);
+}
+
+/* ----------------------------------------------------------------
+   3. BOOT SEQUENCE — full-screen power-up
+   ---------------------------------------------------------------- */
+#jarvis-boot {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: none;
+    place-items: center;
+    background: radial-gradient(ellipse at center, #06121f 0%, var(--jarvis-ink) 70%, #000 100%);
+    font-family: 'Orbitron', sans-serif;
+    color: var(--jarvis-cyan);
+    text-align: center;
+}
+#jarvis-boot.show { display: grid; }
+#jarvis-boot.fade-out { animation: jarvis-boot-fade 900ms ease forwards; }
+@keyframes jarvis-boot-fade { to { opacity: 0; visibility: hidden; } }
+
+#jarvis-boot .boot-reactor {
+    --reactor-size: 160px;
+    margin: 0 auto 28px;
+    animation: jarvis-boot-grow 1200ms cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes jarvis-boot-grow {
+    from { transform: scale(0.2); opacity: 0; filter: blur(8px); }
+    to   { transform: scale(1);   opacity: 1; filter: blur(0); }
+}
+#jarvis-boot .boot-title {
+    font-size: clamp(28px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    margin: 0 0 18px;
+    text-shadow: var(--jarvis-glow);
+}
+#jarvis-boot .boot-log {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--jarvis-cyan-soft);
+    min-height: 120px;
+    text-align: left;
+    width: min(440px, 86vw);
+    margin: 0 auto;
+}
+#jarvis-boot .boot-log .ok { color: var(--jarvis-gold); }
+#jarvis-boot .boot-skip {
+    margin-top: 22px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted, #64748b);
+    cursor: pointer;
+    pointer-events: auto;
+    background: none;
+    border: 1px solid var(--border-color, #1e3a5f);
+    padding: 6px 16px;
+    border-radius: 4px;
+}
+#jarvis-boot .boot-skip:hover { color: var(--jarvis-cyan); border-color: var(--jarvis-cyan); }
+
+/* ----------------------------------------------------------------
+   4. VOICE DOCK — mic + mute + status, with a reactive orb
+   ---------------------------------------------------------------- */
+#jarvis-dock {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9000;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(8, 20, 34, 0.82);
+    border: 1px solid var(--border-color, #1e3a5f);
+    box-shadow: var(--jarvis-glow), 0 8px 30px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    font-family: 'Rajdhani', sans-serif;
+}
+html.jarvis-mode #jarvis-dock { display: flex; }
+
+#jarvis-dock .dock-orb {
+    --reactor-size: 30px;
+    transition: filter 0.2s ease;
+}
+#jarvis-dock.speaking .dock-orb { filter: drop-shadow(0 0 10px var(--jarvis-cyan)); }
+#jarvis-dock.listening .dock-orb { color: var(--jarvis-gold); }
+
+#jarvis-dock .dock-status {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary, #94a3b8);
+    min-width: 92px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#jarvis-dock .dock-status.active { color: var(--jarvis-cyan); }
+
+#jarvis-dock button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid var(--border-color, #1e3a5f);
+    color: var(--jarvis-cyan);
+    font-size: 16px;
+    transition: all 0.18s ease;
+}
+#jarvis-dock button:hover { background: rgba(0, 212, 255, 0.18); box-shadow: var(--jarvis-glow); }
+#jarvis-dock button.off { color: var(--text-muted, #64748b); border-color: var(--border-subtle, #0f2847); }
+#jarvis-dock button.mic.listening {
+    color: var(--jarvis-gold);
+    border-color: var(--jarvis-gold);
+    box-shadow: var(--jarvis-glow-gold);
+    animation: jarvis-pulse 1.4s ease-in-out infinite;
+}
+
+/* Waveform bars shown while JARVIS is speaking */
+#jarvis-dock .dock-wave { display: none; gap: 2px; align-items: flex-end; height: 20px; }
+#jarvis-dock.speaking .dock-wave { display: flex; }
+#jarvis-dock .dock-wave span {
+    width: 3px; height: 6px;
+    background: var(--jarvis-cyan);
+    border-radius: 2px;
+    animation: jarvis-wave 0.9s ease-in-out infinite;
+}
+#jarvis-dock .dock-wave span:nth-child(2) { animation-delay: 0.15s; }
+#jarvis-dock .dock-wave span:nth-child(3) { animation-delay: 0.30s; }
+#jarvis-dock .dock-wave span:nth-child(4) { animation-delay: 0.45s; }
+#jarvis-dock .dock-wave span:nth-child(5) { animation-delay: 0.60s; }
+@keyframes jarvis-wave { 0%,100% { height: 5px; } 50% { height: 20px; } }
+
+/* Transient subtitle of what JARVIS just said / heard */
+#jarvis-subtitle {
+    position: fixed;
+    left: 50%;
+    bottom: 74px;
+    transform: translateX(-50%);
+    z-index: 9000;
+    max-width: min(680px, 92vw);
+    padding: 8px 18px;
+    border-radius: 8px;
+    background: rgba(8, 20, 34, 0.9);
+    border: 1px solid var(--border-color, #1e3a5f);
+    color: var(--jarvis-cyan);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+#jarvis-subtitle.show { opacity: 1; }
+#jarvis-subtitle .who { color: var(--jarvis-gold); font-weight: 600; margin-right: 8px; }
+
+/* ----------------------------------------------------------------
+   5. Accessibility — respect reduced motion
+   ---------------------------------------------------------------- */
+/* Re-enable launcher — only visible when JARVIS mode is OFF */
+#jarvis-enable {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px 8px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    background: rgba(8, 20, 34, 0.82);
+    border: 1px solid var(--border-color, #1e3a5f);
+    color: var(--jarvis-cyan);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(8px);
+}
+#jarvis-enable:hover { box-shadow: var(--jarvis-glow); }
+#jarvis-enable .arc-reactor { --reactor-size: 24px; }
+html.jarvis-mode #jarvis-enable { display: none; }
+
+/* ----------------------------------------------------------------
+   5. Accessibility — respect reduced motion
+   ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .arc-reactor::before, .arc-reactor::after, .arc-reactor .reactor-core,
+    html.jarvis-mode .logo-icon::after,
+    #jarvis-hud-chrome .hud-scanline,
+    #jarvis-dock .dock-wave span,
+    #jarvis-dock button.mic.listening {
+        animation: none !important;
+    }
+}
+
+@media (max-width: 640px) {
+    #jarvis-hud-chrome .hud-corner { width: 40px; height: 40px; }
+    #jarvis-dock .dock-status { display: none; }
+    #jarvis-dock { right: 10px; bottom: 70px; padding: 8px 10px; }
+}

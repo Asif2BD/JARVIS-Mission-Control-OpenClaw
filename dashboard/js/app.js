@@ -44,7 +44,7 @@ function toggleSidebarGroup(groupId) {
 // State
 let selectedTask = null;
 let currentTheme = 'dark';
-let currentColorTheme = 'matrix';
+let currentColorTheme = 'jarvis'; // JARVIS arc-reactor blue is the default look
 let currentProfileAgent = null;
 let currentProfileTab = 'attention';
 let currentThreadId = null;
