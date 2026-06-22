@@ -273,7 +273,13 @@
       const nice = title.charAt(0).toUpperCase() + title.slice(1);
       const api = window.MissionControlAPI;
       if (api && typeof api.createTask === 'function') {
-        api.createTask({ title: nice, status: 'INBOX', priority: 'medium', created_by: 'jarvis-voice' })
+        api.createTask({
+            title: nice,
+            description: `Created by voice command via JARVIS: "${nice}".`,
+            status: 'INBOX',
+            priority: 'medium',
+            created_by: 'agent-jarvis-voice'   // schema: ^(agent-|human-|system)...
+          })
           .then(() => { say(`Task created: ${nice}.`); if (typeof window.renderDashboard === 'function') window.renderDashboard(); })
           .catch(() => say('I was unable to create that task, sir.'));
       } else {
