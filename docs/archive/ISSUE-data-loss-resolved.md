@@ -38,7 +38,7 @@ This commit deleted legitimate data files thinking they were "artifacts".
 
 ## Impact
 
-- Production dashboard (https://zion.asif.dev/) shows incomplete data
+- Production dashboard (https://your-private-host.example/) shows incomplete data
 - Historical tasks are gone
 - Agent cards missing for Oracle, Tank, Link
 - Token optimizer launch plan no longer accessible

@@ -5,6 +5,18 @@ Format: [version] — date | what changed | PR
 
 ---
 
+## [Unreleased] — JARVIS Voice & Cinematic HUD
+
+### Added
+- 🎙️ **Two-way voice (JARVIS Voice)** — `dashboard/js/jarvis-voice.js`. Speaks via the Web Speech API (auto-selects a British English voice to match the films) and listens for spoken commands via `SpeechRecognition`. Degrades gracefully: speech output works everywhere; voice commands light up in Chrome/Edge and stay silent elsewhere.
+  - Commands: status report, open chat/reports/schedules/events/GitHub, "create task …", switch theme (jarvis/matrix), mute/unmute, greeting.
+  - Event announcements wired to the live WebSocket bus: new task, task DONE/BLOCKED, review submitted/approved, quota exceeded, uplink lost/restored.
+- 🌀 **Cinematic HUD (JARVIS mode)** — `dashboard/js/jarvis-hud.js` + `dashboard/css/jarvis-hud.css`. Power-up boot sequence ("INITIALIZING JARVIS…"), animated arc-reactor (header logo + boot centerpiece), ambient HUD chrome (corner reticles, sweeping scan line, grid vignette), a reactive voice dock (orb + waveform + mic/mute), and live subtitles of what JARVIS says/hears.
+- 🎨 **Arc-reactor blue is now the default theme** — `data-color-theme="jarvis"` with a no-flash early init. Matrix and all other themes remain selectable; JARVIS mode is toggleable (`window.toggleJarvisMode()` / the dock power button) and persisted in `localStorage`.
+- ♿ Respects `prefers-reduced-motion`; all HUD overlays are `pointer-events:none` so they never block the UI.
+
+---
+
 ## [2.1.0] — 2026-06-21 | OpenClaw Sessions, Cost Metrics Fix & Hardening
 
 ### Added

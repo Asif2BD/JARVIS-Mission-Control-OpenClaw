@@ -321,7 +321,7 @@ async function _loadSchedules() {
         if (loading) loading.textContent = '';
         _renderSchedules();
     } catch (e) {
-        listEl.innerHTML = `<div style="color:#e53e3e; font-size:13px; padding:12px 0;">Error: ${e.message}</div>`;
+        listEl.innerHTML = `<div style="color:#e53e3e; font-size:13px; padding:12px 0;">Error: ${DOMPurify.sanitize(String(e.message))}</div>`;
         if (loading) loading.textContent = '';
     }
 }
