@@ -132,7 +132,13 @@
       document.documentElement.classList.toggle('jarvis-mode', on);
       localStorage.setItem('jarvis-mode', on ? 'on' : 'off');
       if (on && !sessionStorage.getItem('jarvis-booted')) this.boot();
+      // Powering off must be immediate: stop any in-flight speech/listening.
+      if (!on) {
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+        if (V() && V().listening) V().stopListening();
+      }
     },
+    isActive() { return document.documentElement.classList.contains('jarvis-mode'); },
     toggleMode() {
       this.setMode(!document.documentElement.classList.contains('jarvis-mode'));
     },
@@ -186,6 +192,9 @@
       if (!api || typeof api.on !== 'function') return;
       let last = 0;
       const announce = (text, priority) => {
+        // Stay silent when JARVIS mode is powered off — the handlers remain
+        // registered, so this gate is what makes the power toggle reliable.
+        if (!this.isActive()) return;
         const now = Date.now();
         if (now - last < 1200 && !priority) return; // throttle chatter
         last = now;
