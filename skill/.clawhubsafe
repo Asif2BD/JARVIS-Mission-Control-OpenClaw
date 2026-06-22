@@ -1,13 +1,13 @@
 # ClawHub Safety Attestation
 # Skill: jarvis-mission-control
-# Version: 2.1.0
+# Version: 2.1.1
 # Publisher: ProSkillsMD / Matrix Zion
-# Date: 2026-06-21
+# Date: 2026-06-22
 
 ## SHA256 Checksums (verify with: sha256sum <file>)
 
-4b5b18c7267a14a8adad65be30fb49c0f079a30d00ebb3eb942926803c9e16e3  SKILL.md
-f0c85047df0391b9228744aac61188aab658960d4cbe45a4bd0f5163213bb120  _meta.json
+684f323eee70cfcf451947aa53db24be2f3e71b0cd21218bf36145098738507f  SKILL.md
+bb40f5c251fef7ff46165d3e2e8b598a7c0bccf24b6375a69fc50bc46fae024b  _meta.json
 092226f618865ec2d41e508af6cdfcd9e02af61a1069e00f7918a2f2ef3811b0  SECURITY.md
 cc61dd76c09da95f7724a8f8c58d2111d06a0cf0b74e5f7d70d0c51a8c0d4131  references/1-setup.md
 53e8cdb310a1b96e5e20b287282ac9d000f844eb6c2e122fc263017e95abc514  references/2-missiondeck-connect.md

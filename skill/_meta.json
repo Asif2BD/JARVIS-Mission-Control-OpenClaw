@@ -1,8 +1,8 @@
 {
-  "name": "Free Mission Control for OpenClaw AI Agents",
+  "name": "Jarvis Mission Control for OpenCLAW AIS",
   "slug": "jarvis-mission-control",
-  "version": "2.1.0",
-  "description": "JARVIS Mission Control v2.1.0 \u2014 a free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, OpenClaw Sessions, live cost metrics, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard. Self-host from GitHub or connect to MissionDeck.ai.",
+  "version": "2.1.1",
+  "description": "Jarvis Mission Control for OpenCLAW AIS v2.1.1 \u2014 a self-hosted command center for OpenCLAW AI systems. Kanban board, real-time chat, OpenClaw Sessions, live cost metrics, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard. Self-host from GitHub or connect to MissionDeck.ai.",
   "author": "Asif2BD",
   "tags": [
     "mission-control",
@@ -18,5 +18,5 @@
   ],
   "repository": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw",
   "homepage": "https://missiondeck.ai",
-  "changelog": "v2.1.0: OpenClaw Sessions panel, dashboard cost metrics fix, repo-wide version alignment, JSON body limit, file download stream/error hardening, task-title validation, and live GitHub API User-Agent versioning. v2.0.8: Performance fix \u2014 surgical O(1) cache updates for /api/tasks. Eliminates 6000ms+ response times caused by full cache invalidation on every file write. New updateCacheItem() updates individual items in-place; 5-min TTL safety net. v2.0.3: Smart slide-out panels for Chat (real-time WebSocket), Reports, and Schedules. Fixed panel CSS transition bug. v2.0.2: Right sidebar UX fixes, double /api/ URL bug, chat overflow fix. v2.0.1: Dark mode hardcoded as default. v2.0.0: Major UI overhaul \u2014 widget cards, enhanced task cards, collapsible sidebar, Matrix theme polish. v1.10.0-v1.14.0: Webhook retry + circuit breaker + SQLite delivery log. v1.12.0: 51-test Jest suite. v1.9.0: Pino structured logging. v1.7.0: Rate limiting. v1.6.0: CSRF protection."
+  "changelog": "v2.1.1: ClawHub branding correction \u2014 restored the package display name to Jarvis Mission Control for OpenCLAW AIS and corrected skill frontmatter slug. v2.1.0: OpenClaw Sessions panel, dashboard cost metrics fix, repo-wide version alignment, JSON body limit, file download stream/error hardening, task-title validation, and live GitHub API User-Agent versioning. v2.0.8: Performance fix \u2014 surgical O(1) cache updates for /api/tasks. Eliminates 6000ms+ response times caused by full cache invalidation on every file write. New updateCacheItem() updates individual items in-place; 5-min TTL safety net. v2.0.3: Smart slide-out panels for Chat (real-time WebSocket), Reports, and Schedules. Fixed panel CSS transition bug. v2.0.2: Right sidebar UX fixes, double /api/ URL bug, chat overflow fix. v2.0.1: Dark mode hardcoded as default. v2.0.0: Major UI overhaul \u2014 widget cards, enhanced task cards, collapsible sidebar, Matrix theme polish. v1.10.0-v1.14.0: Webhook retry + circuit breaker + SQLite delivery log. v1.12.0: 51-test Jest suite. v1.9.0: Pino structured logging. v1.7.0: Rate limiting. v1.6.0: CSRF protection."
 }

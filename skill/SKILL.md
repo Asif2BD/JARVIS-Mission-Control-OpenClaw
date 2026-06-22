@@ -1,7 +1,7 @@
 ---
-name: free-mission-control
-description: JARVIS Mission Control v2.1.0 — free, self-hosted command center for OpenClaw AI agents. Kanban board, real-time chat, OpenClaw Sessions, live cost metrics, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard.
-version: 2.1.0
+name: jarvis-mission-control
+description: Jarvis Mission Control for OpenCLAW AIS v2.1.1 — self-hosted command center for OpenCLAW AI systems. Kanban board, real-time chat, OpenClaw Sessions, live cost metrics, Claude Code session tracking, GitHub Issues sync, webhook delivery monitoring, CLI console, agent SOUL editor, and a full Matrix-themed dashboard.
+version: 2.1.1
 homepage: https://missiondeck.ai
 metadata:
   {
@@ -34,9 +34,9 @@ metadata:
   }
 ---
 
-# JARVIS Mission Control v2.1 for OpenClaw
+# Jarvis Mission Control for OpenCLAW AIS v2.1.1
 
-[![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.1.1-brightgreen.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/CHANGELOG.md)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw/blob/main/LICENSE)
 
 Built by [MissionDeck.ai](https://missiondeck.ai) · [GitHub](https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw) · [Live Demo](https://missiondeck.ai/mission-control/demo)
