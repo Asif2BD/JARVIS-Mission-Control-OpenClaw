@@ -55,6 +55,8 @@ coverage/
 # Operational data — never commit
 .mission-control/reports/
 .mission-control/archived-tasks/
+# Live Telegram bot mapping — deployment-specific (template lives in examples/config/agents.json)
+.mission-control/config/agents.json
 .mission-control/logs/activity.log
 .mission-control/logs/*.log
 .mission-control/tasks/*.json
