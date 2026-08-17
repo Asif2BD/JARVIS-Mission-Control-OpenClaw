@@ -16,7 +16,11 @@ function basicAuth(req, res, next) {
     if (!process.env.MC_AUTH_PASS) return next();
 
     // Always allow API requests from agents (Bearer token or no auth header on localhost)
-    const isLocalhost = req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1';
+    // Use the actual socket peer, not req.ip, because trust-proxy makes req.ip
+    // dependent on a client-controlled forwarding header when Express is
+    // reached directly.
+    const remoteAddress = req.socket && req.socket.remoteAddress;
+    const isLocalhost = remoteAddress === '127.0.0.1' || remoteAddress === '::1' || remoteAddress === '::ffff:127.0.0.1';
     if (isLocalhost) return next();
 
     // Allow API routes with valid agent token if configured

@@ -101,10 +101,10 @@ async function loadCliConnectionsPanel() {
             return;
         }
 
-        listEl.innerHTML = connections.map(conn => renderConnection(conn)).join('');
+        listEl.innerHTML = DOMPurify.sanitize(connections.map(conn => renderConnection(conn)).join(''));
 
     } catch (err) {
-        listEl.innerHTML = `<div style="color:#ef4444; font-size:13px; padding:16px 0;">Error loading connections: ${err.message}</div>`;
+        listEl.innerHTML = DOMPurify.sanitize(`<div style="color:#ef4444; font-size:13px; padding:16px 0;">Error loading connections: ${escapeHtml(err.message)}</div>`);
     }
 }
 
@@ -161,5 +161,6 @@ function escapeHtml(str) {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }

@@ -52,10 +52,23 @@ const app = express();
 // Trust proxy (nginx) for correct IP detection and rate limiting
 app.set('trust proxy', 1);
 
-app.use(cors({ origin: true, credentials: true }));
+const CORS_ORIGINS = (process.env.MC_CORS_ORIGINS || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+app.use(cors({
+    origin(origin, callback) {
+        // Non-browser and same-origin requests have no Origin header. Cross-origin
+        // dashboard access must be explicitly enabled with MC_CORS_ORIGINS.
+        callback(null, !origin || CORS_ORIGINS.includes(origin));
+    },
+    credentials: true,
+}));
 // Cap request bodies to prevent memory-exhaustion DoS (SOUL editor allows up to ~500KB content)
 app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
+app.use(require('./middleware/basic-auth'));
 
 
 // =====================================
@@ -613,7 +626,7 @@ app.get('/api/files', async (req, res) => {
 
         const resolvedPath = path.resolve(fullPath);
         const resolvedBase = path.resolve(MISSION_CONTROL_DIR);
-        if (!resolvedPath.startsWith(resolvedBase)) {
+        if (!isPathSafe(resolvedPath, resolvedBase)) {
             return res.status(403).json({ error: 'Access denied' });
         }
 
@@ -653,7 +666,7 @@ app.get('/api/files/:path(*)', async (req, res) => {
         const resolvedPath = path.resolve(fullPath);
         const resolvedBase = path.resolve(MISSION_CONTROL_DIR);
         
-        if (!resolvedPath.startsWith(resolvedBase)) {
+        if (!isPathSafe(resolvedPath, resolvedBase)) {
             return res.status(403).json({ error: 'Access denied' });
         }
         

@@ -13,14 +13,10 @@ Thumbs.db
 
 # Dependencies
 node_modules/
-package-lock.json
 
 # Logs (keep structure, ignore content)
 .mission-control/logs/*.log
 !.mission-control/logs/.gitkeep
-
-# Lock files
-*.lock
 
 # Temporary files
 *.tmp
@@ -65,4 +61,5 @@ coverage/
 .mission-control/*.db
 .mission-control/*.db-shm
 .mission-control/*.db-wal
+.mission-control/.github-sync
 JARVIS-DEV.md
