@@ -23,6 +23,7 @@ Modular capability definitions for AI agents. Load only the skills relevant to y
 | **MissionDeck API** | [`missiondeck-api.md`](missiondeck-api.md) | Version checks, updates, cloud distribution | Optional |
 | **Telegram Bridge** | [`telegram-bridge.md`](telegram-bridge.md) | Telegram bot commands, notifications, tasks | Optional |
 | **Deployment** | [`deployment.md`](deployment.md) | Make dashboard public (Cloudflare, ngrok, VPS) | Optional |
+| **DeepSeek-Harness Bridge** | [`deepseek-harness.md`](deepseek-harness.md) | Mirror dsh sessions onto the board (experimental) | Optional |
 
 ## Skills by Role
 

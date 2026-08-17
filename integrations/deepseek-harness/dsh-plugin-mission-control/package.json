@@ -1,0 +1,31 @@
+{
+  "name": "dsh-plugin-mission-control",
+  "version": "0.1.0",
+  "description": "DeepSeek-Harness (dsh) plugin that streams sessions, turns, and tool activity to a JARVIS Mission Control board",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "mission-control",
+    "jarvis"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dsh": {
+    "category": "integration",
+    "preview": true
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Asif2BD/JARVIS-Mission-Control-OpenClaw.git",
+    "directory": "integrations/deepseek-harness/dsh-plugin-mission-control"
+  }
+}

@@ -8,6 +8,7 @@ Format: [version] — date | what changed | PR
 ## [Unreleased] — JARVIS Voice & Cinematic HUD
 
 ### Added
+- 🧩 **DeepSeek-Harness bridge (experimental)** — `integrations/deepseek-harness/` ships `dsh-plugin-mission-control`, a Cordis plugin that mounts inside [DeepSeek-Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) and mirrors its append-only `session/event` stream onto the board: sessions become tasks, turns/messages/tool calls stream into the activity log, and turn completion moves tasks to `REVIEW`. Zero-dependency ESM, configurable event names (dsh is a v0.1 preview), queued/retried HTTP so a dead board never blocks the agent loop. Analysis + plugin-vs-fork rationale in `docs/deepseek-harness-integration.md`; agent skill in `skills/deepseek-harness.md`.
 - 🎙️ **Two-way voice (JARVIS Voice)** — `dashboard/js/jarvis-voice.js`. Speaks via the Web Speech API (auto-selects a British English voice to match the films) and listens for spoken commands via `SpeechRecognition`. Degrades gracefully: speech output works everywhere; voice commands light up in Chrome/Edge and stay silent elsewhere.
   - Commands: status report, open chat/reports/schedules/events/GitHub, "create task …", switch theme (jarvis/matrix), mute/unmute, greeting.
   - Event announcements wired to the live WebSocket bus: new task, task DONE/BLOCKED, review submitted/approved, quota exceeded, uplink lost/restored.
