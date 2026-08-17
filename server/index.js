@@ -477,9 +477,20 @@ async function triggerWebhooks(event, data) {
 // =====================================
 
 const watcher = chokidar.watch(MISSION_CONTROL_DIR, {
-    ignored: /(^|[\/\\])\../, // ignore dotfiles
+    // Ignore dotfiles inside the tree (.initialized, .demo-loaded) — but never
+    // the watch root itself: MISSION_CONTROL_DIR is a dot-folder
+    // (".mission-control"), so a plain dotfile regex like /(^|[\/\\])\../
+    // matches the root path and chokidar ignores the entire tree.
+    ignored: (watchedPath) => {
+        if (path.resolve(watchedPath) === path.resolve(MISSION_CONTROL_DIR)) return false;
+        return path.basename(watchedPath).startsWith('.');
+    },
     persistent: true,
-    ignoreInitial: true
+    ignoreInitial: true,
+    // Native fs events are unreliable on some setups (network mounts, some
+    // Windows/container environments). Set MC_WATCH_POLLING=true to poll instead.
+    usePolling: process.env.MC_WATCH_POLLING === 'true',
+    interval: 1000
 });
 
 watcher
