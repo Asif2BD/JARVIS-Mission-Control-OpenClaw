@@ -1,3 +1,5 @@
+
+
 # JARVIS Mission Control for OpenClaw
 
 [![Version](https://img.shields.io/badge/version-2.1.0-brightgreen.svg)](CHANGELOG.md)
@@ -109,7 +111,7 @@ cd JARVIS-Mission-Control-OpenClaw
 # 4. Initialize Mission Control
 ./scripts/init-mission-control.sh
 
-# 5. Your dashboard is live at missiondeck.ai/workspace/your-slug
+# 5. Your dashboard is live at missiondeck.ai/mission-control/your-slug
 ```
 
 Then deploy your agents at **[missiondeck.ai/deploy](https://missiondeck.ai/deploy)** — choose Orgo Cloud or your own VPS.
