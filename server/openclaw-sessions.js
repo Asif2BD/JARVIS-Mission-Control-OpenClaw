@@ -3,7 +3,7 @@
  * Discovers and tracks OpenClaw gateway sessions across all agents.
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -88,10 +88,11 @@ function parseSessionsOutput(output) {
  */
 function scanAgentSessions(agentName) {
     try {
-        const output = execSync(`openclaw sessions --agent ${agentName} 2>/dev/null`, {
+        const output = execFileSync('openclaw', ['sessions', '--agent', agentName], {
             encoding: 'utf8',
             timeout: 10000,
             env: { ...process.env, NO_COLOR: '1' },
+            stdio: ['ignore', 'pipe', 'ignore'],
         });
         return parseSessionsOutput(output);
     } catch (err) {
