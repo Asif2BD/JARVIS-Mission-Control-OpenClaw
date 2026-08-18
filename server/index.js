@@ -3138,7 +3138,7 @@ app.get('*', (req, res) => {
 // START SERVER
 // =====================================
 
-server.listen(PORT, () => {
+server.listen(PORT, process.env.HOST || undefined, () => {
     // Load .missiondeck env file if present and not already set
     const missionDeckEnvFile = path.join(__dirname, '..', '.missiondeck');
     if (!process.env.MISSIONDECK_API_KEY && require('fs').existsSync(missionDeckEnvFile)) {
