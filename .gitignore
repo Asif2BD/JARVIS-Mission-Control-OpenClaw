@@ -29,6 +29,10 @@ node_modules/
 *.pem
 credentials.json
 secrets/
+# MissionDeck connection file written by scripts/connect-missiondeck.sh (holds the workspace API key)
+.missiondeck
+# Local runtime config that can hold a MissionDeck apiKey
+.mission-control/config.json
 
 # Build outputs
 dist/
